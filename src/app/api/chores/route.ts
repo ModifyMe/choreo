@@ -41,9 +41,11 @@ export async function POST(req: Request) {
                 status: "PENDING",
                 dueDate: dueDate ? new Date(dueDate) : null,
                 recurrence: recurrence === "NONE" ? null : recurrence,
+                recurrenceData: body.recurrenceData, // Save custom recurrence data
                 activityLogs: {
                     create: {
                         userId: session.user.id,
+                        householdId,
                         action: "CREATED",
                     },
                 },

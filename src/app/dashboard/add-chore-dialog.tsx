@@ -38,6 +38,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
     const [loading, setLoading] = useState(false);
     const [date, setDate] = useState<Date>();
     const [recurrence, setRecurrence] = useState("NONE");
+    const [recurrenceData, setRecurrenceData] = useState<string[]>([]);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,6 +60,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     householdId,
                     dueDate: date,
                     recurrence,
+                    recurrenceData: recurrence === "CUSTOM" ? JSON.stringify(recurrenceData) : null,
                 }),
             });
 
@@ -157,16 +159,46 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Recurrence</Label>
-                            <Select value={recurrence} onValueChange={setRecurrence}>
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select recurrence" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="NONE">None</SelectItem>
-                                    <SelectItem value="DAILY">Daily</SelectItem>
-                                    <SelectItem value="WEEKLY">Weekly</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="col-span-3 space-y-2">
+                                <Select value={recurrence} onValueChange={setRecurrence}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select recurrence" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="NONE">None</SelectItem>
+                                        <SelectItem value="DAILY">Daily</SelectItem>
+                                        <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                        <SelectItem value="BI_MONTHLY">Bi-Monthly (Every 2 months)</SelectItem>
+                                        <SelectItem value="CUSTOM">Custom Days</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {recurrence === "CUSTOM" && (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => (
+                                            <div
+                                                key={day}
+                                                onClick={() => {
+                                                    setRecurrenceData((prev) =>
+                                                        prev.includes(day)
+                                                            ? prev.filter((d) => d !== day)
+                                                            : [...prev, day]
+                                                    );
+                                                }}
+                                                className={cn(
+                                                    "cursor-pointer px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                                                    recurrenceData.includes(day)
+                                                        ? "bg-primary text-primary-foreground border-primary"
+                                                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                                )}
+                                            >
+                                                {day}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

@@ -53,6 +53,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         activityLogs: {
                             create: {
                                 userId: session.user.id,
+                                householdId: chore.householdId,
                                 action: "COMPLETED",
                                 proofImage: body.proofImage, // Save proof URL
                             },
@@ -96,10 +97,41 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             // Handle Recurrence & Auto-Delegation
             if (chore.recurrence && chore.recurrence !== "NONE") {
                 let nextDueDate = new Date();
+
                 if (chore.recurrence === "DAILY") {
                     nextDueDate.setDate(nextDueDate.getDate() + 1);
                 } else if (chore.recurrence === "WEEKLY") {
                     nextDueDate.setDate(nextDueDate.getDate() + 7);
+                } else if (chore.recurrence === "MONTHLY") {
+                    nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+                } else if (chore.recurrence === "BI_MONTHLY") {
+                    nextDueDate.setMonth(nextDueDate.getMonth() + 2);
+                } else if (chore.recurrence === "CUSTOM" && chore.recurrenceData) {
+                    try {
+                        const days = JSON.parse(chore.recurrenceData) as string[];
+                        const dayMap: { [key: string]: number } = {
+                            "SUN": 0, "MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SAT": 6
+                        };
+
+                        const currentDay = nextDueDate.getDay();
+                        let daysUntilNext = 7; // Default max wait
+
+                        // Find the smallest gap to a future day
+                        for (const day of days) {
+                            const targetDay = dayMap[day];
+                            if (targetDay !== undefined) {
+                                let diff = targetDay - currentDay;
+                                if (diff <= 0) diff += 7; // It's next week
+                                if (diff < daysUntilNext) {
+                                    daysUntilNext = diff;
+                                }
+                            }
+                        }
+                        nextDueDate.setDate(nextDueDate.getDate() + daysUntilNext);
+                    } catch (e) {
+                        // Fallback to weekly if parsing fails
+                        nextDueDate.setDate(nextDueDate.getDate() + 7);
+                    }
                 }
 
                 // Find next assignee (Round Robin with Load Balancing)
@@ -140,9 +172,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         status: "PENDING",
                         dueDate: nextDueDate,
                         recurrence: chore.recurrence,
+                        recurrenceData: chore.recurrenceData, // Copy custom data
                         activityLogs: {
                             create: {
                                 userId: session.user.id,
+                                householdId: chore.householdId,
                                 action: "CREATED",
                             }
                         }
@@ -161,6 +195,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     activityLogs: {
                         create: {
                             userId: session.user.id,
+                            householdId: chore.householdId,
                             action: "CLAIMED",
                         },
                     },
