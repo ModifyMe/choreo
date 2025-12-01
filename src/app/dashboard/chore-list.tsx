@@ -73,21 +73,30 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
         if (proofFile) {
             setUploading(true);
             try {
-                const formData = new FormData();
-                formData.append("file", proofFile);
+                // 1. Get Signed Upload Token from Server (Bypasses Vercel Limit)
+                const fileExt = proofFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `${userId}/${fileName}`;
 
-                const uploadRes = await fetch("/api/upload", {
+                const tokenRes = await fetch("/api/upload", {
                     method: "POST",
-                    body: formData,
+                    body: JSON.stringify({ filePath }),
+                    headers: { "Content-Type": "application/json" }
                 });
 
-                if (!uploadRes.ok) {
-                    const errorText = await uploadRes.text();
-                    throw new Error(errorText || "Upload failed");
-                }
+                if (!tokenRes.ok) throw new Error("Failed to get upload token");
+                const { token, path } = await tokenRes.json();
 
-                const data = await uploadRes.json();
-                proofUrl = data.url;
+                // 2. Upload directly to Supabase using the token
+                const { error: uploadError } = await supabase.storage
+                    .from('chore-proofs')
+                    .uploadToSignedUrl(path, token, proofFile);
+
+                if (uploadError) throw uploadError;
+
+                // 3. Get Public URL
+                const { data } = supabase.storage.from('chore-proofs').getPublicUrl(path);
+                proofUrl = data.publicUrl;
             } catch (error) {
                 console.error("Upload failed", error);
                 toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);

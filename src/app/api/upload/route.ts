@@ -11,11 +11,11 @@ export async function POST(req: Request) {
     }
 
     try {
-        const formData = await req.formData();
-        const file = formData.get("file") as File;
+        const body = await req.json();
+        const { filePath } = body;
 
-        if (!file) {
-            return new NextResponse("No file uploaded", { status: 400 });
+        if (!filePath) {
+            return new NextResponse("Missing filePath", { status: 400 });
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -33,25 +33,18 @@ export async function POST(req: Request) {
             },
         });
 
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${session.user.id}/${fileName}`;
-
-        const { error: uploadError } = await supabaseAdmin.storage
+        // Generate a signed URL for the client to upload directly to Supabase
+        // This bypasses the Vercel 4.5MB payload limit
+        const { data, error } = await supabaseAdmin.storage
             .from('chore-proofs')
-            .upload(filePath, file, {
-                contentType: file.type,
-                upsert: false,
-            });
+            .createSignedUploadUrl(filePath);
 
-        if (uploadError) {
-            console.error("Supabase Upload Error:", uploadError);
-            throw uploadError;
+        if (error) {
+            console.error("Supabase Signed URL Error:", error);
+            throw error;
         }
 
-        const { data } = supabaseAdmin.storage.from('chore-proofs').getPublicUrl(filePath);
-
-        return NextResponse.json({ url: data.publicUrl });
+        return NextResponse.json({ token: data.token, path: data.path, signedUrl: data.signedUrl });
     } catch (error) {
         console.error("[UPLOAD_ERROR]", error);
         return new NextResponse("Internal Upload Error", { status: 500 });
