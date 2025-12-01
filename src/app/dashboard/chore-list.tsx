@@ -73,18 +73,18 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
         if (proofFile) {
             setUploading(true);
             try {
-                const fileExt = proofFile.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
-                const filePath = `${userId}/${fileName}`;
+                const formData = new FormData();
+                formData.append("file", proofFile);
 
-                const { error: uploadError } = await supabase.storage
-                    .from('chore-proofs')
-                    .upload(filePath, proofFile);
+                const uploadRes = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData,
+                });
 
-                if (uploadError) throw uploadError;
+                if (!uploadRes.ok) throw new Error("Upload failed");
 
-                const { data } = supabase.storage.from('chore-proofs').getPublicUrl(filePath);
-                proofUrl = data.publicUrl;
+                const data = await uploadRes.json();
+                proofUrl = data.url;
             } catch (error) {
                 console.error("Upload failed", error);
                 toast.error("Failed to upload photo. Completing without proof.");
