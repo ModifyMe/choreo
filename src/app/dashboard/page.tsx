@@ -14,7 +14,9 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { ActivityFeed } from "./activity-feed";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
-import { Coins } from "lucide-react";
+import { Coins, BarChart3 } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -120,6 +122,11 @@ export default async function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-4">
                         <InviteCode code={household.inviteCode} />
+                        <Link href="/dashboard/analytics">
+                            <Button variant="outline" size="icon" title="Analytics">
+                                <BarChart3 className="w-4 h-4" />
+                            </Button>
+                        </Link>
                         <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                         <AchievementsDialog achievements={achievementsData} />
                         {membership.role === "ADMIN" && (
