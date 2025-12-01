@@ -81,13 +81,16 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                     body: formData,
                 });
 
-                if (!uploadRes.ok) throw new Error("Upload failed");
+                if (!uploadRes.ok) {
+                    const errorText = await uploadRes.text();
+                    throw new Error(errorText || "Upload failed");
+                }
 
                 const data = await uploadRes.json();
                 proofUrl = data.url;
             } catch (error) {
                 console.error("Upload failed", error);
-                toast.error("Failed to upload photo. Completing without proof.");
+                toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
             } finally {
                 setUploading(false);
             }
