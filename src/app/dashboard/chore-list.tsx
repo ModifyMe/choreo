@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Clock, Loader2, Upload } from "lucide-react";
+import { CheckCircle, Circle, Clock, Loader2, Upload, Camera, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -171,8 +171,47 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid w-full max-w-sm items-center gap-1.5">
-                                        <Label htmlFor="picture">Picture</Label>
-                                        <Input id="picture" type="file" accept="image/*" onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
+                                        <Label htmlFor="picture">Proof Photo</Label>
+                                        <input
+                                            id="picture"
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            className="hidden"
+                                            ref={(input) => {
+                                                // Auto-focus or just keep ref if needed, but we use ID for label or click handler
+                                                if (input) input.onclick = (e) => { (e.target as HTMLInputElement).value = '' } // Reset to allow same file selection
+                                            }}
+                                            onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                                        />
+
+                                        {proofFile ? (
+                                            <div className="relative mt-2">
+                                                <img
+                                                    src={URL.createObjectURL(proofFile)}
+                                                    alt="Proof preview"
+                                                    className="w-full h-48 object-cover rounded-md border"
+                                                />
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 h-8 w-8"
+                                                    onClick={() => setProofFile(null)}
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="h-32 border-dashed flex flex-col gap-2 mt-2 hover:bg-muted/50"
+                                                onClick={() => document.getElementById('picture')?.click()}
+                                            >
+                                                <Camera className="w-8 h-8 text-muted-foreground" />
+                                                <span className="text-muted-foreground">Tap to Take Photo</span>
+                                            </Button>
+                                        )}
                                     </div>
                                     <DialogFooter>
                                         <Button variant="outline" onClick={() => setSelectedChoreId(null)}>Cancel</Button>
