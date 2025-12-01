@@ -14,6 +14,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { ActivityFeed } from "./activity-feed";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
+import { PushNotificationManager } from "@/components/push-manager";
 import { Coins, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,7 @@ export default async function DashboardPage() {
                                 <BarChart3 className="w-4 h-4" />
                             </Button>
                         </Link>
+                        <PushNotificationManager />
                         <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                         <AchievementsDialog achievements={achievementsData} />
                         {membership.role === "ADMIN" && (
