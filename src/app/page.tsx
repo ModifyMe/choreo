@@ -1,6 +1,6 @@
 import { SignInButton } from "@/components/sign-in-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Trophy, Zap, Gamepad2, Gift } from "lucide-react";
+import { Sparkles, Trophy, Zap, Gamepad2, Gift, Camera, Plane, Coins, UserPlus, CheckSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,10 @@ export default async function Home() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-16 max-w-6xl mx-auto w-full">
-        <div className="space-y-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-700 pt-10">
+      <main className="flex-1 flex flex-col items-center p-6 text-center space-y-24 max-w-6xl mx-auto w-full">
+
+        {/* Hero */}
+        <div className="space-y-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-700 pt-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-4 animate-bounce">
             <Sparkles className="w-4 h-4" />
             <span>Gamify your household today!</span>
@@ -54,26 +56,78 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* How to Play (Steps) */}
+        <div className="w-full space-y-12">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">How to Play</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <StepCard
+              number="1"
+              icon={<UserPlus className="w-6 h-6" />}
+              title="Form Your Party"
+              description="Create a household and invite your roommates or family."
+            />
+            <StepCard
+              number="2"
+              icon={<CheckSquare className="w-6 h-6" />}
+              title="Post Quests"
+              description="Add chores with point values and gold rewards."
+            />
+            <StepCard
+              number="3"
+              icon={<Camera className="w-6 h-6" />}
+              title="Prove It"
+              description="Snap a photo proof to complete the task. No cheating!"
+            />
+            <StepCard
+              number="4"
+              icon={<Gift className="w-6 h-6" />}
+              title="Get Loot"
+              description="Redeem gold for real-life rewards like 'Pizza Night'."
+            />
+          </div>
+        </div>
+
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full pt-8 pb-20 px-4">
-          <FunCard
-            icon={<Zap className="w-10 h-10 text-yellow-500" />}
-            title="Speed Run Chores"
-            description="Race against the clock (and your roommates) to clear the task list."
-            delay="delay-100"
-          />
-          <FunCard
-            icon={<Trophy className="w-10 h-10 text-orange-500" />}
-            title="Climb the Ranks"
-            description="Weekly leaderboards to prove who is the true MVP of the house."
-            delay="delay-200"
-          />
-          <FunCard
-            icon={<Gift className="w-10 h-10 text-pink-500" />}
-            title="Earn Real Loot"
-            description="Trade your hard-earned Gold for custom rewards like 'Pizza Night' or 'Skip a Chore'."
-            delay="delay-300"
-          />
+        <div className="w-full space-y-12 pb-20">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Epic Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            <FunCard
+              icon={<Zap className="w-10 h-10 text-yellow-500" />}
+              title="Speed Run Chores"
+              description="Race against the clock. Recurring tasks keep the XP flowing daily."
+              delay="delay-100"
+            />
+            <FunCard
+              icon={<Trophy className="w-10 h-10 text-orange-500" />}
+              title="Leaderboards"
+              description="Weekly rankings to prove who is the true MVP of the house."
+              delay="delay-200"
+            />
+            <FunCard
+              icon={<Plane className="w-10 h-10 text-blue-500" />}
+              title="Vacation Mode"
+              description="Going AFK? Toggle vacation mode to skip auto-assigned tasks."
+              delay="delay-300"
+            />
+            <FunCard
+              icon={<Camera className="w-10 h-10 text-purple-500" />}
+              title="Photo Proof"
+              description="Pics or it didn't happen. Upload evidence to claim your points."
+              delay="delay-100"
+            />
+            <FunCard
+              icon={<Coins className="w-10 h-10 text-green-500" />}
+              title="Economy Mode"
+              description="Inflation hitting hard? Limit snack rewards to save money."
+              delay="delay-200"
+            />
+            <FunCard
+              icon={<Sparkles className="w-10 h-10 text-pink-500" />}
+              title="Confetti"
+              description="Because finishing the laundry deserves a celebration."
+              delay="delay-300"
+            />
+          </div>
         </div>
       </main>
 
@@ -89,9 +143,9 @@ export default async function Home() {
 
 function FunCard({ icon, title, description, delay }: { icon: React.ReactNode, title: string, description: string, delay: string }) {
   return (
-    <Card className={`border-2 border-muted/50 bg-card/50 backdrop-blur-sm hover:bg-card hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-8 ${delay}`}>
+    <Card className={`border-2 border-muted/50 bg-card/50 backdrop-blur-sm hover:bg-card hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group`}>
       <CardHeader className="flex flex-col items-center space-y-4 pb-2">
-        <div className="p-4 bg-background rounded-full shadow-sm ring-1 ring-border">
+        <div className="p-4 bg-background rounded-full shadow-sm ring-1 ring-border group-hover:scale-110 transition-transform duration-300">
           {icon}
         </div>
         <CardTitle className="text-xl font-bold">{title}</CardTitle>
@@ -102,5 +156,22 @@ function FunCard({ icon, title, description, delay }: { icon: React.ReactNode, t
         </p>
       </CardContent>
     </Card>
+  )
+}
+
+function StepCard({ number, icon, title, description }: { number: string, icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <div className="flex flex-col items-center space-y-4 p-6 rounded-2xl bg-muted/30 border border-transparent hover:border-primary/20 transition-colors">
+      <div className="relative">
+        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg z-10 relative">
+          {number}
+        </div>
+        <div className="absolute -top-2 -right-2 bg-background p-1.5 rounded-full shadow-sm text-muted-foreground">
+          {icon}
+        </div>
+      </div>
+      <h3 className="font-bold text-lg">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   )
 }
