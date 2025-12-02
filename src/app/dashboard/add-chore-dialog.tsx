@@ -39,7 +39,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         title: "",
         description: "",
         points: "10",
-        recurrenceType: "daily",
+        recurrenceType: "DAILY",
         recurrenceData: [] as string[],
     });
 
@@ -90,7 +90,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 title: "",
                 description: "",
                 points: "10",
-                recurrenceType: "daily",
+                recurrenceType: "DAILY",
                 recurrenceData: [],
             });
         } catch (error) {
@@ -168,15 +168,18 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="daily">Daily</SelectItem>
-                                        <SelectItem value="weekly">Weekly</SelectItem>
-                                        <SelectItem value="once">One-time</SelectItem>
+                                        <SelectItem value="DAILY">Daily</SelectItem>
+                                        <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                        <SelectItem value="BI_MONTHLY">Bi-Monthly</SelectItem>
+                                        <SelectItem value="CUSTOM">Custom (Select Days)</SelectItem>
+                                        <SelectItem value="NONE">One-time</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
-                        {formData.recurrenceType === "weekly" && (
+                        {formData.recurrenceType === "CUSTOM" && (
                             <div className="grid gap-2">
                                 <Label>Repeat on</Label>
                                 <div className="flex flex-wrap gap-2">
