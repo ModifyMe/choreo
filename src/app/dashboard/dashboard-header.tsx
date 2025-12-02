@@ -8,7 +8,8 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
-import { Coins, BarChart3, Flame, Menu, MoreHorizontal } from "lucide-react";
+import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
 import {
     DropdownMenu,
@@ -64,10 +65,8 @@ export function DashboardHeader({
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto">
-                {/* Mobile: Invite Code + Add Chore + More Menu */}
-                <div className="flex md:hidden items-center gap-2 w-full">
-                    <InviteCode code={household.inviteCode} />
-                    <div className="flex-1" />
+                {/* Mobile: Add Chore + More Menu */}
+                <div className="flex md:hidden items-center justify-end gap-2 w-full">
                     <AddChoreDialog householdId={household.id} />
 
                     <DropdownMenu>
@@ -76,7 +75,26 @@ export function DashboardHeader({
                                 <MoreHorizontal className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-56">
+                            <div className="p-2">
+                                <p className="text-xs text-muted-foreground mb-1">Invite Code</p>
+                                <div className="flex items-center justify-between bg-muted/50 p-2 rounded border border-dashed">
+                                    <code className="font-mono font-bold">{household.inviteCode}</code>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigator.clipboard.writeText(household.inviteCode);
+                                            toast.success("Invite code copied!");
+                                        }}
+                                    >
+                                        <Copy className="w-3 h-3" />
+                                    </Button>
+                                </div>
+                            </div>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="/dashboard/analytics" className="flex items-center w-full">
                                     <BarChart3 className="w-4 h-4 mr-2" />
