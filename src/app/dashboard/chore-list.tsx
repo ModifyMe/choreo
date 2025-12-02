@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Clock, Loader2, Upload, Camera, X } from "lucide-react";
+import { CheckCircle, Circle, Clock, Loader2, Upload, Camera, X, Bell } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -150,29 +150,6 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                             >
                                 {loadingId === chore.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Claim"}
                             </Button>
-                        ) : (
-                            <Dialog open={selectedChoreId === chore.id} onOpenChange={(open) => !open && setSelectedChoreId(null)}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="gap-2"
-                                        onClick={() => setSelectedChoreId(chore.id)}
-                                    >
-                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                        Complete
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Complete "{chore.title}"</DialogTitle>
-                                        <DialogDescription>
-                                            Upload a photo proof (optional) to complete this chore.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                                        <Label htmlFor="picture">Proof Photo</Label>
-                                        <input
                                             id="picture"
                                             type="file"
                                             accept="image/*"
@@ -221,11 +198,12 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
-                            </Dialog>
-                        )}
-                    </div>
+                            </Dialog >
+                        )
+}
+                    </div >
                 );
             })}
-        </div>
+        </div >
     );
 }
