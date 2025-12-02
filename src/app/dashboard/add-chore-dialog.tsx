@@ -86,8 +86,9 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 throw new Error("Failed to create chore");
             }
 
-            // Remove optimistic chore as the real one will come via subscription (or refresh)
-            removeOptimisticChore(tempId);
+            // Note: We DO NOT remove the optimistic chore here anymore.
+            // The ChoreContext will automatically remove it when the real chore arrives via subscription/refresh
+            // to prevent flickering (gap between optimistic removal and real arrival).
 
             router.refresh();
             setFormData({
