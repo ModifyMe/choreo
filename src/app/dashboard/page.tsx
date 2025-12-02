@@ -15,7 +15,7 @@ import { ActivityFeed } from "./activity-feed";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
-import { Coins, BarChart3 } from "lucide-react";
+import { Coins, BarChart3, Flame } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -119,6 +119,10 @@ export default async function DashboardPage() {
                                     {membership.balance} Gold
                                 </span>
                             )}
+                            <span className="inline-flex items-center gap-1 font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full text-sm border border-orange-200" title="Current Streak">
+                                <Flame className="w-3 h-3 fill-orange-600" />
+                                {membership.currentStreak} Day Streak
+                            </span>
                         </p>
                     </div>
                     <div className="flex items-center gap-4">

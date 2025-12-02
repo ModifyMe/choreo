@@ -44,7 +44,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 return new NextResponse("Already completed", { status: 400 });
             }
 
-            // Transaction to update chore and award points
+            // Calculate Streak
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let newStreak = membership.currentStreak;
+            let lastDate = membership.lastChoreDate;
+
+            if (lastDate) {
+                lastDate.setHours(0, 0, 0, 0);
+                const diffTime = Math.abs(today.getTime() - lastDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    // Consecutive day
+                    newStreak += 1;
+                } else if (diffDays > 1) {
+                    // Streak broken
+                    newStreak = 1;
+                }
+                // If diffDays === 0 (same day), keep streak as is
+            } else {
+                // First chore ever
+                newStreak = 1;
+            }
+
             const transactionOperations: any[] = [
                 prisma.chore.update({
                     where: { id },
@@ -66,6 +90,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         totalPoints: {
                             increment: chore.points,
                         },
+                    },
+                }),
+                // Update Membership Streak
+                prisma.membership.update({
+                    where: {
+                        userId_householdId: {
+                            userId: session.user.id,
+                            householdId: chore.householdId,
+                        },
+                    },
+                    data: {
+                        currentStreak: newStreak,
+                        lastChoreDate: new Date(),
                     },
                 }),
             ];
