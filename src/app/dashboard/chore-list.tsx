@@ -39,7 +39,7 @@ import { EditChoreDialog } from "./edit-chore-dialog";
 import { useChores, Chore } from "./chore-context";
 
 export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
-    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore } = useChores();
+    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore } = useChores();
     const chores = type === "my" ? myChores : availableChores;
 
     const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -108,6 +108,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
             router.refresh();
         } catch (error) {
             toast.error("Failed to delete chore");
+            restoreChore(deletingChoreId); // Restore on error
             router.refresh();
         } finally {
             setLoadingId(null);

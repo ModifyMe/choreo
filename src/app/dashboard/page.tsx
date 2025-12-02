@@ -108,7 +108,7 @@ export default async function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-muted/30 p-6">
-            <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any}>
+            <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id}>
                 <div className="max-w-6xl mx-auto space-y-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
