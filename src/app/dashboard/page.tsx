@@ -3,22 +3,15 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InviteCode } from "./invite-code";
 import { Leaderboard } from "./leaderboard";
-import { AddChoreDialog } from "./add-chore-dialog";
 import { ChoreList } from "./chore-list";
 import { Shop } from "./shop";
 import { AddRewardDialog } from "./add-reward-dialog";
-import { SettingsDialog } from "./settings-dialog";
-import { ModeToggle } from "@/components/mode-toggle";
 import { ActivityFeed } from "./activity-feed";
-import { AchievementsDialog } from "./achievements-dialog";
-import { VacationToggle } from "./vacation-toggle";
-import { PushNotificationManager } from "@/components/push-manager";
-import { Coins, BarChart3, Flame } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChoreProvider } from "./chore-context";
+import { DashboardHeader } from "./dashboard-header";
 
 export const dynamic = "force-dynamic";
 
@@ -110,40 +103,12 @@ export default async function DashboardPage() {
         <div className="min-h-screen bg-muted/30 p-6">
             <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id}>
                 <div className="max-w-6xl mx-auto space-y-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
-                            <p className="text-muted-foreground flex items-center gap-2">
-                                Welcome back, {user.name}
-                                {household.mode === "ECONOMY" && (
-                                    <span className="inline-flex items-center gap-1 font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-sm border border-yellow-200">
-                                        <Coins className="w-3 h-3" />
-                                        {membership.balance} Gold
-                                    </span>
-                                )}
-                                <span className="inline-flex items-center gap-1 font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full text-sm border border-orange-200" title="Current Streak">
-                                    <Flame className="w-3 h-3 fill-orange-600" />
-                                    {membership.currentStreak} Day Streak
-                                </span>
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <InviteCode code={household.inviteCode} />
-                            <Link href="/dashboard/analytics">
-                                <Button variant="outline" size="icon" title="Analytics">
-                                    <BarChart3 className="w-4 h-4" />
-                                </Button>
-                            </Link>
-                            <PushNotificationManager />
-                            <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
-                            <AchievementsDialog achievements={achievementsData} />
-                            {membership.role === "ADMIN" && (
-                                <SettingsDialog householdId={household.id} currentMode={household.mode} />
-                            )}
-                            <ModeToggle />
-                            <AddChoreDialog householdId={household.id} />
-                        </div>
-                    </div>
+                    <DashboardHeader
+                        household={household as any}
+                        user={user}
+                        membership={membership as any}
+                        achievementsData={achievementsData}
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Main Content Area - Chores */}
