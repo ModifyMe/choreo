@@ -101,7 +101,7 @@ export default async function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-muted/30 p-6">
-            <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id}>
+            <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id} householdId={household.id}>
                 <div className="max-w-6xl mx-auto space-y-8">
                     <DashboardHeader
                         household={household as any}

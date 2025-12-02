@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export interface Chore {
     id: string;
@@ -36,11 +37,13 @@ export function ChoreProvider({
     initialMyChores,
     initialAvailableChores,
     userId,
+    householdId,
 }: {
     children: React.ReactNode;
     initialMyChores: Chore[];
     initialAvailableChores: Chore[];
     userId: string;
+    householdId: string;
 }) {
     // Server state
     const [serverMyChores, setServerMyChores] = useState<Chore[]>(initialMyChores);
@@ -57,6 +60,63 @@ export function ChoreProvider({
         setServerAvailableChores(initialAvailableChores);
     }, [initialMyChores, initialAvailableChores]);
 
+    // Real-time Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('realtime-chores')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'Chore',
+                    filter: `householdId=eq.${householdId}`,
+                },
+                (payload) => {
+                    console.log('Real-time change received!', payload);
+
+                    if (payload.eventType === 'INSERT') {
+                        const newChore = payload.new as Chore;
+                        // Convert dates from string to Date object if needed
+                        newChore.createdAt = new Date(newChore.createdAt);
+                        newChore.updatedAt = new Date(newChore.updatedAt);
+                        if (newChore.dueDate) newChore.dueDate = new Date(newChore.dueDate);
+
+                        if (newChore.assignedToId === userId) {
+                            setServerMyChores((prev) => [newChore, ...prev]);
+                        } else if (!newChore.assignedToId) {
+                            setServerAvailableChores((prev) => [newChore, ...prev]);
+                        }
+                    } else if (payload.eventType === 'UPDATE') {
+                        const updatedChore = payload.new as Chore;
+                        updatedChore.createdAt = new Date(updatedChore.createdAt);
+                        updatedChore.updatedAt = new Date(updatedChore.updatedAt);
+                        if (updatedChore.dueDate) updatedChore.dueDate = new Date(updatedChore.dueDate);
+
+                        // Remove from both lists first to handle re-assignment
+                        setServerMyChores((prev) => prev.filter((c) => c.id !== updatedChore.id));
+                        setServerAvailableChores((prev) => prev.filter((c) => c.id !== updatedChore.id));
+
+                        // Add back to correct list
+                        if (updatedChore.assignedToId === userId) {
+                            setServerMyChores((prev) => [updatedChore, ...prev]);
+                        } else if (!updatedChore.assignedToId) {
+                            setServerAvailableChores((prev) => [updatedChore, ...prev]);
+                        }
+                    } else if (payload.eventType === 'DELETE') {
+                        const deletedId = payload.old.id;
+                        setServerMyChores((prev) => prev.filter((c) => c.id !== deletedId));
+                        setServerAvailableChores((prev) => prev.filter((c) => c.id !== deletedId));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [householdId, userId]);
+
     // Cleanup confirmed actions
     useEffect(() => {
         // Cleanup Pending Deletes
@@ -64,8 +124,8 @@ export function ChoreProvider({
             const next = new Set(prev);
             let changed = false;
             for (const id of prev) {
-                const inMy = initialMyChores.some(c => c.id === id);
-                const inAvail = initialAvailableChores.some(c => c.id === id);
+                const inMy = serverMyChores.some(c => c.id === id);
+                const inAvail = serverAvailableChores.some(c => c.id === id);
                 // If it's gone from server data, it's confirmed deleted
                 if (!inMy && !inAvail) {
                     next.delete(id);
@@ -78,14 +138,14 @@ export function ChoreProvider({
         // Cleanup Optimistic Adds
         setOptimisticAdds(prev => {
             const next = prev.filter(add => {
-                const inMy = initialMyChores.some(c => c.id === add.id);
-                const inAvail = initialAvailableChores.some(c => c.id === add.id);
+                const inMy = serverMyChores.some(c => c.id === add.id);
+                const inAvail = serverAvailableChores.some(c => c.id === add.id);
                 // If it's present in server data, it's confirmed added
                 return !inMy && !inAvail;
             });
             return next.length !== prev.length ? next : prev;
         });
-    }, [initialMyChores, initialAvailableChores]);
+    }, [serverMyChores, serverAvailableChores]);
 
     // Derived State Calculation
     const { myChores, availableChores } = React.useMemo(() => {
