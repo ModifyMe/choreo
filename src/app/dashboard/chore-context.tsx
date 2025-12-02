@@ -71,7 +71,7 @@ export function ChoreProvider({
                     event: '*',
                     schema: 'public',
                     table: 'Chore',
-                    filter: `householdId=eq.${householdId}`,
+                    filter: `"householdId"=eq.${householdId}`,
                 },
                 (payload) => {
                     console.log('Real-time change received!', payload);
