@@ -28,6 +28,7 @@ interface ChoreContextType {
     moveChoreToMy: (id: string, userId: string) => void;
     completeChore: (id: string) => void;
     restoreChore: (id: string) => void;
+    removeOptimisticChore: (id: string) => void;
 }
 
 const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
@@ -222,6 +223,10 @@ export function ChoreProvider({
         });
     }, []);
 
+    const removeOptimisticChore = useCallback((id: string) => {
+        setOptimisticAdds((prev) => prev.filter((c) => c.id !== id));
+    }, []);
+
     return (
         <ChoreContext.Provider
             value={{
@@ -233,6 +238,7 @@ export function ChoreProvider({
                 moveChoreToMy,
                 completeChore,
                 restoreChore,
+                removeOptimisticChore,
             }}
         >
             {children}

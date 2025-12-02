@@ -33,7 +33,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { addChore } = useChores();
+    const { addChore, removeOptimisticChore } = useChores();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -47,28 +47,28 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         e.preventDefault();
         setLoading(true);
 
+        // Optimistic Update
+        const tempId = Math.random().toString(36).substring(7);
+        const optimisticChore: Chore = {
+            id: tempId,
+            title: formData.title,
+            description: formData.description,
+            points: parseInt(formData.points),
+            recurrence: formData.recurrenceType,
+            recurrenceData: JSON.stringify(formData.recurrenceData),
+            householdId,
+            assignedToId: null,
+            status: "PENDING",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            dueDate: null,
+        };
+
+        addChore(optimisticChore);
+        setOpen(false);
+        toast.success("Chore created!");
+
         try {
-            // Optimistic Update
-            const tempId = Math.random().toString(36).substring(7);
-            const optimisticChore: Chore = {
-                id: tempId,
-                title: formData.title,
-                description: formData.description,
-                points: parseInt(formData.points),
-                recurrence: formData.recurrenceType,
-                recurrenceData: JSON.stringify(formData.recurrenceData),
-                householdId,
-                assignedToId: null,
-                status: "PENDING",
-                createdAt: new Date(), // This might cause hydration mismatch if rendered, but for optimistic it's fine
-                updatedAt: new Date(),
-                dueDate: null,
-            };
-
-            addChore(optimisticChore);
-            setOpen(false);
-            toast.success("Chore created!");
-
             const res = await fetch("/api/chores", {
                 method: "POST",
                 headers: {
@@ -76,6 +76,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
                     points: parseInt(formData.points),
                     householdId,
                 }),
@@ -84,6 +85,9 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             if (!res.ok) {
                 throw new Error("Failed to create chore");
             }
+
+            // Remove optimistic chore as the real one will come via subscription (or refresh)
+            removeOptimisticChore(tempId);
 
             router.refresh();
             setFormData({
@@ -96,7 +100,8 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         } catch (error) {
             toast.error("Something went wrong");
             console.error(error);
-            // Ideally we would rollback the optimistic update here, but for now we'll rely on refresh
+            // On error, we should also remove the optimistic chore (or show error state)
+            removeOptimisticChore(tempId);
         } finally {
             setLoading(false);
         }
