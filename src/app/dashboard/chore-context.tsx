@@ -139,10 +139,23 @@ export function ChoreProvider({
         // Cleanup Optimistic Adds
         setOptimisticAdds(prev => {
             const next = prev.filter(add => {
-                const inMy = serverMyChores.some(c => c.id === add.id);
-                const inAvail = serverAvailableChores.some(c => c.id === add.id);
-                // If it's present in server data, it's confirmed added
-                return !inMy && !inAvail;
+                const allServerChores = [...serverMyChores, ...serverAvailableChores];
+
+                const matchFound = allServerChores.some(serverChore => {
+                    // 1. Direct ID match (rare for creates, common for updates)
+                    if (serverChore.id === add.id) return true;
+
+                    // 2. Content match (for creates where ID differs)
+                    // We check title, points, and recurrence to be reasonably sure it's the same chore
+                    return (
+                        serverChore.title === add.title &&
+                        serverChore.points === add.points &&
+                        serverChore.recurrence === add.recurrence
+                    );
+                });
+
+                // Keep the optimistic add only if NO match is found in server data
+                return !matchFound;
             });
             return next.length !== prev.length ? next : prev;
         });
