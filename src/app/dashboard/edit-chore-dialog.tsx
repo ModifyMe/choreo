@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -19,28 +21,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useChores, Chore } from "./chore-context";
 
-interface Chore {
-    id: string;
-    title: string;
-    description: string | null;
-    points: number;
-    dueDate: Date | null;
-    recurrence: string | null;
-    recurrenceData?: string | null;
-}
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface EditChoreDialogProps {
     chore: Chore | null;
@@ -50,64 +36,88 @@ interface EditChoreDialogProps {
 
 export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogProps) {
     const [loading, setLoading] = useState(false);
-    const [date, setDate] = useState<Date | undefined>();
-    const [recurrence, setRecurrence] = useState("NONE");
-    const [recurrenceData, setRecurrenceData] = useState<string[]>([]);
     const router = useRouter();
+    const { updateChore } = useChores();
+
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        points: "10",
+        recurrenceType: "daily",
+        recurrenceData: [] as string[],
+    });
 
     useEffect(() => {
         if (chore) {
-            setDate(chore.dueDate ? new Date(chore.dueDate) : undefined);
-            setRecurrence(chore.recurrence || "NONE");
-            if (chore.recurrenceData) {
-                try {
-                    setRecurrenceData(JSON.parse(chore.recurrenceData));
-                } catch (e) {
-                    setRecurrenceData([]);
+            let parsedRecurrenceData: string[] = [];
+            try {
+                if (chore.recurrenceData) {
+                    // Handle both JSON string and potentially plain string if legacy
+                    parsedRecurrenceData = JSON.parse(chore.recurrenceData);
+                    if (!Array.isArray(parsedRecurrenceData)) {
+                        parsedRecurrenceData = [];
+                    }
                 }
-            } else {
-                setRecurrenceData([]);
+            } catch (e) {
+                console.error("Failed to parse recurrence data", e);
+                parsedRecurrenceData = [];
             }
+
+            setFormData({
+                title: chore.title,
+                description: chore.description || "",
+                points: chore.points.toString(),
+                recurrenceType: chore.recurrence || "daily",
+                recurrenceData: parsedRecurrenceData,
+            });
         }
     }, [chore]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!chore) return;
         setLoading(true);
 
-        const formData = new FormData(e.currentTarget);
-        const title = formData.get("title") as string;
-        const description = formData.get("description") as string;
-        const points = formData.get("points") as string;
-
         try {
+            // Optimistic Update
+            const updates: Partial<Chore> = {
+                title: formData.title,
+                description: formData.description,
+                points: parseInt(formData.points),
+                recurrence: formData.recurrenceType,
+                recurrenceData: JSON.stringify(formData.recurrenceData),
+            };
+
+            updateChore(chore.id, updates);
+            onOpenChange(false);
+            toast.success("Chore updated!");
+
             const res = await fetch(`/api/chores/${chore.id}`, {
                 method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
-                    action: "EDIT",
-                    title,
-                    description,
-                    points,
-                    dueDate: date,
-                    recurrence,
-                    recurrenceData: recurrence === "CUSTOM" ? JSON.stringify(recurrenceData) : null,
+                    title: formData.title,
+                    description: formData.description,
+                    points: parseInt(formData.points),
+                    recurrenceType: formData.recurrenceType, // Backend might expect recurrenceType or recurrence
+                    recurrenceData: formData.recurrenceData, // Backend might expect array
                 }),
             });
 
-            if (!res.ok) throw new Error("Failed to update chore");
+            if (!res.ok) {
+                throw new Error("Failed to update chore");
+            }
 
-            toast.success("Chore updated successfully");
-            onOpenChange(false);
             router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
+            console.error(error);
         } finally {
             setLoading(false);
         }
     };
-
-    if (!chore) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,119 +125,98 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 <DialogHeader>
                     <DialogTitle>Edit Chore</DialogTitle>
                     <DialogDescription>
-                        Update the details of this chore.
+                        Make changes to the chore details.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="title" className="text-right">
-                                Title
-                            </Label>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-title">Title</Label>
                             <Input
-                                id="title"
-                                name="title"
-                                defaultValue={chore.title}
-                                placeholder="e.g. Wash Dishes"
-                                className="col-span-3"
+                                id="edit-title"
+                                value={formData.title}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, title: e.target.value })
+                                }
+                                placeholder="e.g., Wash dishes"
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="description" className="text-right">
-                                Description
-                            </Label>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-description">Description</Label>
                             <Textarea
-                                id="description"
-                                name="description"
-                                defaultValue={chore.description || ""}
+                                id="edit-description"
+                                value={formData.description}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, description: e.target.value })
+                                }
                                 placeholder="Optional details..."
-                                className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="points" className="text-right">
-                                Points
-                            </Label>
-                            <Input
-                                id="points"
-                                name="points"
-                                type="number"
-                                defaultValue={chore.points}
-                                placeholder="10"
-                                className="col-span-3"
-                                required
-                                min="1"
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Due Date</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "col-span-3 justify-start text-left font-normal",
-                                            !date && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                        mode="single"
-                                        selected={date}
-                                        onSelect={setDate}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Recurrence</Label>
-                            <div className="col-span-3 space-y-2">
-                                <Select value={recurrence} onValueChange={setRecurrence}>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-points">Points</Label>
+                                <Input
+                                    id="edit-points"
+                                    type="number"
+                                    min="0"
+                                    value={formData.points}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, points: e.target.value })
+                                    }
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-recurrence">Recurrence</Label>
+                                <Select
+                                    value={formData.recurrenceType}
+                                    onValueChange={(value) =>
+                                        setFormData({ ...formData, recurrenceType: value })
+                                    }
+                                >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select recurrence" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="NONE">None</SelectItem>
-                                        <SelectItem value="DAILY">Daily</SelectItem>
-                                        <SelectItem value="WEEKLY">Weekly</SelectItem>
-                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
-                                        <SelectItem value="BI_MONTHLY">Bi-Monthly (Every 2 months)</SelectItem>
-                                        <SelectItem value="CUSTOM">Custom Days</SelectItem>
+                                        <SelectItem value="daily">Daily</SelectItem>
+                                        <SelectItem value="weekly">Weekly</SelectItem>
+                                        <SelectItem value="once">One-time</SelectItem>
                                     </SelectContent>
                                 </Select>
-
-                                {recurrence === "CUSTOM" && (
-                                    <div className="flex flex-wrap gap-2 pt-2">
-                                        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => (
-                                            <div
-                                                key={day}
-                                                onClick={() => {
-                                                    setRecurrenceData((prev) =>
-                                                        prev.includes(day)
-                                                            ? prev.filter((d) => d !== day)
-                                                            : [...prev, day]
-                                                    );
-                                                }}
-                                                className={cn(
-                                                    "cursor-pointer px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                                                    recurrenceData.includes(day)
-                                                        ? "bg-primary text-primary-foreground border-primary"
-                                                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                                )}
-                                            >
-                                                {day}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
                         </div>
+
+                        {formData.recurrenceType === "weekly" && (
+                            <div className="grid gap-2">
+                                <Label>Repeat on</Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {DAYS.map((day) => (
+                                        <div
+                                            key={day}
+                                            onClick={() => {
+                                                const current = formData.recurrenceData;
+                                                const isSelected = current.includes(day);
+                                                setFormData({
+                                                    ...formData,
+                                                    recurrenceData: isSelected
+                                                        ? current.filter((d) => d !== day)
+                                                        : [...current, day],
+                                                });
+                                            }}
+                                            className={cn(
+                                                "cursor-pointer px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                                                formData.recurrenceData.includes(day)
+                                                    ? "bg-primary text-primary-foreground border-primary"
+                                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                            )}
+                                        >
+                                            {day}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

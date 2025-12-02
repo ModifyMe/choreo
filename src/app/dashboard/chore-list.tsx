@@ -36,20 +36,12 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditChoreDialog } from "./edit-chore-dialog";
+import { useChores, Chore } from "./chore-context";
 
-interface Chore {
-    id: string;
-    title: string;
-    description: string | null;
-    points: number;
-    assignedToId: string | null;
-    status: string;
-    dueDate: Date | null;
-    recurrence: string | null;
-    recurrenceData?: string | null;
-}
+export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
+    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore } = useChores();
+    const chores = type === "my" ? myChores : availableChores;
 
-export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: string; type: "my" | "available" }) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [selectedChoreId, setSelectedChoreId] = useState<string | null>(null);
@@ -63,6 +55,17 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
 
     const handleAction = async (choreId: string, action: "CLAIM" | "COMPLETE", proofUrl?: string) => {
         setLoadingId(choreId);
+
+        // Optimistic Updates
+        if (action === "CLAIM") {
+            moveChoreToMy(choreId, userId);
+            toast.success("Chore claimed!");
+        } else if (action === "COMPLETE") {
+            completeChore(choreId);
+            toast.success("Chore completed! 🎉");
+            runSideCannons();
+        }
+
         try {
             const res = await fetch(`/api/chores/${choreId}`, {
                 method: "PATCH",
@@ -74,13 +77,12 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                 throw new Error(error);
             }
 
-            toast.success(action === "CLAIM" ? "Chore claimed!" : "Chore completed! 🎉");
-            if (action === "COMPLETE") {
-                runSideCannons();
-            }
+            // No need to toast success again if optimistic
             router.refresh();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Something went wrong");
+            // Ideally revert optimistic update here, but for simplicity we'll just refresh
+            router.refresh();
         } finally {
             setLoadingId(null);
             setSelectedChoreId(null);
@@ -91,6 +93,11 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
     const handleDelete = async () => {
         if (!deletingChoreId) return;
         setLoadingId(deletingChoreId);
+
+        // Optimistic Delete
+        deleteChore(deletingChoreId);
+        toast.success("Chore deleted");
+
         try {
             const res = await fetch(`/api/chores/${deletingChoreId}`, {
                 method: "DELETE",
@@ -98,10 +105,10 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
 
             if (!res.ok) throw new Error("Failed to delete chore");
 
-            toast.success("Chore deleted");
             router.refresh();
         } catch (error) {
             toast.error("Failed to delete chore");
+            router.refresh();
         } finally {
             setLoadingId(null);
             setDeletingChoreId(null);
@@ -143,12 +150,13 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
             } catch (error) {
                 console.error("Upload failed", error);
                 toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-            } finally {
                 setUploading(false);
+                return; // Stop if upload fails
             }
         }
 
         await handleAction(selectedChoreId, "COMPLETE", proofUrl);
+        setUploading(false);
     };
 
     if (chores.length === 0) {
