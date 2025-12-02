@@ -254,9 +254,82 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json(updatedChore);
         }
 
+        if (action === "EDIT") {
+            const { title, description, points, dueDate, recurrence, recurrenceData } = body;
+
+            const updatedChore = await prisma.chore.update({
+                where: { id },
+                data: {
+                    title,
+                    description,
+                    points: Number(points),
+                    dueDate: dueDate ? new Date(dueDate) : null,
+                    recurrence,
+                    recurrenceData,
+                    activityLogs: {
+                        create: {
+                            userId: session.user.id,
+                            householdId: chore.householdId,
+                            action: "UPDATED",
+                        },
+                    },
+                },
+            });
+            return NextResponse.json(updatedChore);
+        }
+
         return new NextResponse("Invalid action", { status: 400 });
     } catch (error) {
         console.error("[CHORE_UPDATE]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    try {
+        const { id } = await params;
+
+        const chore = await prisma.chore.findUnique({
+            where: { id },
+            include: { household: true },
+        });
+
+        if (!chore) {
+            return new NextResponse("Chore not found", { status: 404 });
+        }
+
+        // Verify membership
+        const membership = await prisma.membership.findUnique({
+            where: {
+                userId_householdId: {
+                    userId: session.user.id,
+                    householdId: chore.householdId,
+                },
+            },
+        });
+
+        if (!membership) {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        // Allow deletion if user is the creator (if we tracked that, but we don't explicitly yet, so allow any member for now)
+        // OR if they are an admin. For now, assuming any member can delete to keep it simple as per "household" trust model.
+        // Ideally we should check if membership.role === 'ADMIN' or if they created it.
+        // Let's stick to the trust model for now.
+
+        await prisma.chore.delete({
+            where: { id },
+        });
+
+        return new NextResponse("Chore deleted", { status: 200 });
+    } catch (error) {
+        console.error("[CHORE_DELETE]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
