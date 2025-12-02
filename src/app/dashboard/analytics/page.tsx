@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { AnalyticsCharts } from "./charts";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -16,17 +16,32 @@ export default async function AnalyticsPage() {
 
     const user = await prisma.user.findUnique({
         where: { email: session.user?.email! },
-        include: { household: true },
+        include: {
+            memberships: {
+                include: {
+                    household: true
+                }
+            }
+        },
     });
 
-    if (!user?.householdId) {
+    const membership = user?.memberships[0];
+    const householdId = membership?.householdId;
+
+    if (!householdId) {
         redirect("/onboarding");
     }
 
     // Fetch data for analytics
     // 1. Total chores completed by each member
     const members = await prisma.user.findMany({
-        where: { householdId: user.householdId },
+        where: {
+            memberships: {
+                some: {
+                    householdId: householdId
+                }
+            }
+        },
         select: {
             id: true,
             name: true,
@@ -34,7 +49,10 @@ export default async function AnalyticsPage() {
             _count: {
                 select: {
                     activityLogs: {
-                        where: { action: "COMPLETED" }
+                        where: {
+                            action: "COMPLETED",
+                            householdId: householdId
+                        }
                     }
                 }
             }
@@ -53,7 +71,7 @@ export default async function AnalyticsPage() {
 
     const logs = await prisma.activityLog.findMany({
         where: {
-            householdId: user.householdId,
+            householdId: householdId,
             action: "COMPLETED",
             createdAt: {
                 gte: sevenDaysAgo
