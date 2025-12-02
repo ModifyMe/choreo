@@ -44,6 +44,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 return new NextResponse("Already completed", { status: 400 });
             }
 
+            // Prevent spam completion (Lock until due date)
+            if (chore.dueDate) {
+                const now = new Date();
+                const due = new Date(chore.dueDate);
+                // Reset hours to compare just the dates
+                now.setHours(0, 0, 0, 0);
+                due.setHours(0, 0, 0, 0);
+
+                if (due > now) {
+                    return new NextResponse("Chore is locked until due date", { status: 400 });
+                }
+            }
+
             // Calculate Streak
             const today = new Date();
             today.setHours(0, 0, 0, 0);

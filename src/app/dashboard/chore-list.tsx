@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Clock, Loader2, Upload, Camera, X, Bell } from "lucide-react";
+import { CheckCircle, Circle, Clock, Loader2, Upload, Camera, X, Bell, Lock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { runSideCannons } from "@/lib/confetti";
-import { format, isPast, isToday, isTomorrow } from "date-fns";
+import { format, isPast, isToday, isTomorrow, isFuture } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -168,24 +168,6 @@ export function ChoreList({ chores, userId, type }: { chores: Chore[]; userId: s
                                                     src={URL.createObjectURL(proofFile)}
                                                     alt="Proof preview"
                                                     className="w-full h-48 object-cover rounded-md border"
-                                                />
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    className="absolute top-2 right-2 h-8 w-8"
-                                                    onClick={() => setProofFile(null)}
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="h-32 border-dashed flex flex-col gap-2 mt-2 hover:bg-muted/50"
-                                                onClick={() => document.getElementById('picture')?.click()}
-                                            >
-                                                <Camera className="w-8 h-8 text-muted-foreground" />
                                                 <span className="text-muted-foreground">Tap to Take Photo</span>
                                             </Button>
                                         )}
