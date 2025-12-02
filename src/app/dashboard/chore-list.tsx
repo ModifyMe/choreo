@@ -77,8 +77,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
                 throw new Error(error);
             }
 
-            // No need to toast success again if optimistic
-            router.refresh();
+            // No need to refresh, real-time subscription will handle it
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Something went wrong");
             // Ideally revert optimistic update here, but for simplicity we'll just refresh
@@ -105,11 +104,11 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
 
             if (!res.ok) throw new Error("Failed to delete chore");
 
-            router.refresh();
+            // No need to refresh, real-time subscription will handle it
         } catch (error) {
             toast.error("Failed to delete chore");
             restoreChore(deletingChoreId); // Restore on error
-            router.refresh();
+            // router.refresh(); // Optional: keep if you want to force sync on error
         } finally {
             setLoadingId(null);
             setDeletingChoreId(null);
