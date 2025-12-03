@@ -228,6 +228,11 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
                                                 {isToday(new Date(chore.dueDate)) ? "Today" :
                                                     isTomorrow(new Date(chore.dueDate)) ? "Tomorrow" :
                                                         format(new Date(chore.dueDate), "MMM d")}
+                                                {chore.reminderTime && (
+                                                    <span className="ml-1 text-[10px] opacity-80">
+                                                        (@ {chore.reminderTime})
+                                                    </span>
+                                                )}
                                             </span>
                                         )}
                                     </div>

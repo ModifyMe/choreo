@@ -115,6 +115,7 @@ model Chore {
   dueDate     DateTime?
   recurrence  Recurrence?
   recurrenceData String?   // JSON string for custom days e.g. ["MON", "WED"]
+  reminderTime String?   // Optional time string "HH:mm"
   steps       Json?     // Optional JSON for subtasks: [{ id, title, completed }]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

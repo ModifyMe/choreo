@@ -26,12 +26,7 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Handle the dishes",
             points: 30,
             difficulty: "MEDIUM",
-            steps: [
-                "Load dishwasher",
-                "Hand wash pots/pans",
-                "Dry & put away",
-                "Wipe down sink"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Deep Clean Fridge",
@@ -78,11 +73,7 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Fast bathroom refresh",
             points: 10,
             difficulty: "EASY",
-            steps: [
-                "Wipe counters",
-                "Change towels",
-                "Check toilet paper"
-            ]
+            steps: [] // Simplified
         }
     ],
     "Living Area": [
@@ -91,35 +82,21 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Clean living room floors and surfaces",
             points: 30,
             difficulty: "MEDIUM",
-            steps: [
-                "Pick up clutter",
-                "Dust surfaces",
-                "Vacuum floor",
-                "Fluff pillows"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Floors",
             description: "Vacuum and mop all main areas",
             points: 50,
             difficulty: "HARD",
-            steps: [
-                "Vacuum carpets/rugs",
-                "Sweep hard floors",
-                "Mop hard floors"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Clean Windows",
             description: "Wash inside of windows and sills",
             points: 30,
             difficulty: "MEDIUM",
-            steps: [
-                "Spray glass cleaner",
-                "Wipe inside glass",
-                "Wipe window sills",
-                "Dust blinds"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Clean Gaming Setup",
@@ -140,22 +117,14 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Wash and replace bed sheets",
             points: 30,
             difficulty: "MEDIUM",
-            steps: [
-                "Strip bed",
-                "Wash & dry sheets",
-                "Make bed with fresh linens"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Tidy Room",
             description: "General bedroom organization",
             points: 10,
             difficulty: "EASY",
-            steps: [
-                "Make bed",
-                "Pick up clothes",
-                "Clear nightstand"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Wash Bedding",
@@ -188,13 +157,7 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Wash, dry, and fold clothes",
             points: 50,
             difficulty: "HARD",
-            steps: [
-                "Sort clothes",
-                "Wash load",
-                "Dry load",
-                "Fold & hang",
-                "Put away"
-            ]
+            steps: [] // Simplified
         }
     ],
     "Outdoor": [
@@ -203,24 +166,14 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
             description: "Cut the grass",
             points: 50,
             difficulty: "HARD",
-            steps: [
-                "Clear yard debris",
-                "Mow lawn",
-                "Weed whack edges",
-                "Blow clippings"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Wash Car",
             description: "Exterior wash and interior vacuum",
             points: 100,
             difficulty: "EPIC",
-            steps: [
-                "Wash exterior",
-                "Clean wheels",
-                "Vacuum interior",
-                "Wipe dashboard/windows"
-            ]
+            steps: [] // Simplified
         },
         {
             title: "Gardening",
@@ -236,27 +189,32 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
     ],
     "Pets": [
         {
-            title: "Pet Care",
-            description: "Daily pet maintenance",
+            title: "Feed Pets",
+            description: "Give food and water",
             points: 10,
             difficulty: "EASY",
-            steps: [
-                "Feed & water",
-                "Clean litter box / Pick up waste",
-                "Brush/Groom"
-            ]
+            steps: []
+        },
+        {
+            title: "Clean Litter",
+            description: "Scoop and clean litter box",
+            points: 10,
+            difficulty: "EASY",
+            steps: []
+        },
+        {
+            title: "Pet Care",
+            description: "General pet maintenance",
+            points: 10,
+            difficulty: "EASY",
+            steps: [] // Simplified
         },
         {
             title: "Walk Dog",
             description: "Take the dog for a walk",
             points: 30,
             difficulty: "MEDIUM",
-            steps: [
-                "Put on leash",
-                "Walk for 20+ mins",
-                "Clean up waste",
-                "Wipe paws if needed"
-            ]
+            steps: [] // Simplified
         }
     ],
     "Seasonal": [

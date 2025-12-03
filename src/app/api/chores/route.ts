@@ -42,6 +42,7 @@ export async function POST(req: Request) {
                 dueDate: dueDate ? new Date(dueDate) : null,
                 recurrence: recurrence === "NONE" ? null : recurrence,
                 recurrenceData: body.recurrenceData ? JSON.stringify(body.recurrenceData) : null, // Save custom recurrence data
+                reminderTime: body.reminderTime || null,
                 steps: body.steps || null,
                 activityLogs: {
                     create: {

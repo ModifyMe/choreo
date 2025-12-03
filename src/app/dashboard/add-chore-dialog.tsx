@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, X, Wand2 } from "lucide-react";
+import { Loader2, Plus, X, Wand2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useChores, Chore } from "./chore-context";
@@ -42,6 +42,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         difficulty: "EASY",
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
+        reminderTime: "",
         steps: [] as { id: string; title: string; completed: boolean }[],
     });
 
@@ -58,6 +59,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             points: parseInt(formData.points),
             recurrence: formData.recurrenceType,
             recurrenceData: JSON.stringify(formData.recurrenceData),
+            reminderTime: formData.reminderTime || null,
             householdId,
             assignedToId: null,
             status: "PENDING",
@@ -80,6 +82,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 body: JSON.stringify({
                     ...formData,
                     recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
+                    reminderTime: formData.reminderTime,
                     points: parseInt(formData.points),
                     householdId,
                     steps: formData.steps,
@@ -102,6 +105,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 difficulty: "EASY",
                 recurrenceType: "DAILY",
                 recurrenceData: [],
+                reminderTime: "",
                 steps: [],
             });
         } catch (error) {
@@ -325,6 +329,40 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 ))}
                             </div>
                         </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                        <details className="group">
+                            <summary className="flex items-center gap-2 cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors list-none">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border rounded flex items-center justify-center group-open:bg-muted">
+                                        <Plus className="w-3 h-3 group-open:hidden" />
+                                        <X className="w-3 h-3 hidden group-open:block" />
+                                    </div>
+                                    Advanced Options
+                                </div>
+                            </summary>
+                            <div className="pt-4 grid gap-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="reminderTime">Reminder Time</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="w-4 h-4 text-muted-foreground" />
+                                        <Input
+                                            id="reminderTime"
+                                            type="time"
+                                            value={formData.reminderTime}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, reminderTime: e.target.value })
+                                            }
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    <p className="text-[0.8rem] text-muted-foreground">
+                                        Set a specific time for push notifications.
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

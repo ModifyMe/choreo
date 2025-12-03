@@ -14,6 +14,7 @@ export interface Chore {
     dueDate: Date | null;
     recurrence: string | null;
     recurrenceData?: string | null;
+    reminderTime?: string | null;
     householdId: string;
     steps?: any;
     createdAt: Date;
