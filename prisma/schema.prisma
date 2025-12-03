@@ -151,6 +151,7 @@ model ActivityLog {
   choreId     String?
   rewardId    String?
   timestamp   DateTime @default(now())
+  metadata    Json?     // Stores snapshot data like { choreTitle, chorePoints }
 
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)

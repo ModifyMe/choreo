@@ -57,6 +57,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 }
             }
 
+            // Prevent Cheating (XP Limit)
+            if (chore.points > 1000) {
+                return new NextResponse("Chore points exceed the limit (1000)", { status: 400 });
+            }
+
             // Calculate Streak
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -93,6 +98,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                                 householdId: chore.householdId,
                                 action: "COMPLETED",
                                 proofImage: body.proofImage, // Save proof URL
+                                metadata: {
+                                    choreTitle: chore.title,
+                                    chorePoints: chore.points,
+                                },
                             },
                         },
                     },
@@ -247,6 +256,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                             userId: session.user.id,
                             householdId: chore.householdId,
                             action: "CLAIMED",
+                            metadata: {
+                                choreTitle: chore.title,
+                                chorePoints: chore.points,
+                            },
                         },
                     },
                 },
@@ -271,6 +284,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                             userId: session.user.id,
                             householdId: chore.householdId,
                             action: "UPDATED",
+                            metadata: {
+                                choreTitle: title || chore.title,
+                                chorePoints: Number(points) || chore.points,
+                            },
                         },
                     },
                 },

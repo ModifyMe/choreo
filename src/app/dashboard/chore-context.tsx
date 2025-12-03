@@ -241,8 +241,37 @@ export function ChoreProvider({
     }, [updateChore]);
 
     const completeChore = useCallback((id: string) => {
+        // Find the chore
+        const allChores = [...serverMyChores, ...serverAvailableChores, ...optimisticAdds];
+        const chore = allChores.find(c => c.id === id);
+
+        if (chore && chore.recurrence && chore.recurrence !== "NONE") {
+            // Optimistically create the next instance
+            const nextDueDate = new Date(); // Start from today
+
+            // Simple client-side recurrence logic (mirroring server roughly)
+            if (chore.recurrence === "DAILY") nextDueDate.setDate(nextDueDate.getDate() + 1);
+            else if (chore.recurrence === "WEEKLY") nextDueDate.setDate(nextDueDate.getDate() + 7);
+            else if (chore.recurrence === "MONTHLY") nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+            else if (chore.recurrence === "BI_MONTHLY") nextDueDate.setMonth(nextDueDate.getMonth() + 2);
+            else nextDueDate.setDate(nextDueDate.getDate() + 7); // Default fallback
+
+            const nextChore: Chore = {
+                ...chore,
+                id: `temp-${Date.now()}`, // Temporary ID
+                dueDate: nextDueDate,
+                status: "PENDING",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                // Reset steps if any
+                steps: chore.steps ? (chore.steps as any[]).map((s: any) => ({ ...s, completed: false })) : undefined
+            };
+
+            addChore(nextChore);
+        }
+
         updateChore(id, { status: "COMPLETED" });
-    }, [updateChore]);
+    }, [serverMyChores, serverAvailableChores, optimisticAdds, updateChore, addChore]);
 
     const restoreChore = useCallback((id: string) => {
         setPendingDeletes((prev) => {
