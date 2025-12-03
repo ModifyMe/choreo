@@ -166,4 +166,14 @@ export default async function DashboardPage({
                                     </CardContent>
                                 </Card>
                             </div>
+                        </div>
+                    </div>
+                </RewardProvider>
+            </ChoreProvider>
+
+            {/* Hidden Test Push Button */}
+            <TestPushButton householdId={household.id} />
+        </div>
+    );
+}
 
