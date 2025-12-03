@@ -4,7 +4,17 @@ import { Sparkles, Trophy, Zap, Gamepad2, Gift, Camera, Plane, Coins, UserPlus, 
 
 export const dynamic = "force-dynamic";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
 export default async function Home() {
+  const session = await getServerSession(authOptions);
+
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-400/20 via-background to-background flex flex-col">
       {/* Header */}

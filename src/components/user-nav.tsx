@@ -56,15 +56,16 @@ export function UserNav({ user, households, currentHouseholdId }: UserNavProps) 
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>Switch Household</DropdownMenuLabel>
                     {households.map((household) => (
-                        <DropdownMenuItem
-                            key={household.id}
-                            onClick={() => router.push(`/dashboard?householdId=${household.id}`)}
-                            className="justify-between"
-                        >
-                            {household.name}
-                            {household.id === currentHouseholdId && (
-                                <Check className="h-4 w-4 text-muted-foreground" />
-                            )}
+                        <DropdownMenuItem key={household.id} asChild>
+                            <Link
+                                href={`/dashboard?householdId=${household.id}`}
+                                className="flex justify-between w-full cursor-pointer"
+                            >
+                                {household.name}
+                                {household.id === currentHouseholdId && (
+                                    <Check className="h-4 w-4 text-muted-foreground" />
+                                )}
+                            </Link>
                         </DropdownMenuItem>
                     ))}
                     <DropdownMenuSeparator />
