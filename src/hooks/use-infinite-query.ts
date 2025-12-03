@@ -88,7 +88,7 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
             }
         } catch (err) {
             console.error('Error fetching infinite query:', err)
-            setError(err instanceof Error ? err : new Error('Unknown error'))
+            setError(err instanceof Error ? err : new Error(JSON.stringify(err)))
         } finally {
             setIsFetching(false)
         }
