@@ -7,6 +7,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+
 export function VacationToggle({
     householdId,
     initialIsAway,
@@ -40,16 +48,6 @@ export function VacationToggle({
             setLoading(false);
         }
     };
-
-    import {
-        Tooltip,
-        TooltipContent,
-        TooltipProvider,
-        TooltipTrigger,
-    } from "@/components/ui/tooltip";
-    import { Info } from "lucide-react";
-
-    // ... inside component ...
 
     if (minimal) {
         return (

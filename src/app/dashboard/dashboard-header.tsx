@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { InviteCodeButton } from "./invite-code";
 import { AddChoreDialog } from "./add-chore-dialog";
 import { SettingsDialog } from "./settings-dialog";
+import { HelpDialog } from "./help-dialog";
 import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
@@ -164,6 +165,7 @@ export function DashboardHeader({
                             <ShoppingCart className="w-4 h-4" />
                         </Button>
                     </Link>
+                    <HelpDialog />
                     <PushNotificationManager />
                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                     <AchievementsDialog achievements={achievementsData} />
