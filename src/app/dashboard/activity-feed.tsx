@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+
 
 import { CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
@@ -98,6 +100,10 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
         );
     };
 
+    const trailingQuery = useCallback((query: any) => {
+        return query.eq('householdId', householdId).order('createdAt', { ascending: false });
+    }, [householdId]);
+
     return (
         <CardContent className="h-[400px] p-0">
             <InfiniteList
@@ -105,7 +111,7 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 columns="*, user:User(name), chore:Chore(title)"
                 pageSize={10}
                 className="p-6"
-                trailingQuery={(query) => query.eq('householdId', householdId).order('createdAt', { ascending: false })}
+                trailingQuery={trailingQuery}
                 renderItem={renderItem}
                 renderNoResults={() => <p className="text-sm text-muted-foreground text-center">No recent activity.</p>}
                 realtime={true}
