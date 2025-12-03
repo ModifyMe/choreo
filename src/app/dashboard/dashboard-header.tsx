@@ -59,7 +59,9 @@ export function DashboardHeader({
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
+                <Link href="/dashboard" className="hover:underline">
+                    <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
+                </Link>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                     <p className="text-muted-foreground text-sm font-medium">{user.name}</p>
                     <span className="inline-flex items-center gap-1 font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full text-xs border border-purple-200">
