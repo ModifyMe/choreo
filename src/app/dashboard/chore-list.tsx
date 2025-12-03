@@ -34,123 +34,180 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-}
-    };
+} from "@/components/ui/alert-dialog";
+import { EditChoreDialog } from "./edit-chore-dialog";
+import { useChores, Chore } from "./chore-context";
+import { ChoreCard } from "./chore-card";
 
-const handleDelete = async () => {
-    if (!deletingChoreId) return;
-    setLoadingId(deletingChoreId);
+export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
+    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore, toggleSubtask, updateChore } = useChores();
+    const chores = type === "my" ? myChores : availableChores;
 
-    // Optimistic Delete
-    deleteChore(deletingChoreId);
-    toast.success("Chore deleted");
+    const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [selectedChoreId, setSelectedChoreId] = useState<string | null>(null);
+    const [proofFile, setProofFile] = useState<File | null>(null);
 
-    try {
-        const res = await fetch(`/api/chores/${deletingChoreId}`, {
-            method: "DELETE",
-        });
+    // Edit & Delete State
+    const [editingChore, setEditingChore] = useState<Chore | null>(null);
+    const [deletingChoreId, setDeletingChoreId] = useState<string | null>(null);
 
-        if (!res.ok) throw new Error("Failed to delete chore");
+    const router = useRouter();
 
-        // No need to refresh, real-time subscription will handle it
-    } catch (error) {
-        toast.error("Failed to delete chore");
-        restoreChore(deletingChoreId); // Restore on error
-        // router.refresh(); // Optional: keep if you want to force sync on error
-    } finally {
-        setLoadingId(null);
-        setDeletingChoreId(null);
-    }
-};
+    const handleAction = async (choreId: string, action: "CLAIM" | "COMPLETE", proofUrl?: string) => {
+        setLoadingId(choreId);
 
-const handleCompleteWithProof = async () => {
-    if (!selectedChoreId) return;
+        // Optimistic Updates
+        if (action === "CLAIM") {
+            moveChoreToMy(choreId, userId);
+            toast.success("Chore claimed!");
+        } else if (action === "COMPLETE") {
+            completeChore(choreId);
+            toast.success("Chore completed! 🎉");
+            runSideCannons();
+        }
 
-    let proofUrl = undefined;
-
-    if (proofFile) {
-        setUploading(true);
         try {
-            // 1. Get Signed Upload Token from Server (Bypasses Vercel Limit)
-            const fileExt = proofFile.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${userId}/${fileName}`;
-
-            const tokenRes = await fetch("/api/upload", {
-                method: "POST",
-                body: JSON.stringify({ filePath }),
-                headers: { "Content-Type": "application/json" }
+            const res = await fetch(`/api/chores/${choreId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ action, proofImage: proofUrl }),
             });
 
-            if (!tokenRes.ok) throw new Error("Failed to get upload token");
-            const { token, path } = await tokenRes.json();
+            if (!res.ok) {
+                const error = await res.text();
+                throw new Error(error);
+            }
 
-            // 2. Upload directly to Supabase using the token
-            const { error: uploadError } = await supabase.storage
-                .from('chore-proofs')
-                .uploadToSignedUrl(path, token, proofFile);
-
-            if (uploadError) throw uploadError;
-
-            // 3. Get Public URL
-            const { data } = supabase.storage.from('chore-proofs').getPublicUrl(path);
-            proofUrl = data.publicUrl;
+            // No need to refresh, real-time subscription will handle it
         } catch (error) {
-            console.error("Upload failed", error);
-            toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-            setUploading(false);
-            return; // Stop if upload fails
+            toast.error(error instanceof Error ? error.message : "Something went wrong");
+
+            // Revert optimistic update
+            if (action === "COMPLETE") {
+                updateChore(choreId, { status: "PENDING" });
+            }
+            router.refresh();
+        } finally {
+            setLoadingId(null);
+            setSelectedChoreId(null);
+            setProofFile(null);
         }
-    }
+    };
 
-    await handleAction(selectedChoreId, "COMPLETE", proofUrl);
-    setUploading(false);
-};
+    const handleDelete = async () => {
+        if (!deletingChoreId) return;
+        setLoadingId(deletingChoreId);
 
-return (
-    <>
-        {chores.length === 0 ? (
-            <div className="text-muted-foreground text-sm italic text-center py-12 border rounded-lg border-dashed">No chores found.</div>
-        ) : (
-            <div className="space-y-4">
-                {chores.map((chore) => (
-                    <ChoreCard
-                        key={chore.id}
-                        chore={chore}
-                        userId={userId}
-                        type={type}
-                        onAction={handleAction}
-                        onToggleSubtask={toggleSubtask}
-                        onEdit={setEditingChore}
-                        onDelete={setDeletingChoreId}
-                        loadingId={loadingId}
-                    />
-                ))}
-            </div>
-        )}
+        // Optimistic Delete
+        deleteChore(deletingChoreId);
+        toast.success("Chore deleted");
 
-        <EditChoreDialog
-            chore={editingChore}
-            open={!!editingChore}
-            onOpenChange={(open) => !open && setEditingChore(null)}
-        />
+        try {
+            const res = await fetch(`/api/chores/${deletingChoreId}`, {
+                method: "DELETE",
+            });
 
-        <AlertDialog open={!!deletingChoreId} onOpenChange={(open) => !open && setDeletingChoreId(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the chore.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                        {loadingId === deletingChoreId ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    </>
-);
+            if (!res.ok) throw new Error("Failed to delete chore");
+
+            // No need to refresh, real-time subscription will handle it
+        } catch (error) {
+            toast.error("Failed to delete chore");
+            restoreChore(deletingChoreId); // Restore on error
+            // router.refresh(); // Optional: keep if you want to force sync on error
+        } finally {
+            setLoadingId(null);
+            setDeletingChoreId(null);
+        }
+    };
+
+    const handleCompleteWithProof = async () => {
+        if (!selectedChoreId) return;
+
+        let proofUrl = undefined;
+
+        if (proofFile) {
+            setUploading(true);
+            try {
+                // 1. Get Signed Upload Token from Server (Bypasses Vercel Limit)
+                const fileExt = proofFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `${userId}/${fileName}`;
+
+                const tokenRes = await fetch("/api/upload", {
+                    method: "POST",
+                    body: JSON.stringify({ filePath }),
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                if (!tokenRes.ok) throw new Error("Failed to get upload token");
+                const { token, path } = await tokenRes.json();
+
+                // 2. Upload directly to Supabase using the token
+                const { error: uploadError } = await supabase.storage
+                    .from('chore-proofs')
+                    .uploadToSignedUrl(path, token, proofFile);
+
+                if (uploadError) throw uploadError;
+
+                // 3. Get Public URL
+                const { data } = supabase.storage.from('chore-proofs').getPublicUrl(path);
+                proofUrl = data.publicUrl;
+            } catch (error) {
+                console.error("Upload failed", error);
+                toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+                setUploading(false);
+                return; // Stop if upload fails
+            }
+        }
+
+        await handleAction(selectedChoreId, "COMPLETE", proofUrl);
+        setUploading(false);
+    };
+
+    return (
+        <>
+            {chores.length === 0 ? (
+                <div className="text-muted-foreground text-sm italic text-center py-12 border rounded-lg border-dashed">No chores found.</div>
+            ) : (
+                <div className="space-y-4">
+                    {chores.map((chore) => (
+                        <ChoreCard
+                            key={chore.id}
+                            chore={chore}
+                            userId={userId}
+                            type={type}
+                            onAction={handleAction}
+                            onToggleSubtask={toggleSubtask}
+                            onEdit={setEditingChore}
+                            onDelete={setDeletingChoreId}
+                            loadingId={loadingId}
+                        />
+                    ))}
+                </div>
+            )}
+
+            <EditChoreDialog
+                chore={editingChore}
+                open={!!editingChore}
+                onOpenChange={(open) => !open && setEditingChore(null)}
+            />
+
+            <AlertDialog open={!!deletingChoreId} onOpenChange={(open) => !open && setDeletingChoreId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the chore.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                            {loadingId === deletingChoreId ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    );
 }
