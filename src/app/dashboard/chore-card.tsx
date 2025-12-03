@@ -94,8 +94,15 @@ export function ChoreCard({
         setDialogOpen(false);
     };
 
+    const isLocked = chore.dueDate && isFuture(new Date(chore.dueDate)) && !isToday(new Date(chore.dueDate));
+
     const handlers = useSwipeable({
         onSwipedRight: async () => {
+            if (isLocked) {
+                toast.error("This chore is locked until its due date!");
+                return;
+            }
+
             if (type === "my" || chore.assignedToId === userId) {
                 // Haptic feedback
                 if (navigator.vibrate) navigator.vibrate(200);
@@ -216,7 +223,7 @@ export function ChoreCard({
                             </Button>
                         )}
 
-                        {isFuture(new Date(chore.dueDate || 0)) && !isToday(new Date(chore.dueDate || 0)) ? (
+                        {isLocked ? (
                             <Button size="sm" variant="secondary" disabled className="opacity-50 cursor-not-allowed">
                                 <Lock className="w-4 h-4 mr-2" />
                                 Locked
