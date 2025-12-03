@@ -61,38 +61,32 @@ export default async function DashboardPage({
     const household = membership.household;
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const myChores = await prisma.chore.findMany({
-        where: {
-            householdId: household.id,
-            assignedToId: user.id,
-            status: "PENDING",
-        },
-        orderBy: { createdAt: "desc" },
-    });
-
-    const availableChores = await prisma.chore.findMany({
-        where: {
-            householdId: household.id,
-            assignedToId: null,
-            status: "PENDING",
-        },
-        orderBy: { createdAt: "desc" },
-    });
-
-    let rewards: any[] = [];
-    if (household.mode === "ECONOMY") {
-        rewards = await prisma.reward.findMany({
+    const [myChores, availableChores, rewards, allAchievements, userAchievements] = await Promise.all([
+        prisma.chore.findMany({
+            where: {
+                householdId: household.id,
+                assignedToId: user.id,
+                status: "PENDING",
+            },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.chore.findMany({
+            where: {
+                householdId: household.id,
+                assignedToId: null,
+                status: "PENDING",
+            },
+            orderBy: { createdAt: "desc" },
+        }),
+        household.mode === "ECONOMY" ? prisma.reward.findMany({
             where: { householdId: household.id },
             orderBy: { cost: "asc" },
-        });
-    }
-
-
-
-    const allAchievements = await prisma.achievement.findMany();
-    const userAchievements = await prisma.userAchievement.findMany({
-        where: { userId: user.id },
-    });
+        }) : Promise.resolve([]),
+        prisma.achievement.findMany(),
+        prisma.userAchievement.findMany({
+            where: { userId: user.id },
+        })
+    ]);
 
     const achievementsData = allAchievements.map((ach) => ({
         ...ach,
