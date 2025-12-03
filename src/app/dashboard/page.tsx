@@ -16,7 +16,11 @@ import { DashboardHeader } from "./dashboard-header";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string | string[] | undefined };
+}) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -38,13 +42,23 @@ export default async function DashboardPage() {
         redirect("/api/auth/signin");
     }
 
-    const membership = user.memberships[0];
-
-    if (!membership) {
+    if (user.memberships.length === 0) {
         redirect("/onboarding");
     }
 
+    // Determine which household to show
+    const householdId = searchParams?.householdId as string;
+    let membership = user.memberships[0];
+
+    if (householdId) {
+        const found = user.memberships.find((m) => m.householdId === householdId);
+        if (found) {
+            membership = found;
+        }
+    }
+
     const household = membership.household;
+    const allHouseholds = user.memberships.map((m) => m.household);
 
     const myChores = await prisma.chore.findMany({
         where: {
@@ -94,6 +108,7 @@ export default async function DashboardPage() {
                             user={user}
                             membership={membership as any}
                             achievementsData={achievementsData}
+                            allHouseholds={allHouseholds}
                         />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

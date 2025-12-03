@@ -19,6 +19,8 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
+import { UserNav } from "@/components/user-nav";
+
 interface DashboardHeaderProps {
     household: {
         id: string;
@@ -29,6 +31,8 @@ interface DashboardHeaderProps {
     user: {
         id: string;
         name: string | null;
+        email: string | null;
+        image: string | null;
     };
     membership: {
         role: "ADMIN" | "MEMBER";
@@ -37,6 +41,7 @@ interface DashboardHeaderProps {
         isAway: boolean;
     };
     achievementsData: any[];
+    allHouseholds: { id: string; name: string }[];
 }
 
 export function DashboardHeader({
@@ -44,6 +49,7 @@ export function DashboardHeader({
     user,
     membership,
     achievementsData,
+    allHouseholds,
 }: DashboardHeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -139,6 +145,12 @@ export function DashboardHeader({
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                    <UserNav
+                        user={user}
+                        households={allHouseholds}
+                        currentHouseholdId={household.id}
+                    />
                 </div>
 
                 {/* Desktop: Full Row */}
@@ -157,6 +169,14 @@ export function DashboardHeader({
                     )}
                     <ModeToggle />
                     <AddChoreDialog householdId={household.id} />
+
+                    <div className="ml-2 border-l pl-4">
+                        <UserNav
+                            user={user}
+                            households={allHouseholds}
+                            currentHouseholdId={household.id}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
