@@ -11,8 +11,8 @@ export interface ShoppingItem {
     name: string;
     checked: boolean;
     addedById: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string | Date;
+    updatedAt: string | Date;
     addedBy?: {
         name: string | null;
         image: string | null;
