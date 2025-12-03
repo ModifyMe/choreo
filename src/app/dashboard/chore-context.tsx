@@ -15,6 +15,7 @@ export interface Chore {
     recurrence: string | null;
     recurrenceData?: string | null;
     householdId: string;
+    steps?: any;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -29,6 +30,7 @@ interface ChoreContextType {
     completeChore: (id: string) => void;
     restoreChore: (id: string) => void;
     removeOptimisticChore: (id: string) => void;
+    toggleSubtask: (choreId: string, stepId: string) => void;
 }
 
 const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
@@ -253,6 +255,33 @@ export function ChoreProvider({
         setOptimisticAdds((prev) => prev.filter((c) => c.id !== id));
     }, []);
 
+    const toggleSubtask = useCallback((choreId: string, stepId: string) => {
+        // Find the chore to get current steps
+        const allChores = [...serverMyChores, ...serverAvailableChores, ...optimisticAdds];
+        const chore = allChores.find(c => c.id === choreId);
+
+        if (!chore || !chore.steps) return;
+
+        // Calculate new steps
+        const newSteps = (chore.steps as any[]).map(step =>
+            step.id === stepId ? { ...step, completed: !step.completed } : step
+        );
+
+        // Optimistic Update
+        updateChore(choreId, { steps: newSteps });
+
+        // API Call
+        fetch(`/api/chores/${choreId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "TOGGLE_STEP", stepId }),
+        }).catch(err => {
+            console.error("Failed to toggle subtask", err);
+            // Revert on error (optional, but good practice)
+            updateChore(choreId, { steps: chore.steps });
+        });
+    }, [serverMyChores, serverAvailableChores, optimisticAdds, updateChore]);
+
     return (
         <ChoreContext.Provider
             value={{
@@ -265,6 +294,7 @@ export function ChoreProvider({
                 completeChore,
                 restoreChore,
                 removeOptimisticChore,
+                toggleSubtask,
             }}
         >
             {children}

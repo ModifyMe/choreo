@@ -278,6 +278,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json(updatedChore);
         }
 
+        if (action === "TOGGLE_STEP") {
+            const { stepId } = body;
+            const currentSteps = (chore.steps as any[]) || [];
+
+            const updatedSteps = currentSteps.map((step: any) =>
+                step.id === stepId ? { ...step, completed: !step.completed } : step
+            );
+
+            const updatedChore = await prisma.chore.update({
+                where: { id },
+                data: {
+                    steps: updatedSteps,
+                    // Optional: Log activity if needed, but might be too noisy for every step
+                },
+            });
+            return NextResponse.json(updatedChore);
+        }
+
         return new NextResponse("Invalid action", { status: 400 });
     } catch (error) {
         console.error("[CHORE_UPDATE]", error);

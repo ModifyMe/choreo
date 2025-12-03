@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, X, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useChores, Chore } from "./chore-context";
@@ -42,6 +42,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         difficulty: "EASY",
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
+        steps: [] as { id: string; title: string; completed: boolean }[],
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +64,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             createdAt: new Date(),
             updatedAt: new Date(),
             dueDate: null,
+            steps: formData.steps,
         };
 
         addChore(optimisticChore);
@@ -80,6 +82,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
                     points: parseInt(formData.points),
                     householdId,
+                    steps: formData.steps,
                 }),
             });
 
@@ -99,6 +102,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 difficulty: "EASY",
                 recurrenceType: "DAILY",
                 recurrenceData: [],
+                steps: [],
             });
         } catch (error) {
             toast.error("Something went wrong");
@@ -125,6 +129,24 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                         Create a new chore for your household.
                     </DialogDescription>
                 </DialogHeader>
+
+                <div className="px-6 pt-2">
+                    <TemplateSelector onSelect={(template) => {
+                        setFormData({
+                            ...formData,
+                            title: template.title,
+                            description: template.description,
+                            points: template.points.toString(),
+                            difficulty: template.difficulty,
+                            steps: template.steps.map(s => ({
+                                id: Math.random().toString(36).substring(7),
+                                title: s,
+                                completed: false
+                            }))
+                        });
+                    }} />
+                </div>
+
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
@@ -255,6 +277,54 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 </div>
                             </div>
                         )}
+
+                        <div className="grid gap-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Subtasks (Optional)</Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setFormData({
+                                            ...formData,
+                                            steps: [
+                                                ...formData.steps,
+                                                { id: Math.random().toString(36).substring(7), title: "", completed: false }
+                                            ]
+                                        });
+                                    }}
+                                >
+                                    <Plus className="w-3 h-3 mr-1" /> Add Step
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {formData.steps.map((step, index) => (
+                                    <div key={step.id} className="flex gap-2">
+                                        <Input
+                                            value={step.title}
+                                            onChange={(e) => {
+                                                const newSteps = [...formData.steps];
+                                                newSteps[index].title = e.target.value;
+                                                setFormData({ ...formData, steps: newSteps });
+                                            }}
+                                            placeholder={`Step ${index + 1}`}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                const newSteps = formData.steps.filter((_, i) => i !== index);
+                                                setFormData({ ...formData, steps: newSteps });
+                                            }}
+                                        >
+                                            <X className="w-4 h-4 text-muted-foreground" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
@@ -263,6 +333,63 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                         </Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+import { CHORE_TEMPLATES, ChoreTemplate } from "@/lib/chore-templates";
+
+function TemplateSelector({ onSelect }: { onSelect: (t: ChoreTemplate) => void }) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" className="w-full border-dashed">
+                    <Wand2 className="w-4 h-4 mr-2 text-primary" />
+                    Use a Template
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] h-[80vh]">
+                <DialogHeader>
+                    <DialogTitle>Choose a Template</DialogTitle>
+                    <DialogDescription>
+                        Select a template to auto-fill chore details and subtasks.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="h-full pr-4 overflow-y-auto">
+                    <div className="space-y-6">
+                        {Object.entries(CHORE_TEMPLATES).map(([category, templates]) => (
+                            <div key={category}>
+                                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">{category}</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {templates.map((template) => (
+                                        <div
+                                            key={template.title}
+                                            className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors flex flex-col gap-2"
+                                            onClick={() => {
+                                                onSelect(template);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <span className="font-medium">{template.title}</span>
+                                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                                    {template.points} XP
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
+                                            <div className="text-xs text-muted-foreground mt-auto pt-2 border-t">
+                                                {template.steps.length} steps
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );
