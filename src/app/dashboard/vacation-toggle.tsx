@@ -41,12 +41,32 @@ export function VacationToggle({
         }
     };
 
+    import {
+        Tooltip,
+        TooltipContent,
+        TooltipProvider,
+        TooltipTrigger,
+    } from "@/components/ui/tooltip";
+    import { Info } from "lucide-react";
+
+    // ... inside component ...
+
     if (minimal) {
         return (
             <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                     <Plane className={`h-4 w-4 ${isAway ? "text-blue-500" : "text-muted-foreground"}`} />
                     <span className="text-sm">Vacation Mode</span>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="max-w-[200px]">When on vacation, you won't be assigned new recurring chores.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
                 <Switch
                     checked={isAway}
@@ -60,9 +80,21 @@ export function VacationToggle({
     return (
         <div className="flex items-center space-x-2 border p-2 rounded-md bg-background">
             <Plane className={`h-4 w-4 ${isAway ? "text-blue-500" : "text-muted-foreground"}`} />
-            <Label htmlFor="vacation-mode" className="text-sm font-medium cursor-pointer">
-                Vacation Mode
-            </Label>
+            <div className="flex items-center gap-2">
+                <Label htmlFor="vacation-mode" className="text-sm font-medium cursor-pointer">
+                    Vacation Mode
+                </Label>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="max-w-[200px]">When on vacation, you won't be assigned new recurring chores.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
             <Switch
                 id="vacation-mode"
                 checked={isAway}

@@ -114,29 +114,6 @@ export function DashboardHeader({
                                     >
                                         <Copy className="w-3 h-3" />
                                     </Button>
-                                </div>
-                            </div>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="/dashboard/analytics" className="flex items-center w-full">
-                                    <BarChart3 className="w-4 h-4 mr-2" />
-                                    Analytics
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/dashboard/shopping-list" className="flex items-center w-full">
-                                    <ShoppingCart className="w-4 h-4 mr-2" />
-                                    Shopping List
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
-                                    <PushNotificationManager />
-                                    <span className="ml-2">Notifications</span>
-                                </div>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <div className="w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
                                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
                                 </div>
                             </DropdownMenuItem>
