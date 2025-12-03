@@ -107,8 +107,8 @@ export function ChoreCard({
                 // Haptic feedback
                 if (navigator.vibrate) navigator.vibrate(50);
 
-                // Open dialog to allow proof upload
-                setDialogOpen(true);
+                // Direct complete on swipe (bypass proof)
+                await onAction(chore.id, "COMPLETE");
             }
         },
         trackMouse: true,

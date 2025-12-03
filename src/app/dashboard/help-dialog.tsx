@@ -9,7 +9,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, Plane, RefreshCw, Trophy, ShoppingBag } from "lucide-react";
+import { HelpCircle, Plane, RefreshCw, Trophy, ShoppingBag, ShoppingCart } from "lucide-react";
 
 export function HelpDialog() {
     return (
@@ -81,6 +81,19 @@ export function HelpDialog() {
                         <p className="text-muted-foreground leading-relaxed">
                             If your household uses Economy Mode, you also earn <strong>Gold</strong> for every chore.
                             Use your Gold to redeem rewards in the Shop, like "Skip a Chore" or "Movie Night Pick".
+                        </p>
+                    </div>
+
+                    {/* Shopping List */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <ShoppingCart className="h-5 w-5 text-green-500" />
+                            Shopping List
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                            Need something from the store? Add it to the <strong>Shopping List</strong>!
+                            It's shared with your whole household and updates in real-time.
+                            Anyone can check off items as they buy them.
                         </p>
                     </div>
 
