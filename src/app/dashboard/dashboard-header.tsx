@@ -117,31 +117,32 @@ export function DashboardHeader({
                                     </Button>
                                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
                                 </div>
+                            </div>
 
-                                <DropdownMenuItem asChild>
-                                    <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
-                                        <AchievementsDialog achievements={achievementsData} />
-                                        <span className="ml-2">Achievements</span>
-                                    </div>
-                                </DropdownMenuItem>
-                                {membership.role === "ADMIN" && (
-                                    <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
-                                            <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
-                                                <SettingsDialog householdId={household.id} currentMode={household.mode} />
-                                                <span className="ml-2">Settings</span>
-                                            </div>
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <div className="flex items-center w-full justify-between" onClick={(e) => e.preventDefault()}>
-                                        <span>Theme</span>
-                                        <ModeToggle />
-                                    </div>
-                                </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
+                                    <AchievementsDialog achievements={achievementsData} />
+                                    <span className="ml-2">Achievements</span>
+                                </div>
+                            </DropdownMenuItem>
+                            {membership.role === "ADMIN" && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
+                                            <SettingsDialog householdId={household.id} currentMode={household.mode} />
+                                            <span className="ml-2">Settings</span>
+                                        </div>
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <div className="flex items-center w-full justify-between" onClick={(e) => e.preventDefault()}>
+                                    <span>Theme</span>
+                                    <ModeToggle />
+                                </div>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
