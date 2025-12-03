@@ -17,10 +17,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useRewards } from "./reward-context";
+
 export function AddRewardDialog({ householdId }: { householdId: string }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { addReward, removeOptimisticReward } = useRewards();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -29,6 +32,21 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
         const formData = new FormData(e.currentTarget);
         const name = formData.get("name") as string;
         const cost = formData.get("cost") as string;
+
+        // Optimistic Add
+        const tempId = Math.random().toString(36).substring(7);
+        const optimisticReward = {
+            id: tempId,
+            name,
+            cost: parseInt(cost),
+            stock: null, // Default to unlimited for now
+            householdId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        addReward(optimisticReward);
+        setOpen(false);
+        toast.success("Reward added to shop");
 
         try {
             const res = await fetch("/api/rewards", {
@@ -42,11 +60,16 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
 
             if (!res.ok) throw new Error("Failed to create reward");
 
-            toast.success("Reward added to shop");
-            setOpen(false);
+            // Success! The real reward will come via Realtime.
+            // We don't need to manually remove the optimistic one here because 
+            // the context handles deduplication/cleanup when the real one arrives.
+            // However, we should remove it if there's an error.
+
             router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
+            // Revert optimistic add on error
+            removeOptimisticReward(tempId);
         } finally {
             setLoading(false);
         }

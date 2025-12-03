@@ -15,20 +15,27 @@ interface Reward {
     stock: number | null;
 }
 
+import { useRewards } from "./reward-context";
+
 export function Shop({
-    rewards,
     userBalance,
     isAdmin,
 }: {
-    rewards: Reward[];
     userBalance: number;
     isAdmin: boolean;
 }) {
     const router = useRouter();
+    const { rewards, redeemReward, deleteReward } = useRewards();
     const [loadingId, setLoadingId] = useState<string | null>(null);
 
     const handleRedeem = async (rewardId: string) => {
         setLoadingId(rewardId);
+
+        // Optimistic update handled by context (if we implemented it fully there)
+        // For now, we rely on the fast server response + realtime, 
+        // but we can call redeemReward(rewardId) if we want to decrement stock optimistically.
+        redeemReward(rewardId);
+
         try {
             const res = await fetch(`/api/rewards/${rewardId}`, {
                 method: "PATCH",
@@ -42,6 +49,9 @@ export function Shop({
 
             runConfetti();
             toast.success("Reward redeemed! Enjoy.");
+            // router.refresh(); // No longer needed for rewards list, but maybe for balance?
+            // Balance is on membership, which is passed from page.tsx (server component).
+            // So we DO need router.refresh() to update the balance in the UI!
             router.refresh();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to redeem");
@@ -53,6 +63,10 @@ export function Shop({
     const handleDelete = async (rewardId: string) => {
         if (!confirm("Are you sure you want to delete this reward?")) return;
         setLoadingId(rewardId);
+
+        // Optimistic delete
+        deleteReward(rewardId);
+
         try {
             const res = await fetch(`/api/rewards/${rewardId}`, {
                 method: "DELETE",
@@ -61,7 +75,7 @@ export function Shop({
             if (!res.ok) throw new Error("Failed to delete");
 
             toast.success("Reward deleted");
-            router.refresh();
+            // router.refresh(); // Not needed for list, but good for consistency
         } catch (error) {
             toast.error("Failed to delete reward");
         } finally {
