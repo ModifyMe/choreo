@@ -13,6 +13,8 @@ interface UseInfiniteQueryProps<T extends SupabaseTableName> {
     columns?: string
     pageSize?: number
     trailingQuery?: SupabaseQueryHandler<T>
+    realtime?: boolean
+    realtimeFilter?: { column: string; value: string | number }
 }
 
 export function useInfiniteQuery<T extends SupabaseTableName>({
@@ -20,6 +22,8 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
     columns = '*',
     pageSize = 20,
     trailingQuery,
+    realtime = false,
+    realtimeFilter,
 }: UseInfiniteQueryProps<T>) {
     const [data, setData] = useState<SupabaseTableData<T>[]>([])
     const [isFetching, setIsFetching] = useState(false)
@@ -56,7 +60,24 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
             }
 
             if (newData) {
-                setData((prev) => [...prev, ...newData])
+                setData((prev) => {
+                    // If page is 0, we might be refreshing or initial load.
+                    // If we have existing data and we are appending, standard spread.
+                    // However, with realtime, we might have prepended items.
+                    // Ideally, we should deduplicate based on ID if possible.
+                    // For now, simple append is fine for infinite scroll, but let's be careful.
+                    // Actually, if we prepend realtime items, they are "newer".
+                    // Pagination fetches "older" items.
+                    // So appending is correct.
+                    // BUT, if a realtime item was just added, it might also appear in the fetched page 
+                    // if the pagination offset shifts?
+                    // Yes, duplicate risk exists.
+                    // Let's filter out duplicates by ID.
+
+                    const existingIds = new Set(prev.map((item: any) => item.id));
+                    const uniqueNewData = newData.filter((item: any) => !existingIds.has(item.id));
+                    return [...prev, ...uniqueNewData];
+                })
 
                 // Check if we reached the end
                 if (newData.length < pageSize || (count !== null && data.length + newData.length >= count)) {
@@ -75,18 +96,51 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
 
     // Initial fetch
     useEffect(() => {
-        // Only fetch if we have no data and haven't fetched yet (page 0)
-        // Or we can just rely on the component calling fetchNextPage initially via intersection observer?
-        // Usually infinite scroll hooks fetch the first page automatically.
         if (page === 0 && data.length === 0 && !isFetching && hasMore) {
             fetchNextPage()
         }
-    }, []) // Empty dependency array to run once on mount? 
-    // Actually, fetchNextPage depends on state, so we can't easily put it in useEffect without infinite loops if not careful.
-    // Let's rely on the IntersectionObserver in the UI component to trigger the first load if the list is empty/sentinel is visible.
-    // BUT, if the list is empty, the sentinel IS visible.
+    }, [])
 
-    // Let's add a reset function if needed, e.g. if filters change
+    // Real-time Subscription
+    useEffect(() => {
+        if (!realtime) return;
+
+        const channel = supabase
+            .channel(`realtime-${tableName}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: tableName,
+                    filter: realtimeFilter ? `${realtimeFilter.column}=eq.${realtimeFilter.value}` : undefined,
+                },
+                async (payload) => {
+                    // Fetch the full record with relations
+                    const { data: fetchedRecord, error } = await supabase
+                        .from(tableName)
+                        .select(columns)
+                        .eq('id', (payload.new as any).id)
+                        .single();
+
+                    if (fetchedRecord && !error) {
+                        setData((prev) => {
+                            // Deduplicate just in case
+                            if (prev.some((item: any) => item.id === fetchedRecord.id)) {
+                                return prev;
+                            }
+                            return [fetchedRecord, ...prev];
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [tableName, realtime, realtimeFilter?.column, realtimeFilter?.value, columns]);
+
     const reset = useCallback(() => {
         setData([])
         setPage(0)

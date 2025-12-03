@@ -19,6 +19,8 @@ interface InfiniteListProps<TableName extends SupabaseTableName> {
     renderNoResults?: () => React.ReactNode
     renderEndMessage?: () => React.ReactNode
     renderSkeleton?: (count: number) => React.ReactNode
+    realtime?: boolean
+    realtimeFilter?: { column: string; value: string | number }
 }
 
 const DefaultNoResults = () => (
@@ -47,12 +49,16 @@ export function InfiniteList<TableName extends SupabaseTableName>({
     renderNoResults = DefaultNoResults,
     renderEndMessage = DefaultEndMessage,
     renderSkeleton = defaultSkeleton,
+    realtime = false,
+    realtimeFilter,
 }: InfiniteListProps<TableName>) {
     const { data, isFetching, hasMore, fetchNextPage, isSuccess } = useInfiniteQuery({
         tableName,
         columns,
         pageSize,
         trailingQuery,
+        realtime,
+        realtimeFilter,
     })
 
     // Ref for the scrolling container

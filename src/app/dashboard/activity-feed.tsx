@@ -106,6 +106,8 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 trailingQuery={(query) => query.eq('householdId', householdId).order('createdAt', { ascending: false })}
                 renderItem={renderItem}
                 renderNoResults={() => <p className="text-sm text-muted-foreground text-center">No recent activity.</p>}
+                realtime={true}
+                realtimeFilter={{ column: 'householdId', value: householdId }}
             />
         </CardContent>
     );
