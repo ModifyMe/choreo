@@ -190,6 +190,12 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                                     <SelectItem value="CUSTOM">⚪ Custom</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <p className="text-[0.8rem] text-muted-foreground">
+                                {formData.difficulty === "EASY" && "e.g., Take out trash, check mail"}
+                                {formData.difficulty === "MEDIUM" && "e.g., Vacuum room, load dishwasher"}
+                                {formData.difficulty === "HARD" && "e.g., Clean bathroom, mow lawn"}
+                                {formData.difficulty === "EPIC" && "e.g., Deep clean garage, wash car"}
+                            </p>
                         </div>
 
                         {formData.difficulty === "CUSTOM" && (
