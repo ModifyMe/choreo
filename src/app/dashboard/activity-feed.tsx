@@ -1,4 +1,6 @@
 
+"use client";
+
 import { CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { CheckCircle2, Plus, ShoppingBag, UserPlus } from "lucide-react";
