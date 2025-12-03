@@ -105,13 +105,10 @@ export function ChoreCard({
 
             if (type === "my" || chore.assignedToId === userId) {
                 // Haptic feedback
-                if (navigator.vibrate) navigator.vibrate(200);
+                if (navigator.vibrate) navigator.vibrate(50);
 
-                // Animate off screen
-                await controls.start({ x: 500, opacity: 0 });
-
-                // Trigger completion (without proof for swipe)
-                onAction(chore.id, "COMPLETE");
+                // Open dialog to allow proof upload
+                setDialogOpen(true);
             }
         },
         trackMouse: true,
