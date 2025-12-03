@@ -39,6 +39,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         title: "",
         description: "",
         points: "10",
+        difficulty: "EASY",
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
     });
@@ -95,6 +96,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 title: "",
                 description: "",
                 points: "10",
+                difficulty: "EASY",
                 recurrenceType: "DAILY",
                 recurrenceData: [],
             });
@@ -148,7 +150,38 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 placeholder="Optional details..."
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="difficulty">Difficulty</Label>
+                            <Select
+                                value={formData.difficulty}
+                                onValueChange={(value) => {
+                                    let points = "10";
+                                    if (value === "EASY") points = "10";
+                                    if (value === "MEDIUM") points = "30";
+                                    if (value === "HARD") points = "50";
+                                    if (value === "EPIC") points = "100";
+
+                                    setFormData({
+                                        ...formData,
+                                        difficulty: value,
+                                        points: value === "CUSTOM" ? formData.points : points
+                                    });
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="EASY">🟢 Easy (10 XP)</SelectItem>
+                                    <SelectItem value="MEDIUM">🟡 Medium (30 XP)</SelectItem>
+                                    <SelectItem value="HARD">🔴 Hard (50 XP)</SelectItem>
+                                    <SelectItem value="EPIC">🟣 Epic (100 XP)</SelectItem>
+                                    <SelectItem value="CUSTOM">⚪ Custom</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {formData.difficulty === "CUSTOM" && (
                             <div className="grid gap-2">
                                 <Label htmlFor="points">Points</Label>
                                 <Input
@@ -162,27 +195,28 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                     required
                                 />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="recurrence">Recurrence</Label>
-                                <Select
-                                    value={formData.recurrenceType}
-                                    onValueChange={(value) =>
-                                        setFormData({ ...formData, recurrenceType: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="DAILY">Daily</SelectItem>
-                                        <SelectItem value="WEEKLY">Weekly</SelectItem>
-                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
-                                        <SelectItem value="BI_MONTHLY">Bi-Monthly</SelectItem>
-                                        <SelectItem value="CUSTOM">Custom (Select Days)</SelectItem>
-                                        <SelectItem value="NONE">One-time</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        )}
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="recurrence">Recurrence</Label>
+                            <Select
+                                value={formData.recurrenceType}
+                                onValueChange={(value) =>
+                                    setFormData({ ...formData, recurrenceType: value })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="DAILY">Daily</SelectItem>
+                                    <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                    <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                    <SelectItem value="BI_MONTHLY">Bi-Monthly</SelectItem>
+                                    <SelectItem value="CUSTOM">Custom (Select Days)</SelectItem>
+                                    <SelectItem value="NONE">One-time</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         {formData.recurrenceType === "CUSTOM" && (
