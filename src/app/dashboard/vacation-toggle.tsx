@@ -10,9 +10,11 @@ import { toast } from "sonner";
 export function VacationToggle({
     householdId,
     initialIsAway,
+    minimal = false,
 }: {
     householdId: string;
     initialIsAway: boolean;
+    minimal?: boolean;
 }) {
     const [isAway, setIsAway] = useState(initialIsAway);
     const [loading, setLoading] = useState(false);
@@ -38,6 +40,22 @@ export function VacationToggle({
             setLoading(false);
         }
     };
+
+    if (minimal) {
+        return (
+            <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                    <Plane className={`h-4 w-4 ${isAway ? "text-blue-500" : "text-muted-foreground"}`} />
+                    <span className="text-sm">Vacation Mode</span>
+                </div>
+                <Switch
+                    checked={isAway}
+                    onCheckedChange={handleToggle}
+                    disabled={loading}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="flex items-center space-x-2 border p-2 rounded-md bg-background">

@@ -55,19 +55,21 @@ export function DashboardHeader({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
-                <p className="text-muted-foreground flex flex-wrap items-center gap-2 mt-1">
-                    <span>Welcome back, {user.name}</span>
-                    {household.mode === "ECONOMY" && (
-                        <span className="inline-flex items-center gap-1 font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-sm border border-yellow-200">
-                            <Coins className="w-3 h-3" />
-                            {membership.balance} Gold
+                <div className="flex flex-col gap-1 mt-1">
+                    <p className="text-muted-foreground text-sm">Welcome back, {user.name}</p>
+                    <div className="flex items-center gap-2">
+                        {household.mode === "ECONOMY" && (
+                            <span className="inline-flex items-center gap-1 font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-xs border border-yellow-200">
+                                <Coins className="w-3 h-3" />
+                                {membership.balance} Gold
+                            </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full text-xs border border-orange-200" title="Current Streak">
+                            <Flame className="w-3 h-3 fill-orange-600" />
+                            {membership.currentStreak} Day Streak
                         </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full text-sm border border-orange-200" title="Current Streak">
-                        <Flame className="w-3 h-3 fill-orange-600" />
-                        {membership.currentStreak} Day Streak
-                    </span>
-                </p>
+                    </div>
+                </div>
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto">
@@ -114,9 +116,8 @@ export function DashboardHeader({
                                 </div>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
-                                    <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
-                                    <span className="ml-2">Vacation Mode</span>
+                                <div className="w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
+                                    <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
                                 </div>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>

@@ -162,7 +162,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
     return (
         <>
             {chores.length === 0 ? (
-                <div className="text-muted-foreground text-sm italic">No chores found.</div>
+                <div className="text-muted-foreground text-sm italic text-center py-12 border rounded-lg border-dashed">No chores found.</div>
             ) : (
                 <div className="space-y-4">
                     {chores.map((chore) => {
