@@ -104,7 +104,7 @@ export function InfiniteList<TableName extends SupabaseTableName>({
 
                 {error ? (
                     <div className="text-center text-red-500 py-4 text-sm">
-                        Error loading activity. Please try again later.
+                        Error: {error.message}
                     </div>
                 ) : (
                     <div ref={loadMoreSentinelRef} style={{ height: '1px' }} />
