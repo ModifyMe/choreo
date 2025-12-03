@@ -52,7 +52,7 @@ export function InfiniteList<TableName extends SupabaseTableName>({
     realtime = false,
     realtimeFilter,
 }: InfiniteListProps<TableName>) {
-    const { data, isFetching, hasMore, fetchNextPage, isSuccess } = useInfiniteQuery({
+    const { data, isFetching, hasMore, fetchNextPage, isSuccess, error } = useInfiniteQuery({
         tableName,
         columns,
         pageSize,
@@ -102,9 +102,15 @@ export function InfiniteList<TableName extends SupabaseTableName>({
 
                 {isFetching && renderSkeleton && renderSkeleton(pageSize)}
 
-                <div ref={loadMoreSentinelRef} style={{ height: '1px' }} />
+                {error ? (
+                    <div className="text-center text-red-500 py-4 text-sm">
+                        Error loading activity. Please try again later.
+                    </div>
+                ) : (
+                    <div ref={loadMoreSentinelRef} style={{ height: '1px' }} />
+                )}
 
-                {!hasMore && data.length > 0 && renderEndMessage()}
+                {!hasMore && !error && data.length > 0 && renderEndMessage()}
             </div>
         </div>
     )
