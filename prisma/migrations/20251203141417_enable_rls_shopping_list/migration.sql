@@ -9,8 +9,10 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1
-        FROM pg_policy
-        WHERE polname = 'Enable read access for all users'
+        FROM pg_policy pol
+        JOIN pg_class rel ON pol.polrelid = rel.oid
+        WHERE pol.polname = 'Enable read access for all users'
+        AND rel.relname = 'ShoppingItem'
     ) THEN
         CREATE POLICY "Enable read access for all users" ON "ShoppingItem"
             FOR SELECT
