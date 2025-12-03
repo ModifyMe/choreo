@@ -99,33 +99,59 @@ export function PushNotificationManager() {
         }
     }
 
+    async function sendLocalTest() {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.showNotification("Local Test 🔔", {
+                body: "If you see this, your browser and OS allow notifications!",
+                icon: "/icon-192x192.png",
+            });
+            toast.success("Local notification sent!");
+        } catch (error) {
+            console.error("Failed to send local notification:", error);
+            toast.error("Failed to send local notification. Check OS settings.");
+        }
+    }
+
     if (!isSupported) {
         return null; // Don't show if not supported
     }
 
-    if (subscription) {
-        return (
-            <Button
-                variant="outline"
-                size="icon"
-                onClick={unsubscribeFromPush}
-                disabled={loading}
-                title="Notifications Enabled (Click to disable)"
-            >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4 text-green-500" />}
-            </Button>
-        );
-    }
-
     return (
-        <Button
-            variant="outline"
-            size="icon"
-            onClick={subscribeToPush}
-            disabled={loading}
-            title="Enable Notifications"
-        >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <BellOff className="w-4 h-4" />}
-        </Button>
+        <div className="flex items-center gap-2">
+            {subscription ? (
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={unsubscribeFromPush}
+                    disabled={loading}
+                    title="Notifications Enabled (Click to disable)"
+                    className="text-green-500 border-green-200 bg-green-50 hover:bg-green-100"
+                >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                </Button>
+            ) : (
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={subscribeToPush}
+                    disabled={loading}
+                    title="Enable Notifications"
+                >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <BellOff className="w-4 h-4" />}
+                </Button>
+            )}
+
+            {/* Debug/Troubleshoot Trigger */}
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground opacity-50 hover:opacity-100"
+                title="Troubleshoot Notifications"
+                onClick={sendLocalTest}
+            >
+                <span className="text-xs">?</span>
+            </Button>
+        </div>
     );
 }
