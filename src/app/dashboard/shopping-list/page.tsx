@@ -33,16 +33,33 @@ export default async function ShoppingListPage() {
     const household = membership.household;
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const initialItems = await prisma.shoppingItem.findMany({
-        where: { householdId: household.id },
-        orderBy: { createdAt: "desc" },
-        include: { addedBy: { select: { name: true, image: true } } }
-    });
-
-    const allAchievements = await prisma.achievement.findMany();
-    const userAchievements = await prisma.userAchievement.findMany({
-        where: { userId: user.id },
-    });
+    const [initialItems, allAchievements, userAchievements, myChores, availableChores] = await Promise.all([
+        prisma.shoppingItem.findMany({
+            where: { householdId: household.id },
+            orderBy: { createdAt: "desc" },
+            include: { addedBy: { select: { name: true, image: true } } }
+        }),
+        prisma.achievement.findMany(),
+        prisma.userAchievement.findMany({
+            where: { userId: user.id },
+        }),
+        prisma.chore.findMany({
+            where: {
+                householdId: household.id,
+                assignedToId: user.id,
+                status: "PENDING",
+            },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.chore.findMany({
+            where: {
+                householdId: household.id,
+                assignedToId: null,
+                status: "PENDING",
+            },
+            orderBy: { createdAt: "desc" },
+        })
+    ]);
 
     const achievementsData = allAchievements.map((ach) => ({
         ...ach,
@@ -54,24 +71,6 @@ export default async function ShoppingListPage() {
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
     }));
-
-    const myChores = await prisma.chore.findMany({
-        where: {
-            householdId: household.id,
-            assignedToId: user.id,
-            status: "PENDING",
-        },
-        orderBy: { createdAt: "desc" },
-    });
-
-    const availableChores = await prisma.chore.findMany({
-        where: {
-            householdId: household.id,
-            assignedToId: null,
-            status: "PENDING",
-        },
-        orderBy: { createdAt: "desc" },
-    });
 
     return (
         <div className="min-h-screen bg-muted/30 p-6">

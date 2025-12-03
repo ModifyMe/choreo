@@ -5,9 +5,10 @@ import { useShoppingList } from "./shopping-list-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Plus, ShoppingCart, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, ShoppingCart, CheckCircle2, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export function ShoppingListView() {
     const { items, addItem, toggleItem, deleteItem, clearChecked } = useShoppingList();
@@ -26,6 +27,11 @@ export function ShoppingListView() {
         <Card className="max-w-2xl mx-auto">
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
+                    <Link href="/dashboard">
+                        <Button variant="ghost" size="icon" className="-ml-2">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                    </Link>
                     <ShoppingCart className="w-5 h-5" />
                     Shopping List
                 </CardTitle>

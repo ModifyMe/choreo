@@ -33,52 +33,54 @@ export default async function AnalyticsPage() {
     }
 
     // Fetch data for analytics
-    // 1. Total chores completed by each member
-    const members = await prisma.user.findMany({
-        where: {
-            memberships: {
-                some: {
-                    householdId: householdId
+    // Fetch data for analytics in parallel
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [members, logs] = await Promise.all([
+        // 1. Total chores completed by each member
+        prisma.user.findMany({
+            where: {
+                memberships: {
+                    some: {
+                        householdId: householdId
+                    }
                 }
-            }
-        },
-        select: {
-            id: true,
-            name: true,
-            image: true,
-            _count: {
-                select: {
-                    activityLogs: {
-                        where: {
-                            action: "COMPLETED",
-                            householdId: householdId
+            },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                _count: {
+                    select: {
+                        activityLogs: {
+                            where: {
+                                action: "COMPLETED",
+                                householdId: householdId
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        }),
+        // 2. Activity over the last 7 days
+        prisma.activityLog.findMany({
+            where: {
+                householdId: householdId,
+                action: "COMPLETED",
+                createdAt: {
+                    gte: sevenDaysAgo
+                }
+            },
+            orderBy: { createdAt: 'asc' }
+        })
+    ]);
 
     const choresByMember = members.map(m => ({
         name: m.name || "Unknown",
         completed: m._count.activityLogs,
         image: m.image
     })).sort((a, b) => b.completed - a.completed);
-
-    // 2. Activity over the last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const logs = await prisma.activityLog.findMany({
-        where: {
-            householdId: householdId,
-            action: "COMPLETED",
-            createdAt: {
-                gte: sevenDaysAgo
-            }
-        },
-        orderBy: { createdAt: 'asc' }
-    });
 
     // Group logs by date
     const activityByDay: { [key: string]: number } = {};
