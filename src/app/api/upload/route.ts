@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { filePath } = body;
+        const { filePath, bucketName = 'chore-proofs' } = body;
 
         if (!filePath) {
             return new NextResponse("Missing filePath", { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         // Generate a signed URL for the client to upload directly to Supabase
         // This bypasses the Vercel 4.5MB payload limit
         const { data, error } = await supabaseAdmin.storage
-            .from('chore-proofs')
+            .from(bucketName)
             .createSignedUploadUrl(filePath);
 
         if (error) {
