@@ -77,14 +77,42 @@ export function PushNotificationManager() {
         }
     }
 
+    async function unsubscribeFromPush() {
+        setLoading(true);
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const sub = await registration.pushManager.getSubscription();
+
+            if (sub) {
+                await sub.unsubscribe();
+                setSubscription(null);
+
+                // Optional: Notify server to remove subscription (though we handle 410s automatically)
+                // For now, just clearing local state is enough to allow re-subscribing
+                toast.success("Notifications disabled.");
+            }
+        } catch (error) {
+            console.error("Failed to unsubscribe:", error);
+            toast.error("Failed to disable notifications.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     if (!isSupported) {
         return null; // Don't show if not supported
     }
 
     if (subscription) {
         return (
-            <Button variant="outline" size="icon" disabled title="Notifications Enabled">
-                <Bell className="w-4 h-4 text-green-500" />
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={unsubscribeFromPush}
+                disabled={loading}
+                title="Notifications Enabled (Click to disable)"
+            >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4 text-green-500" />}
             </Button>
         );
     }
