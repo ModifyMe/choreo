@@ -142,8 +142,8 @@ export function PushNotificationManager() {
                 </Button>
             )}
 
-            {/* Debug/Troubleshoot Trigger */}
-            <Button
+            {/* Debug/Troubleshoot Trigger (Hidden) */}
+            {/* <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground opacity-50 hover:opacity-100"
@@ -151,7 +151,7 @@ export function PushNotificationManager() {
                 onClick={sendLocalTest}
             >
                 <span className="text-xs">?</span>
-            </Button>
+            </Button> */}
         </div>
     );
 }

@@ -172,7 +172,7 @@ export default async function DashboardPage({
             </ChoreProvider>
 
             {/* Hidden Test Push Button */}
-            <TestPushButton householdId={household.id} />
+            {/* <TestPushButton householdId={household.id} /> */}
         </div>
     );
 }
