@@ -59,9 +59,23 @@ export function ShoppingListProvider({
                     console.log('Realtime update:', payload);
                     if (payload.eventType === 'INSERT') {
                         const newItem = payload.new as ShoppingItem;
-                        // We might miss the 'addedBy' relation here, so we might want to fetch it or just show basic info
-                        // For now, let's just add it. If we need user info, we might need to fetch it or rely on optimistic update's data if available (but this is from another user)
-                        setItems((prev) => [newItem, ...prev]);
+                        setItems((prev) => {
+                            // 1. Check if already exists (deduplication)
+                            if (prev.some(i => i.id === newItem.id)) return prev;
+
+                            // 2. Check for matching optimistic item to replace
+                            const optimisticMatch = prev.find(i =>
+                                i.id.startsWith('optimistic-') &&
+                                i.name === newItem.name
+                            );
+
+                            if (optimisticMatch) {
+                                return prev.map(i => i.id === optimisticMatch.id ? newItem : i);
+                            }
+
+                            // 3. Otherwise add new
+                            return [newItem, ...prev];
+                        });
                     } else if (payload.eventType === 'UPDATE') {
                         const updatedItem = payload.new as ShoppingItem;
                         setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? { ...item, ...updatedItem } : item)));
@@ -78,7 +92,7 @@ export function ShoppingListProvider({
     }, [householdId]);
 
     const addItem = async (name: string) => {
-        const tempId = Math.random().toString(36).substr(2, 9);
+        const tempId = `optimistic-${Math.random().toString(36).substr(2, 9)}`;
         const optimisticItem: ShoppingItem = {
             id: tempId,
             householdId,
@@ -101,7 +115,7 @@ export function ShoppingListProvider({
             if (!res.ok) throw new Error("Failed to add item");
 
             const newItem = await res.json();
-            // Replace optimistic item with real one
+            // Replace optimistic item with real one (if it still exists)
             setItems((prev) => prev.map((item) => (item.id === tempId ? newItem : item)));
         } catch (error) {
             toast.error("Failed to add item");
