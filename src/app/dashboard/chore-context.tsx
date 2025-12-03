@@ -71,10 +71,17 @@ export function ChoreProvider({
                     event: '*',
                     schema: 'public',
                     table: 'Chore',
-                    filter: `"householdId"=eq.'${householdId}'`,
+                    filter: undefined, // Subscribe to ALL events on the table, filter client-side
                 },
                 (payload) => {
                     console.log('Real-time change received!', payload);
+
+                    // Client-side filtering
+                    // Note: payload.new or payload.old might be missing depending on event type
+                    const record = payload.new || payload.old;
+                    if (record && (record as any).householdId !== householdId) {
+                        return;
+                    }
 
                     if (payload.eventType === 'INSERT') {
                         const newChore = payload.new as Chore;
@@ -111,7 +118,9 @@ export function ChoreProvider({
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log(`Real-time subscription status: ${status}`);
+            });
 
         return () => {
             supabase.removeChannel(channel);
