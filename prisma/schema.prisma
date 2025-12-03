@@ -26,6 +26,7 @@ model User {
   activityLogs  ActivityLog[]
   achievements  UserAchievement[]
   pushSubscriptions PushSubscription[]
+  addedShoppingItems ShoppingItem[]
 }
 
 model PushSubscription {
@@ -85,6 +86,7 @@ model Household {
   chores      Chore[]
   rewards     Reward[]
   activityLogs ActivityLog[]
+  shoppingItems ShoppingItem[]
 }
 
 model Membership {
@@ -195,6 +197,21 @@ enum Recurrence {
   BI_MONTHLY
   CUSTOM
   NONE
+}
+
+
+
+model ShoppingItem {
+  id          String   @id @default(cuid())
+  householdId String
+  name        String
+  checked     Boolean  @default(false)
+  addedById   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  addedBy     User      @relation(fields: [addedById], references: [id])
 }
 
 enum HouseholdMode {

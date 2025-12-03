@@ -8,7 +8,9 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
-import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy } from "lucide-react";
+import { getLevel } from "@/lib/levels";
+import { Progress } from "@/components/ui/progress";
+import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
@@ -33,6 +35,7 @@ interface DashboardHeaderProps {
         name: string | null;
         email: string | null;
         image: string | null;
+        totalPoints: number;
     };
     membership: {
         role: "ADMIN" | "MEMBER";
@@ -51,12 +54,17 @@ export function DashboardHeader({
     achievementsData,
     allHouseholds,
 }: DashboardHeaderProps) {
+    const levelData = getLevel(user.totalPoints || 0);
+
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                     <p className="text-muted-foreground text-sm font-medium">{user.name}</p>
+                    <span className="inline-flex items-center gap-1 font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full text-xs border border-purple-200">
+                        Lvl {levelData.level}: {levelData.title}
+                    </span>
                     {household.mode === "ECONOMY" && (
                         <span className="inline-flex items-center gap-1 font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-xs border border-yellow-200">
                             <Coins className="w-3 h-3" />
@@ -66,6 +74,12 @@ export function DashboardHeader({
                     <span className="inline-flex items-center gap-1 font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full text-xs border border-orange-200" title="Current Streak">
                         <Flame className="w-3 h-3 fill-orange-600" />
                         {membership.currentStreak} Day Streak
+                    </span>
+                </div>
+                <div className="mt-2 w-full max-w-[200px] flex items-center gap-2">
+                    <Progress value={levelData.progress} className="h-1.5" />
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {Math.floor(levelData.progress)}% to Lvl {levelData.level + 1}
                     </span>
                 </div>
             </div>
@@ -105,6 +119,12 @@ export function DashboardHeader({
                                 <Link href="/dashboard/analytics" className="flex items-center w-full">
                                     <BarChart3 className="w-4 h-4 mr-2" />
                                     Analytics
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard/shopping-list" className="flex items-center w-full">
+                                    <ShoppingCart className="w-4 h-4 mr-2" />
+                                    Shopping List
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
@@ -158,6 +178,11 @@ export function DashboardHeader({
                     <Link href="/dashboard/analytics">
                         <Button variant="outline" size="icon" title="Analytics">
                             <BarChart3 className="w-4 h-4" />
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard/shopping-list">
+                        <Button variant="outline" size="icon" title="Shopping List">
+                            <ShoppingCart className="w-4 h-4" />
                         </Button>
                     </Link>
                     <PushNotificationManager />
