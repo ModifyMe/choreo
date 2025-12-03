@@ -79,7 +79,11 @@ export function ChoreProvider({
                     // Client-side filtering
                     // Note: payload.new or payload.old might be missing depending on event type
                     const record = payload.new || payload.old;
-                    if (record && (record as any).householdId !== householdId) {
+
+                    // For DELETE, we might not have householdId in payload.old, but it's safe to proceed 
+                    // as we only remove by ID if it exists in our local state.
+                    // For INSERT/UPDATE, we must check householdId.
+                    if (payload.eventType !== 'DELETE' && record && (record as any).householdId !== householdId) {
                         return;
                     }
 
