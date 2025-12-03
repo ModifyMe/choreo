@@ -97,9 +97,7 @@ export function SettingsDialog({
         }
     };
 
-    const currentUserId = session?.user?.email; // We need ID, but email is what we have in session usually. 
-    // Actually session.user.id is available in our auth setup usually, let's check.
-    // If not, we can find current member from members list using email.
+    const currentUserId = session?.user?.email;
     const currentUserMember = members.find(m => m.user.email === session?.user?.email);
     const isAdmin = currentUserMember?.role === "ADMIN";
 
@@ -113,37 +111,89 @@ export function SettingsDialog({
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Household Settings</DialogTitle>
-                    <AvatarImage src={member.user.image} />
-                    <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                    <span className="text-sm font-medium">
-                        {member.user.name}
-                        {member.user.email === session?.user?.email && " (You)"}
-                    </span>
-                    <span className="text-xs text-muted-foreground capitalize">{member.role.toLowerCase()}</span>
-                </div>
-            </div>
+                    <DialogDescription>
+                        Manage your household preferences and members.
+                    </DialogDescription>
+                </DialogHeader>
 
-            {isAdmin && member.user.email !== session?.user?.email && (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleRemoveMember(member.id)}
-                    disabled={loading}
-                >
-                    <UserX className="w-4 h-4" />
-                </Button>
-            )}
-        </div>
-    ))
-}
-                        </div >
-                    </TabsContent >
-                </Tabs >
-            </DialogContent >
-        </Dialog >
+                <Tabs defaultValue="general" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="profile">Profile</TabsTrigger>
+                        <TabsTrigger value="members">Members</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="general" className="space-y-4 py-4">
+                        <div className="flex items-center justify-between space-x-2">
+                            <div className="flex flex-col space-y-1">
+                                <Label htmlFor="economy-mode" className="font-medium">
+                                    Economy Mode
+                                </Label>
+                                <span className="text-xs text-muted-foreground">
+                                    Earn Gold for chores and spend it on rewards.
+                                </span>
+                            </div>
+                            <Switch
+                                id="economy-mode"
+                                checked={currentMode === "ECONOMY"}
+                                onCheckedChange={handleModeChange}
+                                disabled={loading || !isAdmin}
+                            />
+                        </div>
+
+                        <div className="pt-4 border-t">
+                            <Button
+                                variant="destructive"
+                                className="w-full"
+                                onClick={handleLeaveHousehold}
+                                disabled={loading}
+                            >
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Leave Household
+                            </Button>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="profile" className="space-y-4 py-4">
+                        <ProfileSettings user={currentUserMember?.user} />
+                    </TabsContent>
+
+                    <TabsContent value="members" className="space-y-4 py-4">
+                        <div className="space-y-4">
+                            {members.map((member) => (
+                                <div key={member.id} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={member.user.image} />
+                                            <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium">
+                                                {member.user.name}
+                                                {member.user.email === session?.user?.email && " (You)"}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground capitalize">{member.role.toLowerCase()}</span>
+                                        </div>
+                                    </div>
+
+                                    {isAdmin && member.user.email !== session?.user?.email && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                            onClick={() => handleRemoveMember(member.id)}
+                                            disabled={loading}
+                                        >
+                                            <UserX className="w-4 h-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </DialogContent>
+        </Dialog>
     );
 }
 
