@@ -18,7 +18,7 @@ export async function sendPushNotification(userId: string, title: string, body: 
 
         if (subscriptions.length === 0) {
             console.log(`No subscriptions found for user ${userId}`);
-            return;
+            return { success: 0, failure: 0, total: 0 };
         }
 
         const payload = JSON.stringify({
@@ -26,6 +26,9 @@ export async function sendPushNotification(userId: string, title: string, body: 
             body,
             url,
         });
+
+        let successCount = 0;
+        let failureCount = 0;
 
         const promises = subscriptions.map(async (sub) => {
             try {
@@ -39,6 +42,7 @@ export async function sendPushNotification(userId: string, title: string, body: 
                     },
                     payload
                 );
+                successCount++;
             } catch (error: any) {
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     // Subscription is gone, delete it
@@ -49,11 +53,14 @@ export async function sendPushNotification(userId: string, title: string, body: 
                 } else {
                     console.error("Error sending push notification:", error);
                 }
+                failureCount++;
             }
         });
 
         await Promise.all(promises);
+        return { success: successCount, failure: failureCount, total: subscriptions.length };
     } catch (error) {
         console.error("Failed to send push notification:", error);
+        return { success: 0, failure: 0, total: 0, error };
     }
 }

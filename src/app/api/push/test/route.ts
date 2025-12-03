@@ -39,18 +39,26 @@ export async function POST(req: Request) {
         });
 
         // Send notifications
-        const promises = members.map(member =>
+        const results = await Promise.all(members.map(member =>
             sendPushNotification(
                 member.userId,
                 "Test Notification 🔔",
                 "This is a test push notification from Choreo! If you see this, it works.",
                 "/"
             )
-        );
+        ));
 
-        await Promise.all(promises);
+        const stats = results.reduce((acc, curr) => ({
+            success: acc.success + (curr?.success || 0),
+            failure: acc.failure + (curr?.failure || 0),
+            total: acc.total + (curr?.total || 0)
+        }), { success: 0, failure: 0, total: 0 });
 
-        return NextResponse.json({ success: true, count: members.length });
+        return NextResponse.json({
+            success: true,
+            ...stats,
+            memberCount: members.length
+        });
     } catch (error) {
         console.error("Error sending test push:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
