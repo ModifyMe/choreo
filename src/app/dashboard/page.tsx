@@ -61,7 +61,7 @@ export default async function DashboardPage({
     const household = membership.household;
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const [myChores, availableChores, rewards, allAchievements, userAchievements] = await Promise.all([
+    const [myChores, availableChores, rewards, allAchievements, userAchievements, members] = await Promise.all([
         prisma.chore.findMany({
             where: {
                 householdId: household.id,
@@ -85,6 +85,10 @@ export default async function DashboardPage({
         prisma.achievement.findMany(),
         prisma.userAchievement.findMany({
             where: { userId: user.id },
+        }),
+        prisma.membership.findMany({
+            where: { householdId: household.id },
+            include: { user: true },
         })
     ]);
 
@@ -104,6 +108,7 @@ export default async function DashboardPage({
                             membership={membership as any}
                             achievementsData={achievementsData}
                             allHouseholds={allHouseholds}
+                            members={members as any}
                         />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

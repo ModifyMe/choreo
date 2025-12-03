@@ -103,7 +103,6 @@ export function HelpDialog() {
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                             <li>Swipe a chore to the right to complete it quickly.</li>
                             <li>Upload a photo proof to show off your hard work.</li>
-                            <li>Use the "Nudge" feature to remind others of their tasks.</li>
                             <li>Check the Calendar view to plan your week ahead.</li>
                         </ul>
                     </div>

@@ -46,6 +46,7 @@ interface DashboardHeaderProps {
     };
     achievementsData: any[];
     allHouseholds: { id: string; name: string }[];
+    members: any[];
 }
 
 export function DashboardHeader({
@@ -54,6 +55,7 @@ export function DashboardHeader({
     membership,
     achievementsData,
     allHouseholds,
+    members,
 }: DashboardHeaderProps) {
     const levelData = getLevel(user.totalPoints || 0);
 
@@ -130,7 +132,7 @@ export function DashboardHeader({
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
                                         <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
-                                            <SettingsDialog householdId={household.id} currentMode={household.mode} />
+                                            <SettingsDialog householdId={household.id} currentMode={household.mode} members={members} />
                                             <span className="ml-2">Settings</span>
                                         </div>
                                     </DropdownMenuItem>
@@ -171,7 +173,7 @@ export function DashboardHeader({
                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                     <AchievementsDialog achievements={achievementsData} />
                     {membership.role === "ADMIN" && (
-                        <SettingsDialog householdId={household.id} currentMode={household.mode} />
+                        <SettingsDialog householdId={household.id} currentMode={household.mode} members={members} />
                     )}
                     <ModeToggle />
                     <AddChoreDialog householdId={household.id} />
