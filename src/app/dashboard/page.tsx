@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChoreProvider } from "./chore-context";
 import { RewardProvider } from "./reward-context";
 import { DashboardHeader } from "./dashboard-header";
-import { TestPushButton } from "./test-push-button";
+// import { TestPushButton } from "./test-push-button";
 
 export const dynamic = "force-dynamic";
 
