@@ -72,23 +72,7 @@ export default async function DashboardPage() {
         });
     }
 
-    const activityLogs = await prisma.activityLog.findMany({
-        where: { householdId: household.id },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        include: {
-            user: {
-                select: {
-                    name: true,
-                },
-            },
-            chore: {
-                select: {
-                    title: true,
-                }
-            }
-        }
-    });
+
 
     const allAchievements = await prisma.achievement.findMany();
     const userAchievements = await prisma.userAchievement.findMany({
@@ -161,8 +145,8 @@ export default async function DashboardPage() {
                                     <CardHeader>
                                         <CardTitle>Recent Activity</CardTitle>
                                     </CardHeader>
-                                    <CardContent>
-                                        <ActivityFeed logs={activityLogs} />
+                                    <CardContent className="p-0">
+                                        <ActivityFeed householdId={household.id} />
                                     </CardContent>
                                 </Card>
                             </div>
