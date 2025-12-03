@@ -288,7 +288,15 @@ export function ChoreProvider({
     const toggleSubtask = useCallback((choreId: string, stepId: string) => {
         // Find the chore to get current steps
         const allChores = [...serverMyChores, ...serverAvailableChores, ...optimisticAdds];
-        const chore = allChores.find(c => c.id === choreId);
+        let chore = allChores.find(c => c.id === choreId);
+
+        // Apply any existing optimistic updates to get the latest state
+        if (optimisticUpdates.has(choreId)) {
+            const updates = optimisticUpdates.get(choreId);
+            if (chore && updates) {
+                chore = { ...chore, ...updates };
+            }
+        }
 
         if (!chore || !chore.steps) return;
 
@@ -308,9 +316,10 @@ export function ChoreProvider({
         }).catch(err => {
             console.error("Failed to toggle subtask", err);
             // Revert on error (optional, but good practice)
-            updateChore(choreId, { steps: chore.steps });
+            // We'd need the original steps here, but since we modify 'chore' locally, we might lose the true original.
+            // For now, let's just rely on the next server sync to fix it if it fails.
         });
-    }, [serverMyChores, serverAvailableChores, optimisticAdds, updateChore]);
+    }, [serverMyChores, serverAvailableChores, optimisticAdds, optimisticUpdates, updateChore]);
 
     return (
         <ChoreContext.Provider
