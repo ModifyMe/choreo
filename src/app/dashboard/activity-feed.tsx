@@ -19,6 +19,7 @@ interface ActivityLog {
     chore: {
         title: string;
     } | null;
+    metadata?: any;
 }
 
 export function ActivityFeed({ householdId }: { householdId: string }) {
@@ -39,7 +40,9 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
 
     const getMessage = (log: ActivityLog) => {
         const userName = log.user?.name || "Someone";
-        const choreTitle = log.chore?.title || "a chore";
+        // Use metadata if available (snapshot), otherwise fall back to relation (live data)
+        const choreTitle = (log.metadata as any)?.choreTitle || log.chore?.title || "a chore";
+        const chorePoints = (log.metadata as any)?.chorePoints || (log.chore as any)?.points;
 
         switch (log.action) {
             case "CREATED":
@@ -47,6 +50,7 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                     <span>
                         <span className="font-medium">{userName}</span> added{" "}
                         <span className="font-medium">{choreTitle}</span>
+                        {chorePoints && <span className="text-muted-foreground ml-1">({chorePoints} XP)</span>}
                     </span>
                 );
             case "COMPLETED":
@@ -54,12 +58,20 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                     <span>
                         <span className="font-medium">{userName}</span> completed{" "}
                         <span className="font-medium">{choreTitle}</span>
+                        {chorePoints && <span className="text-green-600 font-medium ml-1">(+{chorePoints} XP)</span>}
                     </span>
                 );
             case "CLAIMED":
                 return (
                     <span>
                         <span className="font-medium">{userName}</span> claimed{" "}
+                        <span className="font-medium">{choreTitle}</span>
+                    </span>
+                );
+            case "UPDATED":
+                return (
+                    <span>
+                        <span className="font-medium">{userName}</span> updated{" "}
                         <span className="font-medium">{choreTitle}</span>
                     </span>
                 );
