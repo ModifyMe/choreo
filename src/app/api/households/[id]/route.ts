@@ -32,6 +32,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             dataToUpdate.assignmentStrategy = assignmentStrategy;
         }
 
+        if (typeof body.allowMemberDelete === "boolean") {
+            dataToUpdate.allowMemberDelete = body.allowMemberDelete;
+        }
+
         // Verify admin
         const membership = await prisma.membership.findUnique({
             where: {

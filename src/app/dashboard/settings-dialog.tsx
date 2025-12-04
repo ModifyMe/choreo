@@ -34,6 +34,7 @@ export function SettingsDialog({
     householdId,
     currentMode,
     currentStrategy = "LOAD_BALANCING",
+    allowMemberDelete = true,
     members = [],
     open,
     onOpenChange,
@@ -41,6 +42,7 @@ export function SettingsDialog({
     householdId: string;
     currentMode: "STANDARD" | "ECONOMY";
     currentStrategy?: "LOAD_BALANCING" | "STRICT_ROTATION" | "RANDOM" | "NONE";
+    allowMemberDelete?: boolean;
     members?: any[];
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
@@ -87,6 +89,25 @@ export function SettingsDialog({
             if (!res.ok) throw new Error("Failed to update settings");
 
             toast.success("Assignment strategy updated");
+            router.refresh();
+        } catch (error) {
+            toast.error("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAllowDeleteChange = async (checked: boolean) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/households/${householdId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ allowMemberDelete: checked }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update settings");
+
+            toast.success("Settings updated");
             router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
@@ -221,7 +242,25 @@ export function SettingsDialog({
                                         </div>
                                     </SelectItem>
                                 </SelectContent>
+
                             </Select>
+                        </div>
+
+                        <div className="flex items-center justify-between space-x-2 pt-4 border-t">
+                            <div className="flex flex-col space-y-1">
+                                <Label htmlFor="allow-delete" className="font-medium">
+                                    Member Deletion
+                                </Label>
+                                <span className="text-xs text-muted-foreground">
+                                    Allow non-admin members to delete chores.
+                                </span>
+                            </div>
+                            <Switch
+                                id="allow-delete"
+                                checked={allowMemberDelete}
+                                onCheckedChange={handleAllowDeleteChange}
+                                disabled={loading || !isAdmin}
+                            />
                         </div>
 
                         <div className="pt-4 border-t">
@@ -276,7 +315,7 @@ export function SettingsDialog({
                     </TabsContent>
                 </Tabs>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
 

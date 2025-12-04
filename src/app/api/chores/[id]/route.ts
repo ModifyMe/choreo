@@ -285,7 +285,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         if (action === "EDIT") {
-            const { title, description, points, dueDate, recurrence, recurrenceData } = body;
+            const { title, description, points, dueDate, recurrence, recurrenceData, assignedToId } = body;
 
             const updatedChore = await prisma.chore.update({
                 where: { id },
@@ -296,6 +296,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     dueDate: dueDate ? new Date(dueDate) : null,
                     recurrence,
                     recurrenceData,
+                    assignedToId: assignedToId === undefined ? undefined : (assignedToId || null), // Allow clearing assignment
                     activityLogs: {
                         create: {
                             userId: session.user.id,
@@ -370,10 +371,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        // Allow deletion if user is the creator (if we tracked that, but we don't explicitly yet, so allow any member for now)
-        // OR if they are an admin. For now, assuming any member can delete to keep it simple as per "household" trust model.
-        // Ideally we should check if membership.role === 'ADMIN' or if they created it.
-        // Let's stick to the trust model for now.
+        // Check for delete protection
+        if (!chore.household.allowMemberDelete && membership.role !== "ADMIN") {
+            return new NextResponse("Only admins can delete chores in this household", { status: 403 });
+        }
 
         await prisma.chore.delete({
             where: { id },

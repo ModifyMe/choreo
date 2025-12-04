@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { title, description, points, householdId, dueDate, recurrence } = body;
+        const { title, description, points, householdId, dueDate, recurrence, assignedToId } = body;
 
         if (!title || !points || !householdId) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
                 description,
                 points: parseInt(points),
                 householdId,
+                assignedToId: assignedToId || null,
                 status: "PENDING",
                 dueDate: dueDate ? new Date(dueDate) : null,
                 recurrence: recurrence === "NONE" ? null : recurrence,

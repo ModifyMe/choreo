@@ -25,6 +25,7 @@ import {
 import { Loader2, Plus, X, Wand2, Clock, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useChores, Chore } from "./chore-context";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -40,7 +41,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { addChore, removeOptimisticChore } = useChores();
+    const { addChore, removeOptimisticChore, members } = useChores();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -51,6 +52,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         recurrenceData: [] as string[],
         reminderTime: "",
         priority: "MEDIUM",
+        assignedToId: "NONE",
         dueDate: undefined as Date | undefined,
         steps: [] as { id: string; title: string; completed: boolean }[],
     });
@@ -71,7 +73,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             reminderTime: formData.reminderTime || null,
             priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
             householdId,
-            assignedToId: null,
+            assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
             status: "PENDING",
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -91,6 +93,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
                     recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
                     reminderTime: formData.reminderTime,
                     priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
@@ -124,6 +127,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 recurrenceData: [],
                 reminderTime: "",
                 priority: "MEDIUM",
+                assignedToId: "NONE",
                 dueDate: undefined,
                 steps: [],
             });
@@ -249,7 +253,40 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                             </div>
                         )}
 
-
+                        <div className="grid gap-2">
+                            <Label htmlFor="assign-to">Assign To (Optional)</Label>
+                            <Select
+                                value={formData.assignedToId}
+                                onValueChange={(value) =>
+                                    setFormData({ ...formData, assignedToId: value })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Unassigned" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="NONE">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
+                                                <span className="text-xs text-muted-foreground">?</span>
+                                            </div>
+                                            <span>Unassigned</span>
+                                        </div>
+                                    </SelectItem>
+                                    {members.map((member) => (
+                                        <SelectItem key={member.userId} value={member.userId}>
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="w-6 h-6">
+                                                    <AvatarImage src={member.user.image} />
+                                                    <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
+                                                </Avatar>
+                                                <span>{member.user.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="recurrence">Recurrence</Label>

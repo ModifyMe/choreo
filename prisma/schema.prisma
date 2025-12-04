@@ -83,6 +83,7 @@ model Household {
   createdAt   DateTime     @default(now())
   mode        HouseholdMode @default(STANDARD)
   assignmentStrategy AssignmentStrategy @default(LOAD_BALANCING)
+  allowMemberDelete  Boolean            @default(true)
   members     Membership[]
   chores      Chore[]
   rewards     Reward[]

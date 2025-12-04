@@ -38,6 +38,7 @@ interface ChoreContextType {
     restoreChore: (id: string) => void;
     removeOptimisticChore: (id: string) => void;
     toggleSubtask: (choreId: string, stepId: string) => void;
+    members: any[];
 }
 
 const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
@@ -314,6 +315,7 @@ export function ChoreProvider({
                 restoreChore,
                 removeOptimisticChore,
                 toggleSubtask,
+                members,
             }}
         >
             {children}

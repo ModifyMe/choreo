@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useChores, Chore } from "./chore-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -37,7 +38,7 @@ interface EditChoreDialogProps {
 export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogProps) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { updateChore } = useChores();
+    const { updateChore, members } = useChores();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -46,6 +47,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
         difficulty: "EASY",
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
+        assignedToId: "NONE",
     });
 
     useEffect(() => {
@@ -77,6 +79,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 difficulty,
                 recurrenceType: chore.recurrence || "DAILY",
                 recurrenceData: parsedRecurrenceData,
+                assignedToId: chore.assignedToId || "NONE",
             });
         }
     }, [chore]);
@@ -94,6 +97,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 points: parseInt(formData.points),
                 recurrence: formData.recurrenceType,
                 recurrenceData: JSON.stringify(formData.recurrenceData),
+                assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
             };
 
             updateChore(chore.id, updates);
@@ -109,8 +113,9 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                     title: formData.title,
                     description: formData.description,
                     points: parseInt(formData.points),
-                    recurrenceType: formData.recurrenceType, // Backend might expect recurrenceType or recurrence
-                    recurrenceData: formData.recurrenceData, // Backend might expect array
+                    recurrence: formData.recurrenceType,
+                    recurrenceData: JSON.stringify(formData.recurrenceData),
+                    assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
                 }),
             });
 
@@ -213,6 +218,41 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                                 />
                             </div>
                         )}
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-assign-to">Assign To (Optional)</Label>
+                            <Select
+                                value={formData.assignedToId}
+                                onValueChange={(value) =>
+                                    setFormData({ ...formData, assignedToId: value })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Unassigned" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="NONE">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
+                                                <span className="text-xs text-muted-foreground">?</span>
+                                            </div>
+                                            <span>Unassigned</span>
+                                        </div>
+                                    </SelectItem>
+                                    {members.map((member) => (
+                                        <SelectItem key={member.userId} value={member.userId}>
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="w-6 h-6">
+                                                    <AvatarImage src={member.user.image} />
+                                                    <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
+                                                </Avatar>
+                                                <span>{member.user.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="edit-recurrence">Recurrence</Label>
