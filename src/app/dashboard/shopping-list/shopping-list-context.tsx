@@ -81,7 +81,9 @@ export function ShoppingListProvider({
                             );
 
                             if (optimisticMatch) {
-                                return prev.map(i => i.id === optimisticMatch.id ? newItem : i);
+                                // Preserve addedBy from optimistic item since realtime payload lacks it
+                                const mergedItem = { ...newItem, addedBy: optimisticMatch.addedBy };
+                                return prev.map(i => i.id === optimisticMatch.id ? mergedItem : i);
                             }
                             return [newItem, ...prev];
                         } else if (payload.eventType === 'UPDATE') {
@@ -111,6 +113,10 @@ export function ShoppingListProvider({
             addedById: "me",
             createdAt: new Date(),
             updatedAt: new Date(),
+            addedBy: {
+                name: "Me", // Optimistic name
+                image: null
+            }
         };
 
         mutate((prev: ShoppingItem[] | undefined) => [optimisticItem, ...(prev || [])], false);
@@ -125,7 +131,19 @@ export function ShoppingListProvider({
             if (!res.ok) throw new Error("Failed to add item");
 
             const newItem = await res.json();
-            mutate((prev: ShoppingItem[] | undefined) => (prev || []).map((item) => (item.id === tempId ? newItem : item)), false);
+            mutate((prev: ShoppingItem[] | undefined) => {
+                const list = prev || [];
+                // Check if we still have the optimistic item (tempId)
+                const hasOptimistic = list.some(i => i.id === tempId);
+
+                if (hasOptimistic) {
+                    return list.map((item) => (item.id === tempId ? newItem : item));
+                }
+
+                // If not, maybe realtime already replaced it with the real ID?
+                // In that case, update it to ensure we have the full data (like addedBy)
+                return list.map((item) => (item.id === newItem.id ? newItem : item));
+            }, false);
         } catch (error) {
             toast.error("Failed to add item");
             mutate((prev: ShoppingItem[] | undefined) => (prev || []).filter((item) => item.id !== tempId), false);
