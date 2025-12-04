@@ -163,9 +163,21 @@ export function ChoreProvider({
         // 1. Combine all known chores
         let allChores = [...(serverChores || [])];
 
-        // 2. Add Optimistic Adds (deduplicated by ID)
+        // 2. Add Optimistic Adds (deduplicated by ID and Heuristic)
         const serverIds = new Set(allChores.map(c => c.id));
-        const uniqueAdds = optimisticAdds.filter(c => !serverIds.has(c.id));
+        const uniqueAdds = optimisticAdds.filter(optimistic => {
+            // 1. Check ID match
+            if (serverIds.has(optimistic.id)) return false;
+
+            // 2. Check Heuristic match (Title + CreatedAt) to prevent flicker
+            const match = allChores.find(server => {
+                const sameTitle = server.title === optimistic.title;
+                const timeDiff = Math.abs(new Date(server.createdAt).getTime() - new Date(optimistic.createdAt).getTime());
+                return sameTitle && timeDiff < 60000; // 1 minute window
+            });
+
+            return !match;
+        });
         allChores = [...allChores, ...uniqueAdds];
 
         // 3. Apply Optimistic Updates
