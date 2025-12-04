@@ -190,41 +190,48 @@ export function ChoreCard({
                 {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}
 
                 {/* Subtasks Progress */}
-                {chore.steps && (chore.steps as any[]).length > 0 && (
+                {chore.steps && (chore.steps as any[]).filter(s => s.title !== "__CORRELATION__").length > 0 && (
                     <div className="mt-2">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                            <span>Subtasks</span>
-                            <span>
-                                {(chore.steps as any[]).filter(s => s.completed).length}/{(chore.steps as any[]).length}
-                            </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary transition-all duration-300"
-                                style={{ width: `${((chore.steps as any[]).filter(s => s.completed).length / (chore.steps as any[]).length) * 100}%` }}
-                            />
-                        </div>
-
-                        {/* Expandable Subtasks List */}
-                        {(type === "my" || chore.assignedToId === userId) && (
-                            <div className="mt-2 space-y-1">
-                                {(chore.steps as any[]).map((step: any) => (
-                                    <div
-                                        key={step.id}
-                                        className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 p-1 rounded"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onToggleSubtask(chore.id, step.id);
-                                        }}
-                                    >
-                                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${step.completed ? "bg-primary border-primary" : "border-muted-foreground"}`}>
-                                            {step.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
-                                        </div>
-                                        <span className={step.completed ? "line-through text-muted-foreground" : ""}>{step.title}</span>
+                        {(() => {
+                            const visibleSteps = (chore.steps as any[]).filter(s => s.title !== "__CORRELATION__");
+                            return (
+                                <>
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                        <span>Subtasks</span>
+                                        <span>
+                                            {visibleSteps.filter(s => s.completed).length}/{visibleSteps.length}
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary transition-all duration-300"
+                                            style={{ width: `${((chore.steps as any[]).filter(s => s.completed).length / (chore.steps as any[]).length) * 100}%` }}
+                                        />
+                                    </div>
+
+                                    {/* Expandable Subtasks List */}
+                                    {(type === "my" || chore.assignedToId === userId) && (
+                                        <div className="mt-2 space-y-1">
+                                            {visibleSteps.map((step: any) => (
+                                                <div
+                                                    key={step.id}
+                                                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 p-1 rounded"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onToggleSubtask(chore.id, step.id);
+                                                    }}
+                                                >
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${step.completed ? "bg-primary border-primary" : "border-muted-foreground"}`}>
+                                                        {step.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
+                                                    </div>
+                                                    <span className={step.completed ? "line-through text-muted-foreground" : ""}>{step.title}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
