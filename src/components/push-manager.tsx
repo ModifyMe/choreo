@@ -37,6 +37,15 @@ export function PushNotificationManager() {
             const registration = await navigator.serviceWorker.register("/sw.js");
             const sub = await registration.pushManager.getSubscription();
             setSubscription(sub);
+
+            if (sub) {
+                // Sync with server in case DB was cleared
+                await fetch("/api/push/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(sub),
+                });
+            }
         } catch (error) {
             console.error("Service Worker registration failed:", error);
         }
