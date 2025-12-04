@@ -25,6 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { Chore } from "./chore-context";
+import imageCompression from "browser-image-compression";
 
 interface ChoreCardProps {
     chore: Chore;
@@ -60,6 +61,20 @@ export function ChoreCard({
         if (proofFile) {
             setUploading(true);
             try {
+                // Compress image
+                const options = {
+                    maxSizeMB: 0.5, // Compress to ~500KB
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                };
+
+                let compressedFile = proofFile;
+                try {
+                    compressedFile = await imageCompression(proofFile, options);
+                } catch (error) {
+                    console.error("Compression failed, using original file", error);
+                }
+
                 const fileExt = proofFile.name.split('.').pop();
                 const fileName = `${Math.random()}.${fileExt}`;
                 const filePath = `${userId}/${fileName}`;
@@ -75,7 +90,7 @@ export function ChoreCard({
 
                 const { error: uploadError } = await supabase.storage
                     .from('chore-proofs')
-                    .uploadToSignedUrl(path, token, proofFile);
+                    .uploadToSignedUrl(path, token, compressedFile);
 
                 if (uploadError) throw uploadError;
 

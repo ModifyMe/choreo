@@ -20,20 +20,30 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import imageCompression from "browser-image-compression";
 
 export function SettingsDialog({
     householdId,
     currentMode,
     members = [],
+    open,
+    onOpenChange,
 }: {
     householdId: string;
     currentMode: "STANDARD" | "ECONOMY";
     members?: any[];
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }) {
-    const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
     const router = useRouter();
     const { data: session } = useSession();
+
+    const isControlled = open !== undefined;
+    const finalOpen = isControlled ? open : internalOpen;
+    const finalSetOpen = isControlled ? onOpenChange : setInternalOpen;
+
+    const [loading, setLoading] = useState(false);
 
     const handleModeChange = async (checked: boolean) => {
         setLoading(true);
@@ -102,12 +112,14 @@ export function SettingsDialog({
     const isAdmin = currentUserMember?.role === "ADMIN";
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <Settings className="w-5 h-5" />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={finalOpen} onOpenChange={finalSetOpen}>
+            {!isControlled && (
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <Settings className="w-5 h-5" />
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Household Settings</DialogTitle>
@@ -206,11 +218,89 @@ function ProfileSettings({ user }: { user: any }) {
     const cameraInputRef = useRef<HTMLInputElement>(null);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
-        // ... (existing code)
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/user/profile", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update profile");
+
+            toast.success("Profile updated!");
+            router.refresh();
+        } catch (error) {
+            toast.error("Failed to update profile");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        // ... (existing code)
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setLoading(true);
+        try {
+            // Compress image
+            const options = {
+                maxSizeMB: 0.5, // Compress to ~500KB
+                maxWidthOrHeight: 1024,
+                useWebWorker: true,
+            };
+
+            let compressedFile = file;
+            try {
+                compressedFile = await imageCompression(file, options);
+            } catch (error) {
+                console.error("Compression failed, using original file", error);
+            }
+
+            // 1. Get Signed Upload Token
+            const fileExt = file.name.split('.').pop();
+            const fileName = `avatar-${Math.random()}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const tokenRes = await fetch("/api/upload", {
+                method: "POST",
+                body: JSON.stringify({ filePath, bucketName: 'avatars' }), // Use avatars bucket
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!tokenRes.ok) throw new Error("Failed to get upload token");
+            const { token, path } = await tokenRes.json();
+
+            // 2. Upload to Supabase
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .uploadToSignedUrl(path, token, compressedFile);
+
+            if (uploadError) throw uploadError;
+
+            // 3. Get Public URL
+            const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+            const publicUrl = data.publicUrl;
+
+            // 4. Update User Profile
+            const updateRes = await fetch("/api/user/profile", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: publicUrl }),
+            });
+
+            if (!updateRes.ok) throw new Error("Failed to update profile image");
+
+            toast.success("Profile picture updated!");
+            router.refresh();
+        } catch (error) {
+            console.error("Avatar upload failed", error);
+            toast.error("Failed to upload avatar");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

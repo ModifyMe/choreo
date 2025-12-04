@@ -11,10 +11,10 @@ import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
 import { getLevel } from "@/lib/levels";
 import { Progress } from "@/components/ui/progress";
-import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart } from "lucide-react";
+import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
@@ -62,6 +62,8 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
     const levelData = getLevel(membership.totalPoints || 0);
     const router = useRouter();
+
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     useEffect(() => {
         router.prefetch("/dashboard/shopping-list");
@@ -169,11 +171,9 @@ export function DashboardHeader({
                             {membership.role === "ADMIN" && (
                                 <>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem asChild>
-                                        <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
-                                            <SettingsDialog householdId={household.id} currentMode={household.mode} members={members} />
-                                            <span className="ml-2">Settings</span>
-                                        </div>
+                                    <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                                        <Settings className="w-4 h-4 mr-2" />
+                                        <span>Settings</span>
                                     </DropdownMenuItem>
                                 </>
                             )}
@@ -212,7 +212,9 @@ export function DashboardHeader({
                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                     <AchievementsDialog achievements={achievementsData} />
                     {membership.role === "ADMIN" && (
-                        <SettingsDialog householdId={household.id} currentMode={household.mode} members={members} />
+                        <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>
+                            <Settings className="w-4 h-4" />
+                        </Button>
                     )}
                     <ModeToggle />
                     <AddChoreDialog householdId={household.id} />
@@ -226,6 +228,17 @@ export function DashboardHeader({
                     </div>
                 </div>
             </div>
+
+            {/* Controlled Settings Dialog */}
+            {membership.role === "ADMIN" && (
+                <SettingsDialog
+                    householdId={household.id}
+                    currentMode={household.mode}
+                    members={members}
+                    open={settingsOpen}
+                    onOpenChange={setSettingsOpen}
+                />
+            )}
         </div>
     );
 }

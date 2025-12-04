@@ -38,6 +38,7 @@ import {
 import { EditChoreDialog } from "./edit-chore-dialog";
 import { useChores, Chore } from "./chore-context";
 import { ChoreCard } from "./chore-card";
+import imageCompression from "browser-image-compression";
 
 export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
     const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore, toggleSubtask, updateChore } = useChores();
@@ -128,6 +129,20 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
         if (proofFile) {
             setUploading(true);
             try {
+                // Compress image
+                const options = {
+                    maxSizeMB: 0.5, // Compress to ~500KB
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                };
+
+                let compressedFile = proofFile;
+                try {
+                    compressedFile = await imageCompression(proofFile, options);
+                } catch (error) {
+                    console.error("Compression failed, using original file", error);
+                }
+
                 // 1. Get Signed Upload Token from Server (Bypasses Vercel Limit)
                 const fileExt = proofFile.name.split('.').pop();
                 const fileName = `${Math.random()}.${fileExt}`;
@@ -145,7 +160,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
                 // 2. Upload directly to Supabase using the token
                 const { error: uploadError } = await supabase.storage
                     .from('chore-proofs')
-                    .uploadToSignedUrl(path, token, proofFile);
+                    .uploadToSignedUrl(path, token, compressedFile);
 
                 if (uploadError) throw uploadError;
 
