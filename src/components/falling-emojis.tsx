@@ -56,7 +56,7 @@ export function FallingEmojis() {
     const [emojis, setEmojis] = useState<EmojiProps[]>([]);
 
     useEffect(() => {
-        const count = 40; // Increased count slightly
+        const count = 20; // Reduced count for sparsity
         const newEmojis: EmojiProps[] = [];
 
         for (let i = 0; i < count; i++) {

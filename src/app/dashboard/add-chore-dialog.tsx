@@ -61,7 +61,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             recurrence: formData.recurrenceType,
             recurrenceData: JSON.stringify(formData.recurrenceData),
             reminderTime: formData.reminderTime || null,
-            priority: formData.priority,
+            priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
             householdId,
             assignedToId: null,
             status: "PENDING",
@@ -85,7 +85,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     ...formData,
                     recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
                     reminderTime: formData.reminderTime,
-                    priority: formData.priority,
+                    priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
                     points: parseInt(formData.points),
                     householdId,
                     steps: formData.steps,
