@@ -39,7 +39,8 @@ export async function POST(req: Request) {
         });
 
         if (existingMembership) {
-            return new NextResponse("Already a member", { status: 400 });
+            console.log(`[HOUSEHOLD_JOIN] User ${session.user.id} is already a member of ${household.id}. Membership:`, existingMembership);
+            return new NextResponse(`Already a member (Role: ${existingMembership.role})`, { status: 400 });
         }
 
         await prisma.membership.create({
