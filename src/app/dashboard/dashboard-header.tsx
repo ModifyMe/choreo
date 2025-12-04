@@ -9,6 +9,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
+import { CalendarDialog } from "./calendar-dialog";
 
 
 // ... existing imports ...
@@ -54,6 +55,7 @@ interface DashboardHeaderProps {
     achievementsData: any[];
     allHouseholds: { id: string; name: string }[];
     members: any[];
+    householdChores: any[];
 }
 
 export function DashboardHeader({
@@ -63,6 +65,7 @@ export function DashboardHeader({
     achievementsData,
     allHouseholds,
     members,
+    householdChores,
 }: DashboardHeaderProps) {
     const levelData = getLevel(membership.totalPoints || 0);
     const router = useRouter();
@@ -232,6 +235,7 @@ export function DashboardHeader({
                         </Button>
                     </Link>
                     <PushNotificationManager />
+                    <CalendarDialog chores={householdChores} userId={user.id} />
                     <AchievementsDialog achievements={achievementsData} />
                     <HelpDialog />
                     {membership.role === "ADMIN" && (

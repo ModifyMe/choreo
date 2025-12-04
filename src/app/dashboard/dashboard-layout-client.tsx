@@ -60,6 +60,7 @@ export function DashboardLayoutClient({
                             achievementsData={achievementsData}
                             allHouseholds={allHouseholds}
                             members={currentHouseholdMembers}
+                            householdChores={householdChores}
                         />
                         {children}
                     </div>
