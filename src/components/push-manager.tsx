@@ -40,14 +40,23 @@ export function PushNotificationManager() {
 
             if (sub) {
                 // Sync with server in case DB was cleared
-                await fetch("/api/push/subscribe", {
+                const res = await fetch("/api/push/subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(sub),
                 });
+
+                if (!res.ok) {
+                    throw new Error("Failed to sync push subscription");
+                }
+                console.log("Push subscription synced with server");
             }
         } catch (error) {
             console.error("Service Worker registration failed:", error);
+            // Only show toast if it's a sync error, not a registration error (which happens in incognito etc)
+            if (error instanceof Error && error.message.includes("sync")) {
+                toast.error("Failed to sync push notifications. Please re-enable.");
+            }
         }
     }
 
@@ -69,13 +78,17 @@ export function PushNotificationManager() {
             setSubscription(sub);
 
             // Send subscription to server
-            await fetch("/api/push/subscribe", {
+            const res = await fetch("/api/push/subscribe", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(sub),
             });
+
+            if (!res.ok) {
+                throw new Error("Failed to save subscription to server");
+            }
 
             toast.success("Notifications enabled! 🔔");
         } catch (error) {
