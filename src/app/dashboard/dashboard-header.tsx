@@ -15,7 +15,7 @@ import { HouseholdChoresDialog } from "./household-chores-dialog";
 // ... existing imports ...
 import { getLevel } from "@/lib/levels";
 import { Progress } from "@/components/ui/progress";
-import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings } from "lucide-react";
+import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -125,18 +125,35 @@ export function DashboardHeader({
                                 <p className="text-xs text-muted-foreground mb-1">Invite Code</p>
                                 <div className="flex items-center justify-between bg-muted/50 p-2 rounded border border-dashed">
                                     <code className="font-mono font-bold text-sm">{household.inviteCode}</code>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigator.clipboard.writeText(household.inviteCode);
-                                            toast.success("Invite code copied!");
-                                        }}
-                                    >
-                                        <Copy className="w-3 h-3" />
-                                    </Button>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigator.clipboard.writeText(household.inviteCode);
+                                                toast.success("Invite code copied!");
+                                            }}
+                                            title="Copy Code"
+                                        >
+                                            <Copy className="w-3 h-3" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const url = `${window.location.origin}/onboarding?code=${household.inviteCode}`;
+                                                navigator.clipboard.writeText(url);
+                                                toast.success("Invite link copied!");
+                                            }}
+                                            title="Copy Link"
+                                        >
+                                            <LinkIcon className="w-3 h-3" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 

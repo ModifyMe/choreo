@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,21 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Home, UserPlus } from "lucide-react";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"create" | "join">("create");
     const [householdName, setHouseholdName] = useState("");
     const [inviteCode, setInviteCode] = useState("");
+
+    useEffect(() => {
+        const code = searchParams.get("code");
+        if (code) {
+            setMode("join");
+            setInviteCode(code);
+        }
+    }, [searchParams]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,5 +146,13 @@ export default function OnboardingPage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function OnboardingPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <OnboardingContent />
+        </Suspense>
     );
 }
