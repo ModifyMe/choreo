@@ -3,6 +3,7 @@ import { CheckCircle2, Users, Zap } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { FallingEmojis } from "@/components/falling-emojis";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground relative overflow-hidden">
+      <FallingEmojis />
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center border-b">
         <div className="flex items-center gap-2">
