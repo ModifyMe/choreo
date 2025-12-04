@@ -110,6 +110,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    action: "EDIT",
                     title: formData.title,
                     description: formData.description,
                     points: parseInt(formData.points),
