@@ -53,13 +53,21 @@ export function CalendarDialog({ chores, userId }: CalendarDialogProps) {
     // --- Projection Logic ---
     const getChoresForDate = (date: Date) => {
         const dayChores: any[] = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const isToday = isSameDay(date, today);
 
         // 1. Real Chores
         chores.forEach((chore) => {
             // Filter by viewMode
             if (viewMode === "mine" && chore.assignedToId !== userId) return;
 
+            // Chore has a due date - show on that date
             if (chore.dueDate && isSameDay(new Date(chore.dueDate), date)) {
+                dayChores.push({ ...chore, isProjected: false });
+            }
+            // Chore has no due date but is pending - show on today
+            else if (!chore.dueDate && chore.status === "PENDING" && isToday) {
                 dayChores.push({ ...chore, isProjected: false });
             }
         });
