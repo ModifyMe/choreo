@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { Chore } from "./chore-context";
 import imageCompression from "browser-image-compression";
+import { cn } from "@/lib/utils";
 
 interface ChoreCardProps {
     chore: Chore;
@@ -140,9 +141,48 @@ export function ChoreCard({
                 <div className="flex items-center gap-2">
                     <h3 className="font-medium">{chore.title}</h3>
                     {chore.recurrence && chore.recurrence !== "NONE" && (
-                        <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
-                            {chore.recurrence}
-                        </span>
+                        <div className="flex gap-1">
+                            {chore.recurrence === "CUSTOM" && chore.recurrenceData ? (
+                                (() => {
+                                    try {
+                                        const days = JSON.parse(chore.recurrenceData) as string[];
+                                        const dayMap: { [key: string]: number } = { "SUN": 0, "MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SAT": 6 };
+                                        const todayDay = new Date().getDay();
+
+                                        return (
+                                            <div className="flex gap-0.5">
+                                                {days.map(d => {
+                                                    const isToday = dayMap[d] === todayDay;
+                                                    return (
+                                                        <span
+                                                            key={d}
+                                                            className={cn(
+                                                                "text-[9px] px-1 py-0.5 rounded-sm font-bold uppercase",
+                                                                isToday
+                                                                    ? "bg-blue-600 text-white shadow-sm"
+                                                                    : "bg-blue-100 text-blue-700"
+                                                            )}
+                                                        >
+                                                            {d.substring(0, 1)}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    } catch (e) {
+                                        return (
+                                            <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                                                CUSTOM
+                                            </span>
+                                        );
+                                    }
+                                })()
+                            ) : (
+                                <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                                    {chore.recurrence}
+                                </span>
+                            )}
+                        </div>
                     )}
                 </div>
                 {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}

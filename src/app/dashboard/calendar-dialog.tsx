@@ -89,23 +89,28 @@ export function CalendarDialog({ chores, userId }: CalendarDialogProps) {
                 matches = true;
             } else if (chore.recurrence === "WEEKLY") {
                 // Check if same day of week
-                // We need to know the "start" day. Let's assume the current due date is the anchor.
-                if (chore.dueDate) {
-                    const dueDay = getDay(new Date(chore.dueDate));
-                    if (getDay(date) === dueDay) matches = true;
-                }
+                // Use dueDate if available, otherwise fallback to createdAt
+                const anchorDate = chore.dueDate ? new Date(chore.dueDate) : new Date(chore.createdAt);
+                const dueDay = getDay(anchorDate);
+                if (getDay(date) === dueDay) matches = true;
+            } else if (chore.recurrence === "MONTHLY") {
+                // Check if same day of month
+                const anchorDate = chore.dueDate ? new Date(chore.dueDate) : new Date(chore.createdAt);
+                if (date.getDate() === anchorDate.getDate()) matches = true;
+            } else if (chore.recurrence === "BI_MONTHLY") {
+                // Check if same day of month and even/odd month difference? 
+                // For simplicity, let's just match day of month for now in projection, 
+                // or maybe we skip complex bi-monthly projection without a solid anchor.
+                // Let's stick to day of month for visibility.
+                const anchorDate = chore.dueDate ? new Date(chore.dueDate) : new Date(chore.createdAt);
+                if (date.getDate() === anchorDate.getDate()) matches = true;
             } else if (chore.recurrence === "CUSTOM" && chore.recurrenceData) {
                 try {
                     const days = JSON.parse(chore.recurrenceData) as string[];
                     const dayMap: { [key: string]: number } = {
                         "SUN": 0, "MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SAT": 6
                     };
-                    const currentDayName = format(date, "EEE").toUpperCase();
-                    // date-fns format "EEE" gives "Mon", "Tue". We need to match with "MON", "TUE".
-                    // Actually let's just use getDay() and map our days array to numbers.
                     const targetDay = getDay(date);
-                    // Check if targetDay is in the allowed days
-                    // We need to convert our strings "MON" to 1.
                     const allowedDays = days.map(d => dayMap[d]);
                     if (allowedDays.includes(targetDay)) matches = true;
 

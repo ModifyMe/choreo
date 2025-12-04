@@ -244,31 +244,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                             </div>
                         )}
 
-                        <div className="space-y-2">
-                            <Label>Due Date (Optional)</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-full justify-start text-left font-normal",
-                                            !formData.dueDate && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {formData.dueDate ? format(formData.dueDate, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                        mode="single"
-                                        selected={formData.dueDate}
-                                        onSelect={(date) => setFormData({ ...formData, dueDate: date })}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+
 
                         <div className="grid gap-2">
                             <Label htmlFor="recurrence">Recurrence</Label>
@@ -384,6 +360,31 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 </div>
                             </summary>
                             <div className="pt-4 grid gap-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-2">
+                                    <Label>Due Date (Optional)</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !formData.dueDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.dueDate ? format(formData.dueDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.dueDate}
+                                                onSelect={(date) => setFormData({ ...formData, dueDate: date })}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="reminderTime">Reminder Time</Label>
