@@ -30,9 +30,13 @@ interface UserNavProps {
     }[];
     currentHouseholdId: string;
     isAway: boolean;
+    achievements: any[];
 }
 
-export function UserNav({ user, households, currentHouseholdId, isAway }: UserNavProps) {
+import { ModeToggle } from "@/components/mode-toggle";
+import { AchievementsDialog } from "@/app/dashboard/achievements-dialog";
+
+export function UserNav({ user, households, currentHouseholdId, isAway, achievements }: UserNavProps) {
     const router = useRouter();
 
     return (
@@ -59,6 +63,23 @@ export function UserNav({ user, households, currentHouseholdId, isAway }: UserNa
                     <VacationToggle householdId={currentHouseholdId} initialIsAway={isAway} minimal />
                 </div>
                 <DropdownMenuSeparator />
+
+                <DropdownMenuItem asChild>
+                    <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
+                        <AchievementsDialog achievements={achievements} />
+                        <span className="ml-2">Achievements</span>
+                    </div>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                    <div className="flex items-center w-full justify-between cursor-pointer" onClick={(e) => e.preventDefault()}>
+                        <span>Theme</span>
+                        <ModeToggle />
+                    </div>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>Switch Household</DropdownMenuLabel>
                     {households.map((household) => (

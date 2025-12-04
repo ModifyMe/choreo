@@ -22,10 +22,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, X, Wand2, Clock } from "lucide-react";
+import { Loader2, Plus, X, Wand2, Clock, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useChores, Chore } from "./chore-context";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -44,6 +51,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         recurrenceData: [] as string[],
         reminderTime: "",
         priority: "MEDIUM",
+        dueDate: undefined as Date | undefined,
         steps: [] as { id: string; title: string; completed: boolean }[],
     });
 
@@ -67,7 +75,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             status: "PENDING",
             createdAt: new Date(),
             updatedAt: new Date(),
-            dueDate: null,
+            dueDate: formData.dueDate || null,
             steps: formData.steps,
         };
 
@@ -88,6 +96,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
                     points: parseInt(formData.points),
                     householdId,
+                    dueDate: formData.dueDate,
                     steps: formData.steps,
                 }),
             });
@@ -110,6 +119,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 recurrenceData: [],
                 reminderTime: "",
                 priority: "MEDIUM",
+                dueDate: undefined,
                 steps: [],
             });
         } catch (error) {
@@ -146,6 +156,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                             description: template.description,
                             points: template.points.toString(),
                             difficulty: template.difficulty,
+                            dueDate: undefined,
                             steps: template.steps.map(s => ({
                                 id: Math.random().toString(36).substring(7),
                                 title: s,
@@ -232,6 +243,32 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 />
                             </div>
                         )}
+
+                        <div className="space-y-2">
+                            <Label>Due Date (Optional)</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !formData.dueDate && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {formData.dueDate ? format(formData.dueDate, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={formData.dueDate}
+                                        onSelect={(date) => setFormData({ ...formData, dueDate: date })}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="recurrence">Recurrence</Label>
@@ -396,7 +433,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
 

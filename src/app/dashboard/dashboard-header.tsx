@@ -217,6 +217,7 @@ export function DashboardHeader({
                         households={allHouseholds}
                         currentHouseholdId={household.id}
                         isAway={membership.isAway}
+                        achievements={achievementsData}
                     />
                 </div>
 
@@ -236,14 +237,12 @@ export function DashboardHeader({
                     </Link>
                     <PushNotificationManager />
                     <CalendarDialog chores={householdChores} userId={user.id} />
-                    <AchievementsDialog achievements={achievementsData} />
                     <HelpDialog />
                     {membership.role === "ADMIN" && (
                         <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>
                             <Settings className="w-4 h-4" />
                         </Button>
                     )}
-                    <ModeToggle />
                     <AddChoreDialog householdId={household.id} />
 
                     <div className="ml-2 border-l pl-4">
@@ -252,6 +251,7 @@ export function DashboardHeader({
                             households={allHouseholds}
                             currentHouseholdId={household.id}
                             isAway={membership.isAway}
+                            achievements={achievementsData}
                         />
                     </div>
                 </div>

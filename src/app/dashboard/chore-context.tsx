@@ -68,7 +68,75 @@ export function ChoreProvider({
         setServerChores(initialChores || []);
     }, [initialChores]);
 
-    // ... (Real-time Subscription and Cleanup effects remain the same) ...
+    // Real-time Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel("chore-updates")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "Chore",
+                    filter: `householdId=eq.${householdId}`,
+                },
+                (payload) => {
+                    if (payload.eventType === "INSERT") {
+                        const newChore = payload.new as Chore;
+                        // Convert dates
+                        newChore.createdAt = new Date(newChore.createdAt);
+                        newChore.updatedAt = new Date(newChore.updatedAt);
+                        if (newChore.dueDate) newChore.dueDate = new Date(newChore.dueDate);
+
+                        setServerChores((prev) => {
+                            if (prev.some((c) => c.id === newChore.id)) return prev;
+                            return [...prev, newChore];
+                        });
+
+                        // Cleanup optimistic adds if they match
+                        setOptimisticAdds((prev) =>
+                            prev.filter((opt) => {
+                                // Simple matching heuristic: same title and created recently
+                                const isMatch =
+                                    opt.title === newChore.title &&
+                                    Math.abs(new Date(opt.createdAt).getTime() - new Date(newChore.createdAt).getTime()) < 10000; // 10s window
+                                return !isMatch;
+                            })
+                        );
+                    } else if (payload.eventType === "UPDATE") {
+                        const updatedChore = payload.new as Chore;
+                        // Convert dates
+                        updatedChore.createdAt = new Date(updatedChore.createdAt);
+                        updatedChore.updatedAt = new Date(updatedChore.updatedAt);
+                        if (updatedChore.dueDate) updatedChore.dueDate = new Date(updatedChore.dueDate);
+
+                        setServerChores((prev) =>
+                            prev.map((c) => (c.id === updatedChore.id ? updatedChore : c))
+                        );
+
+                        // Clear optimistic update for this ID as server state is now fresh
+                        setOptimisticUpdates((prev) => {
+                            const next = new Map(prev);
+                            next.delete(updatedChore.id);
+                            return next;
+                        });
+                    } else if (payload.eventType === "DELETE") {
+                        const deletedId = payload.old.id;
+                        setServerChores((prev) => prev.filter((c) => c.id !== deletedId));
+                        setPendingDeletes((prev) => {
+                            const next = new Set(prev);
+                            next.delete(deletedId);
+                            return next;
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [householdId]);
 
     // Derived State Calculation
     const { myChores, availableChores, householdChores } = React.useMemo(() => {
