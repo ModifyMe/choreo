@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useShoppingList } from "./shopping-list-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,11 @@ import Link from "next/link";
 export function ShoppingListView() {
     const { items, addItem, toggleItem, deleteItem, clearChecked } = useShoppingList();
     const [newItemName, setNewItemName] = useState("");
+    const router = useRouter();
+
+    useEffect(() => {
+        router.prefetch("/dashboard");
+    }, [router]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

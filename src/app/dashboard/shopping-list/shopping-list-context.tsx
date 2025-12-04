@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export interface ShoppingItem {
     id: string;
@@ -39,7 +42,14 @@ export function ShoppingListProvider({
     initialItems: ShoppingItem[];
     householdId: string;
 }) {
-    const [items, setItems] = useState<ShoppingItem[]>(initialItems);
+    const { data: items = [], mutate } = useSWR<ShoppingItem[]>(
+        `/api/shopping?householdId=${householdId}`,
+        fetcher,
+        {
+            fallbackData: initialItems,
+            revalidateOnFocus: false,
+        }
+    );
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -57,13 +67,14 @@ export function ShoppingListProvider({
                 },
                 (payload) => {
                     console.log('Realtime update:', payload);
-                    if (payload.eventType === 'INSERT') {
-                        const newItem = payload.new as ShoppingItem;
-                        setItems((prev) => {
-                            // 1. Check if already exists (deduplication)
+                    mutate((currentItems: ShoppingItem[] | undefined) => {
+                        const prev = currentItems || [];
+                        if (payload.eventType === 'INSERT') {
+                            const newItem = payload.new as ShoppingItem;
+                            // Deduplication
                             if (prev.some(i => i.id === newItem.id)) return prev;
 
-                            // 2. Check for matching optimistic item to replace
+                            // Check for matching optimistic item to replace
                             const optimisticMatch = prev.find(i =>
                                 i.id.startsWith('optimistic-') &&
                                 i.name === newItem.name
@@ -72,16 +83,15 @@ export function ShoppingListProvider({
                             if (optimisticMatch) {
                                 return prev.map(i => i.id === optimisticMatch.id ? newItem : i);
                             }
-
-                            // 3. Otherwise add new
                             return [newItem, ...prev];
-                        });
-                    } else if (payload.eventType === 'UPDATE') {
-                        const updatedItem = payload.new as ShoppingItem;
-                        setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? { ...item, ...updatedItem } : item)));
-                    } else if (payload.eventType === 'DELETE') {
-                        setItems((prev) => prev.filter((item) => item.id !== payload.old.id));
-                    }
+                        } else if (payload.eventType === 'UPDATE') {
+                            const updatedItem = payload.new as ShoppingItem;
+                            return prev.map((item) => (item.id === updatedItem.id ? { ...item, ...updatedItem } : item));
+                        } else if (payload.eventType === 'DELETE') {
+                            return prev.filter((item) => item.id !== payload.old.id);
+                        }
+                        return prev;
+                    }, false); // false = do not revalidate immediately
                 }
             )
             .subscribe();
@@ -89,7 +99,7 @@ export function ShoppingListProvider({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [householdId]);
+    }, [householdId, mutate]);
 
     const addItem = async (name: string) => {
         const tempId = `optimistic-${Math.random().toString(36).substr(2, 9)}`;
@@ -98,12 +108,12 @@ export function ShoppingListProvider({
             householdId,
             name,
             checked: false,
-            addedById: "me", // Placeholder
+            addedById: "me",
             createdAt: new Date(),
             updatedAt: new Date(),
         };
 
-        setItems((prev) => [optimisticItem, ...prev]);
+        mutate((prev: ShoppingItem[] | undefined) => [optimisticItem, ...(prev || [])], false);
 
         try {
             const res = await fetch("/api/shopping", {
@@ -115,16 +125,15 @@ export function ShoppingListProvider({
             if (!res.ok) throw new Error("Failed to add item");
 
             const newItem = await res.json();
-            // Replace optimistic item with real one (if it still exists)
-            setItems((prev) => prev.map((item) => (item.id === tempId ? newItem : item)));
+            mutate((prev: ShoppingItem[] | undefined) => (prev || []).map((item) => (item.id === tempId ? newItem : item)), false);
         } catch (error) {
             toast.error("Failed to add item");
-            setItems((prev) => prev.filter((item) => item.id !== tempId));
+            mutate((prev: ShoppingItem[] | undefined) => (prev || []).filter((item) => item.id !== tempId), false);
         }
     };
 
     const toggleItem = async (id: string, checked: boolean) => {
-        setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked } : item)));
+        mutate((prev: ShoppingItem[] | undefined) => (prev || []).map((item) => (item.id === id ? { ...item, checked } : item)), false);
 
         try {
             await fetch(`/api/shopping/${id}`, {
@@ -134,13 +143,13 @@ export function ShoppingListProvider({
             });
         } catch (error) {
             toast.error("Failed to update item");
-            setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !checked } : item)));
+            mutate((prev: ShoppingItem[] | undefined) => (prev || []).map((item) => (item.id === id ? { ...item, checked: !checked } : item)), false);
         }
     };
 
     const deleteItem = async (id: string) => {
-        const originalItems = [...items];
-        setItems((prev) => prev.filter((item) => item.id !== id));
+        const originalItems = items;
+        mutate((prev: ShoppingItem[] | undefined) => (prev || []).filter((item) => item.id !== id), false);
 
         try {
             await fetch(`/api/shopping/${id}`, {
@@ -148,24 +157,21 @@ export function ShoppingListProvider({
             });
         } catch (error) {
             toast.error("Failed to delete item");
-            setItems(originalItems);
+            mutate(originalItems, false);
         }
     };
 
     const clearChecked = async () => {
-        // This is a bit complex for optimistic updates if we delete many.
-        // Let's just do it server side and let realtime handle it, or simple optimistic.
         const checkedIds = items.filter(i => i.checked).map(i => i.id);
-        const originalItems = [...items];
-        setItems(prev => prev.filter(i => !i.checked));
+        const originalItems = items;
+        mutate((prev: ShoppingItem[] | undefined) => (prev || []).filter(i => !i.checked), false);
 
         try {
-            // We need a bulk delete endpoint or loop. Loop is easier for now.
             await Promise.all(checkedIds.map(id => fetch(`/api/shopping/${id}`, { method: "DELETE" })));
             toast.success("Cleared checked items");
         } catch (error) {
             toast.error("Failed to clear items");
-            setItems(originalItems);
+            mutate(originalItems, false);
         }
     }
 
