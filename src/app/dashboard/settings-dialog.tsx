@@ -319,75 +319,12 @@ function ProfileSettings({ user }: { user: any }) {
         }
     };
 
-    const handleAvatarUploadNew = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         await uploadFile(file);
     };
 
-    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setLoading(true);
-        try {
-            // Compress image
-            const options = {
-                maxSizeMB: 0.5, // Compress to ~500KB
-                maxWidthOrHeight: 1024,
-                useWebWorker: true,
-            };
-
-            let compressedFile = file;
-            try {
-                compressedFile = await imageCompression(file, options);
-            } catch (error) {
-                console.error("Compression failed, using original file", error);
-            }
-
-            // 1. Get Signed Upload Token
-            const fileExt = file.name.split('.').pop();
-            const fileName = `avatar-${Math.random()}.${fileExt}`;
-            const filePath = `${user.id}/${fileName}`;
-
-            const tokenRes = await fetch("/api/upload", {
-                method: "POST",
-                body: JSON.stringify({ filePath, bucketName: 'avatars' }), // Use avatars bucket
-                headers: { "Content-Type": "application/json" }
-            });
-
-            if (!tokenRes.ok) throw new Error("Failed to get upload token");
-            const { token, path } = await tokenRes.json();
-
-            // 2. Upload to Supabase
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .uploadToSignedUrl(path, token, compressedFile);
-
-            if (uploadError) throw uploadError;
-
-            // 3. Get Public URL
-            const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-            const publicUrl = data.publicUrl;
-
-            // 4. Update User Profile
-            const updateRes = await fetch("/api/user/profile", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: publicUrl }),
-            });
-
-            if (!updateRes.ok) throw new Error("Failed to update profile image");
-
-            toast.success("Profile picture updated!");
-            router.refresh();
-        } catch (error) {
-            console.error("Avatar upload failed", error);
-            toast.error("Failed to upload avatar");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div className="space-y-4">
@@ -427,7 +364,7 @@ function ProfileSettings({ user }: { user: any }) {
                                 type="file"
                                 accept="image/*"
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                onChange={handleAvatarUploadNew}
+                                onChange={handleAvatarUpload}
                                 disabled={loading}
                                 title="Upload image"
                             />
@@ -453,7 +390,7 @@ function ProfileSettings({ user }: { user: any }) {
                             accept="image/*"
                             capture="user"
                             className="hidden"
-                            onChange={handleAvatarUploadNew}
+                            onChange={handleAvatarUpload}
                             disabled={loading}
                         />
                     </div>
