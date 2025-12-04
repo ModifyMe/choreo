@@ -43,6 +43,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
         reminderTime: "",
+        priority: "MEDIUM",
         steps: [] as { id: string; title: string; completed: boolean }[],
     });
 
@@ -60,6 +61,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             recurrence: formData.recurrenceType,
             recurrenceData: JSON.stringify(formData.recurrenceData),
             reminderTime: formData.reminderTime || null,
+            priority: formData.priority,
             householdId,
             assignedToId: null,
             status: "PENDING",
@@ -83,6 +85,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     ...formData,
                     recurrence: formData.recurrenceType, // Fix: Map recurrenceType to recurrence
                     reminderTime: formData.reminderTime,
+                    priority: formData.priority,
                     points: parseInt(formData.points),
                     householdId,
                     steps: formData.steps,
@@ -106,6 +109,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 recurrenceType: "DAILY",
                 recurrenceData: [],
                 reminderTime: "",
+                priority: "MEDIUM",
                 steps: [],
             });
         } catch (error) {
@@ -343,24 +347,44 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 </div>
                             </summary>
                             <div className="pt-4 grid gap-4 animate-in slide-in-from-top-2 duration-200">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="reminderTime">Reminder Time</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-muted-foreground" />
-                                        <Input
-                                            id="reminderTime"
-                                            type="time"
-                                            value={formData.reminderTime}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, reminderTime: e.target.value })
-                                            }
-                                            className="w-full"
-                                        />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="reminderTime">Reminder Time</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4 text-muted-foreground" />
+                                            <Input
+                                                id="reminderTime"
+                                                type="time"
+                                                value={formData.reminderTime}
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, reminderTime: e.target.value })
+                                                }
+                                                className="w-full"
+                                            />
+                                        </div>
                                     </div>
-                                    <p className="text-[0.8rem] text-muted-foreground">
-                                        Set a specific time for push notifications.
-                                    </p>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="priority">Priority</Label>
+                                        <Select
+                                            value={formData.priority}
+                                            onValueChange={(value) =>
+                                                setFormData({ ...formData, priority: value })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="LOW">Low</SelectItem>
+                                                <SelectItem value="MEDIUM">Medium</SelectItem>
+                                                <SelectItem value="HIGH">High</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
+                                <p className="text-[0.8rem] text-muted-foreground">
+                                    Set a specific time for push notifications and priority level.
+                                </p>
                             </div>
                         </details>
                     </div>

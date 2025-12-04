@@ -3,7 +3,7 @@
 import { useSwipeable } from "react-swipeable";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, Loader2, Camera, X, Bell, Lock, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, Loader2, Camera, X, Bell, Lock, MoreVertical, Pencil, Trash2, Flame } from "lucide-react";
 import { format, isPast, isToday, isTomorrow, isFuture } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -184,6 +184,13 @@ export function ChoreCard({
                                     (@ {chore.reminderTime})
                                 </span>
                             )}
+                        </span>
+                    )}
+                    {chore.priority && chore.priority !== "MEDIUM" && (
+                        <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${chore.priority === "HIGH" ? "text-orange-600" : "text-slate-500"
+                            }`}>
+                            {chore.priority === "HIGH" && <Flame className="w-3 h-3" />}
+                            {chore.priority} Priority
                         </span>
                     )}
                 </div>

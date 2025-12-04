@@ -119,6 +119,7 @@ model Chore {
   recurrence  Recurrence?
   recurrenceData String?   // JSON string for custom days e.g. ["MON", "WED"]
   reminderTime String?   // Optional time string "HH:mm"
+  priority    Priority  @default(MEDIUM)
   steps       Json?     // Optional JSON for subtasks: [{ id, title, completed }]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -201,7 +202,11 @@ enum Recurrence {
   NONE
 }
 
-
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
 
 model ShoppingItem {
   id          String   @id @default(cuid())
