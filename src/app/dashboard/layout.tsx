@@ -51,6 +51,14 @@ export default async function DashboardLayout({
                 householdId: { in: householdIds },
                 status: "PENDING",
             },
+            include: {
+                assignedTo: {
+                    select: {
+                        name: true,
+                        image: true,
+                    }
+                }
+            },
             orderBy: { createdAt: "desc" },
         }),
         prisma.reward.findMany({
