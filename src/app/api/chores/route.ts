@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { sendPushNotification } from "@/lib/push";
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
@@ -54,6 +55,34 @@ export async function POST(req: Request) {
                 },
             },
         });
+
+        // Send notifications for HIGH priority chores
+        if (chore.priority === "HIGH") {
+            // Fetch other household members
+            const members = await prisma.membership.findMany({
+                where: {
+                    householdId,
+                    userId: {
+                        not: session.user.id, // Don't notify the creator
+                    },
+                },
+                select: {
+                    userId: true,
+                },
+            });
+
+            // Send notifications in parallel
+            await Promise.all(
+                members.map((member) =>
+                    sendPushNotification(
+                        member.userId,
+                        "🔥 High Priority Chore!",
+                        `${session.user.name || "Someone"} added: ${chore.title}`,
+                        "/dashboard"
+                    )
+                )
+            );
+        }
 
         return NextResponse.json(chore);
     } catch (error) {
