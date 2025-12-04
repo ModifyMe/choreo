@@ -237,7 +237,7 @@ export function DashboardHeader({
                         </Button>
                     </Link>
                     <PushNotificationManager />
-                    <CalendarDialog chores={householdChores} userId={user.id} />
+                    <CalendarDialog userId={user.id} />
                     <HelpDialog />
                     {membership.role === "ADMIN" && (
                         <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>

@@ -27,13 +27,16 @@ import {
     getDay,
 } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useChores } from "./chore-context";
 
 interface CalendarDialogProps {
-    chores: any[];
     userId: string;
 }
 
-export function CalendarDialog({ chores, userId }: CalendarDialogProps) {
+export function CalendarDialog({ userId }: CalendarDialogProps) {
+    const { myChores, availableChores, householdChores } = useChores();
+    const chores = [...myChores, ...availableChores, ...householdChores];
+
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [viewMode, setViewMode] = useState<"mine" | "all">("mine");
 
