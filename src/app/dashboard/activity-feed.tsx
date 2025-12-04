@@ -94,7 +94,14 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 <div className="flex-1 space-y-1">
                     <p className="leading-none">{getMessage(log)}</p>
                     <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                        {(() => {
+                            // Ensure date is treated as UTC if it comes without timezone info
+                            let dateStr = log.createdAt;
+                            if (!dateStr.endsWith("Z") && !dateStr.includes("+")) {
+                                dateStr += "Z";
+                            }
+                            return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
+                        })()}
                     </p>
                     {log.proofImage && (
                         <div className="mt-2">
