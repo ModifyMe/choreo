@@ -54,6 +54,9 @@ export function ChoreCard({
     const [dialogOpen, setDialogOpen] = useState(false);
     const controls = useAnimation();
 
+    // Check if this is an optimistic chore that hasn't been saved yet
+    const isOptimistic = chore.id.startsWith("temp-");
+
     const isOverdue = chore.dueDate && isPast(new Date(chore.dueDate)) && !isToday(new Date(chore.dueDate));
 
     const handleCompleteWithProof = async () => {
@@ -265,9 +268,15 @@ export function ChoreCard({
                     <Button
                         size="sm"
                         onClick={() => onAction(chore.id, "CLAIM")}
-                        disabled={loadingId === chore.id}
+                        disabled={loadingId === chore.id || isOptimistic}
                     >
-                        {loadingId === chore.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Claim"}
+                        {loadingId === chore.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isOptimistic ? (
+                            <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Syncing...</>
+                        ) : (
+                            "Claim"
+                        )}
                     </Button>
                 ) : (
                     <div className="flex gap-2">
