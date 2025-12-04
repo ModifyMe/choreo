@@ -171,10 +171,16 @@ export function ChoreProvider({
         // 1. Combine all known chores
         let allChores = [...(serverChores || [])];
 
-        // 2. Identify Server Chores via Correlation ID
+        // 2. Identify Server Chores via Correlation ID and preserve optimistic createdAt
         const serverCorrelationIds = new Set<string>();
+        const optimisticCreatedAtMap = new Map<string, Date>();
 
-        // Clean up server chores (strip correlation step) and track IDs
+        // Build a map of optimistic chore tempId -> createdAt
+        optimisticAdds.forEach(opt => {
+            optimisticCreatedAtMap.set(opt.id, opt.createdAt);
+        });
+
+        // Clean up server chores (strip correlation step), track IDs, and preserve createdAt
         allChores = allChores.map(chore => {
             if (Array.isArray(chore.steps)) {
                 const correlationStep = chore.steps.find((s: any) => s.title === "__CORRELATION__");
@@ -182,9 +188,13 @@ export function ChoreProvider({
                     const tempId = correlationStep.id.replace("cid-", "");
                     serverCorrelationIds.add(tempId);
 
-                    // Return chore without the correlation step
+                    // Preserve the optimistic createdAt to keep position stable
+                    const optimisticCreatedAt = optimisticCreatedAtMap.get(tempId);
+
+                    // Return chore without the correlation step, with preserved createdAt
                     return {
                         ...chore,
+                        createdAt: optimisticCreatedAt || chore.createdAt,
                         steps: chore.steps.filter((s: any) => s.title !== "__CORRELATION__")
                     };
                 }
