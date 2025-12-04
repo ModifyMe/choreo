@@ -14,6 +14,8 @@ import { Progress } from "@/components/ui/progress";
 import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -59,6 +61,11 @@ export function DashboardHeader({
     members,
 }: DashboardHeaderProps) {
     const levelData = getLevel(membership.totalPoints || 0);
+    const router = useRouter();
+
+    useEffect(() => {
+        router.prefetch("/dashboard/shopping-list");
+    }, [router]);
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -93,6 +100,11 @@ export function DashboardHeader({
             <div className="flex items-center gap-2 w-full md:w-auto">
                 {/* Mobile: Add Chore + More Menu */}
                 <div className="flex md:hidden items-center justify-end gap-2 w-full">
+                    <Link href="/dashboard/shopping-list" prefetch={true}>
+                        <Button variant="outline" size="icon">
+                            <ShoppingCart className="w-4 h-4" />
+                        </Button>
+                    </Link>
                     <AddChoreDialog householdId={household.id} />
 
                     <DropdownMenu>
