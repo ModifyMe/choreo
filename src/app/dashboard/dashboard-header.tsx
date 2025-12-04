@@ -196,6 +196,7 @@ export function DashboardHeader({
                         user={user}
                         households={allHouseholds}
                         currentHouseholdId={household.id}
+                        isAway={membership.isAway}
                     />
                 </div>
 
@@ -216,7 +217,6 @@ export function DashboardHeader({
                     <HelpDialog />
                     <HouseholdChoresDialog />
                     <PushNotificationManager />
-                    <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                     <AchievementsDialog achievements={achievementsData} />
                     {membership.role === "ADMIN" && (
                         <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>
@@ -231,6 +231,7 @@ export function DashboardHeader({
                             user={user}
                             households={allHouseholds}
                             currentHouseholdId={household.id}
+                            isAway={membership.isAway}
                         />
                     </div>
                 </div>

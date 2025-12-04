@@ -16,6 +16,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { Check, LogOut, PlusCircle, Settings, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { VacationToggle } from "@/app/dashboard/vacation-toggle";
 
 interface UserNavProps {
     user: {
@@ -28,9 +29,10 @@ interface UserNavProps {
         name: string;
     }[];
     currentHouseholdId: string;
+    isAway: boolean;
 }
 
-export function UserNav({ user, households, currentHouseholdId }: UserNavProps) {
+export function UserNav({ user, households, currentHouseholdId, isAway }: UserNavProps) {
     const router = useRouter();
 
     return (
@@ -52,6 +54,10 @@ export function UserNav({ user, households, currentHouseholdId }: UserNavProps) 
                         </p>
                     </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                    <VacationToggle householdId={currentHouseholdId} initialIsAway={isAway} minimal />
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>Switch Household</DropdownMenuLabel>
