@@ -87,7 +87,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
             if (action === "COMPLETE") {
                 updateChore(choreId, { status: "PENDING" });
             }
-            router.refresh();
+            // Real-time subscription will sync state on error recovery
         } finally {
             setLoadingId(null);
             setSelectedChoreId(null);

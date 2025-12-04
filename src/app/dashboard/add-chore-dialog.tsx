@@ -121,7 +121,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             // The ChoreContext will automatically remove it when the real chore arrives via subscription/refresh
             // to prevent flickering (gap between optimistic removal and real arrival).
 
-            router.refresh();
+            // Real-time subscription handles new chores
             setFormData({
                 title: "",
                 description: "",

@@ -132,7 +132,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 throw new Error("Failed to update chore");
             }
 
-            router.refresh();
+            // Real-time subscription handles the update
         } catch {
             toast.error("Something went wrong");
             // Revert optimistic update
@@ -334,6 +334,17 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                                         </Select>
                                     </div>
                                 )}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-dueDate">Due Date (Optional)</Label>
+                                    <Input
+                                        id="edit-dueDate"
+                                        type="date"
+                                        value={formData.dueDate}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, dueDate: e.target.value })
+                                        }
+                                    />
+                                </div>
                             </div>
                         </details>
                     </div>

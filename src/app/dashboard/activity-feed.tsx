@@ -18,8 +18,12 @@ interface ActivityLog {
     };
     chore: {
         title: string;
+        points?: number;
     } | null;
-    metadata?: any;
+    metadata?: {
+        choreTitle?: string;
+        chorePoints?: number;
+    } | null;
 }
 
 export function ActivityFeed({ householdId }: { householdId: string }) {
@@ -41,8 +45,8 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
     const getMessage = (log: ActivityLog) => {
         const userName = log.user?.name || "Someone";
         // Use metadata if available (snapshot), otherwise fall back to relation (live data)
-        const choreTitle = (log.metadata as any)?.choreTitle || log.chore?.title || "a chore";
-        const chorePoints = (log.metadata as any)?.chorePoints || (log.chore as any)?.points;
+        const choreTitle = log.metadata?.choreTitle || log.chore?.title || "a chore";
+        const chorePoints = log.metadata?.chorePoints || log.chore?.points;
 
         switch (log.action) {
             case "CREATED":

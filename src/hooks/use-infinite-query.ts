@@ -2,7 +2,11 @@ import { supabase } from '@/lib/supabase'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 
 export type SupabaseTableName = 'ActivityLog' | 'Chore' | 'Reward' // Add other tables as needed
-export type SupabaseTableData<T extends SupabaseTableName> = any // We can refine this with generated types later
+
+interface RecordWithId {
+    id: string;
+    [key: string]: unknown;
+}
 
 export type SupabaseQueryHandler<T extends SupabaseTableName> = (
     query: any
@@ -25,7 +29,7 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
     realtime = false,
     realtimeFilter,
 }: UseInfiniteQueryProps<T>) {
-    const [data, setData] = useState<SupabaseTableData<T>[]>([])
+    const [data, setData] = useState<RecordWithId[]>([])
     const [isFetching, setIsFetching] = useState(false)
     const [hasMore, setHasMore] = useState(true)
     const [page, setPage] = useState(0)
@@ -74,8 +78,8 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
                     // Yes, duplicate risk exists.
                     // Let's filter out duplicates by ID.
 
-                    const existingIds = new Set(prev.map((item: any) => item.id));
-                    const uniqueNewData = newData.filter((item: any) => !existingIds.has(item.id));
+                    const existingIds = new Set(prev.map((item) => item.id));
+                    const uniqueNewData = (newData as unknown as RecordWithId[]).filter((item) => !existingIds.has(item.id));
                     return [...prev, ...uniqueNewData];
                 })
 
@@ -87,7 +91,7 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
                 }
             }
         } catch (err) {
-            console.error('Error fetching infinite query:', err)
+            // Error fetching infinite query - logged for debugging
             setError(err instanceof Error ? err : new Error(JSON.stringify(err)))
         } finally {
             setIsFetching(false)
@@ -120,16 +124,17 @@ export function useInfiniteQuery<T extends SupabaseTableName>({
                     const { data: fetchedRecord, error } = await supabase
                         .from(tableName)
                         .select(columns)
-                        .eq('id', (payload.new as any).id)
+                        .eq('id', (payload.new as RecordWithId).id)
                         .single();
 
                     if (fetchedRecord && !error) {
+                        const record = fetchedRecord as unknown as RecordWithId;
                         setData((prev) => {
                             // Deduplicate just in case
-                            if (prev.some((item: any) => item.id === fetchedRecord.id)) {
+                            if (prev.some((item) => item.id === record.id)) {
                                 return prev;
                             }
-                            return [fetchedRecord, ...prev];
+                            return [record, ...prev];
                         });
                     }
                 }

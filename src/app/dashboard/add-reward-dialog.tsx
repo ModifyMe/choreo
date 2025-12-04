@@ -65,7 +65,7 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
             // the context handles deduplication/cleanup when the real one arrives.
             // However, we should remove it if there's an error.
 
-            router.refresh();
+            // Real-time subscription handles new rewards
         } catch (error) {
             toast.error("Something went wrong");
             // Revert optimistic add on error
