@@ -13,11 +13,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, Trash2, UserX, Camera, Loader2 } from "lucide-react";
+import { Settings, LogOut, Trash2, UserX, Camera, Loader2, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
@@ -197,77 +197,20 @@ export function SettingsDialog({
     );
 }
 
+
+
 function ProfileSettings({ user }: { user: any }) {
     const [name, setName] = useState(user?.name || "");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const res = await fetch("/api/user/profile", {
-                method: "PATCH",
-                body: JSON.stringify({ name }),
-            });
-
-            if (!res.ok) throw new Error("Failed to update profile");
-
-            toast.success("Profile updated");
-            router.refresh();
-        } catch (error) {
-            toast.error("Failed to update profile");
-        } finally {
-            setLoading(false);
-        }
+        // ... (existing code)
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setLoading(true);
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `avatars/${user.id}/${Math.random()}.${fileExt}`;
-
-            // 1. Get signed URL (using chore-proofs bucket for now as it's public/configured)
-            const tokenRes = await fetch("/api/upload", {
-                method: "POST",
-                body: JSON.stringify({ filePath: fileName, bucketName: 'chore-proofs' }),
-            });
-
-            if (!tokenRes.ok) throw new Error("Failed to get upload token");
-            const { token, path } = await tokenRes.json();
-
-            // 2. Upload to Supabase
-            const { error: uploadError } = await supabase.storage
-                .from('chore-proofs')
-                .uploadToSignedUrl(path, token, file);
-
-            if (uploadError) throw uploadError;
-
-            // 3. Get Public URL
-            const { data } = supabase.storage.from('chore-proofs').getPublicUrl(path);
-            const publicUrl = data.publicUrl;
-
-            // 4. Update User Profile
-            const updateRes = await fetch("/api/user/profile", {
-                method: "PATCH",
-                body: JSON.stringify({ image: publicUrl }),
-            });
-
-            if (!updateRes.ok) throw new Error("Failed to update profile image");
-
-            toast.success("Avatar updated");
-            router.refresh();
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to upload avatar");
-        } finally {
-            setLoading(false);
-        }
+        // ... (existing code)
     };
 
     return (
@@ -279,7 +222,7 @@ function ProfileSettings({ user }: { user: any }) {
                         <AvatarFallback className="text-2xl">{user?.name?.[0] || "?"}</AvatarFallback>
                     </Avatar>
                     <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera className="w-8 h-8 text-white" />
+                        <Upload className="w-8 h-8 text-white" />
                     </div>
                     <input
                         type="file"
@@ -287,9 +230,33 @@ function ProfileSettings({ user }: { user: any }) {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         onChange={handleAvatarUpload}
                         disabled={loading}
+                        title="Upload image"
                     />
                 </div>
-                <p className="text-xs text-muted-foreground">Tap to change avatar</p>
+
+                <div className="flex flex-col items-center gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => cameraInputRef.current?.click()}
+                        disabled={loading}
+                    >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Take Selfie
+                    </Button>
+                    <p className="text-xs text-muted-foreground">or tap avatar to upload</p>
+                </div>
+
+                <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={loading}
+                />
             </div>
 
             <div className="space-y-2">
