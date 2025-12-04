@@ -44,18 +44,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 return new NextResponse("Already completed", { status: 400 });
             }
 
-            // Prevent spam completion (Lock until due date)
-            if (chore.dueDate) {
-                const now = new Date();
-                const due = new Date(chore.dueDate);
-                // Reset hours to compare just the dates
-                now.setHours(0, 0, 0, 0);
-                due.setHours(0, 0, 0, 0);
-
-                if (due > now) {
-                    return new NextResponse("Chore is locked until due date", { status: 400 });
-                }
-            }
+            // Note: Previously had lock logic here but user clarified:
+            // "due means that the chore needs to be done until that date not that the chore is locked until that date"
+            // So chores can be completed at any time regardless of due date.
 
             // Prevent Cheating (XP Limit)
             if (chore.points > 1000) {
