@@ -122,6 +122,7 @@ model Chore {
   recurrenceData String?   // JSON string for custom days e.g. ["MON", "WED"]
   reminderTime String?   // Optional time string "HH:mm"
   priority    Priority  @default(MEDIUM)
+  requireProof Boolean  @default(false) // If true, completing chore requires photo proof
   steps       Json?     // Optional JSON for subtasks: [{ id, title, completed }]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

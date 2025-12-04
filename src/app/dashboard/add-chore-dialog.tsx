@@ -55,6 +55,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
         assignedToId: "NONE",
         dueDate: undefined as Date | undefined,
         steps: [] as { id: string; title: string; completed: boolean }[],
+        requireProof: false,
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +73,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
             recurrenceData: JSON.stringify(formData.recurrenceData),
             reminderTime: formData.reminderTime || null,
             priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
+            requireProof: formData.requireProof,
             householdId,
             assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
             status: "PENDING",
@@ -134,6 +136,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                 assignedToId: "NONE",
                 dueDate: undefined,
                 steps: [],
+                requireProof: false,
             });
         } catch (error) {
             toast.error("Something went wrong");
@@ -468,6 +471,21 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-3">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="requireProof" className="cursor-pointer">Require Photo Proof</Label>
+                                        <p className="text-[0.8rem] text-muted-foreground">
+                                            Must upload a photo when completing
+                                        </p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        id="requireProof"
+                                        checked={formData.requireProof}
+                                        onChange={(e) => setFormData({ ...formData, requireProof: e.target.checked })}
+                                        className="h-5 w-5 rounded border-gray-300 accent-primary cursor-pointer"
+                                    />
                                 </div>
                                 <p className="text-[0.8rem] text-muted-foreground">
                                     Set a specific time for push notifications and priority level.

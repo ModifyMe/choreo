@@ -137,8 +137,13 @@ export function ChoreCard({
                 // Haptic feedback
                 if (navigator.vibrate) navigator.vibrate(50);
 
-                // Direct complete on swipe (bypass proof)
-                await onAction(chore.id, "COMPLETE");
+                // If proof is required, open the proof dialog instead of direct complete
+                if (chore.requireProof) {
+                    setDialogOpen(true);
+                } else {
+                    // Direct complete on swipe (bypass proof)
+                    await onAction(chore.id, "COMPLETE");
+                }
             }
             // Reset position after action
             controls.start({ x: 0 });

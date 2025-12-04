@@ -22,6 +22,7 @@ export interface Chore {
     recurrenceData?: string | null;
     reminderTime?: string | null;
     priority?: "LOW" | "MEDIUM" | "HIGH";
+    requireProof?: boolean;
     householdId: string;
     steps?: Step[];
     createdAt: Date;

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
                 recurrenceData: body.recurrenceData ? JSON.stringify(body.recurrenceData) : null, // Save custom recurrence data
                 reminderTime: body.reminderTime || null,
                 priority: body.priority || "MEDIUM",
+                requireProof: body.requireProof || false,
                 // Strip __CORRELATION__ steps - they're only for client-side optimistic update matching
                 steps: body.steps ? body.steps.filter((s: any) => s.title !== "__CORRELATION__") : null,
                 activityLogs: {
