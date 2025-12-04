@@ -15,10 +15,10 @@ export async function POST(req: Request) {
         const { householdId } = await req.json();
 
         if (!householdId) {
-            return new NextResponse("Household ID required", { status: 400 });
+            return new NextResponse("Missing householdId", { status: 400 });
         }
 
-        // Verify user is member of household
+        // Verify membership
         const membership = await prisma.membership.findUnique({
             where: {
                 userId_householdId: {
@@ -32,35 +32,35 @@ export async function POST(req: Request) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        // Get all members
+        // Fetch all members of the household (including self for test)
         const members = await prisma.membership.findMany({
-            where: { householdId },
-            select: { userId: true },
+            where: {
+                householdId,
+            },
+            select: {
+                userId: true,
+            },
         });
 
-        // Send notifications
-        const results = await Promise.all(members.map(member =>
-            sendPushNotification(
-                member.userId,
-                "Test Notification 🔔",
-                "This is a test push notification from Choreo! If you see this, it works.",
-                "/"
-            )
-        ));
+        let successCount = 0;
+        let failureCount = 0;
 
-        const stats = results.reduce((acc, curr) => ({
-            success: acc.success + (curr?.success || 0),
-            failure: acc.failure + (curr?.failure || 0),
-            total: acc.total + (curr?.total || 0)
-        }), { success: 0, failure: 0, total: 0 });
+        await Promise.all(
+            members.map(async (member) => {
+                const result = await sendPushNotification(
+                    member.userId,
+                    "🔔 Test Notification",
+                    "This is a test push notification from Choreo!",
+                    "/dashboard"
+                );
+                successCount += result.success;
+                failureCount += result.failure;
+            })
+        );
 
-        return NextResponse.json({
-            success: true,
-            ...stats,
-            memberCount: members.length
-        });
+        return NextResponse.json({ success: successCount, failure: failureCount });
     } catch (error) {
-        console.error("Error sending test push:", error);
-        return new NextResponse("Internal Server Error", { status: 500 });
+        console.error("[PUSH_TEST]", error);
+        return new NextResponse("Internal Error", { status: 500 });
     }
 }
