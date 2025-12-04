@@ -134,12 +134,20 @@ export function ChoreProvider({
                     } else if (payload.eventType === "UPDATE") {
                         const updatedChore = payload.new as Chore;
                         // Convert dates
-                        updatedChore.createdAt = new Date(updatedChore.createdAt);
                         updatedChore.updatedAt = new Date(updatedChore.updatedAt);
                         if (updatedChore.dueDate) updatedChore.dueDate = new Date(updatedChore.dueDate);
 
                         setServerChores((prev) =>
-                            prev.map((c) => (c.id === updatedChore.id ? updatedChore : c))
+                            prev.map((c) => {
+                                if (c.id === updatedChore.id) {
+                                    // Preserve original createdAt to keep list position stable
+                                    return {
+                                        ...updatedChore,
+                                        createdAt: c.createdAt,
+                                    };
+                                }
+                                return c;
+                            })
                         );
 
                         // Clear optimistic update for this ID as server state is now fresh
