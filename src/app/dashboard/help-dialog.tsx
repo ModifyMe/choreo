@@ -9,7 +9,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, Plane, RefreshCw, Trophy, ShoppingBag, ShoppingCart } from "lucide-react";
+import { HelpCircle, Plane, RefreshCw, Trophy, ShoppingBag, ShoppingCart, Users, Link as LinkIcon } from "lucide-react";
 
 export function HelpDialog() {
     return (
@@ -94,6 +94,30 @@ export function HelpDialog() {
                             Need something from the store? Add it to the <strong>Shopping List</strong>!
                             It's shared with your whole household and updates in real-time.
                             Anyone can check off items as they buy them.
+                        </p>
+                    </div>
+
+                    {/* Household Chores */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <Users className="h-5 w-5 text-indigo-500" />
+                            Household Chores
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                            Curious what others are doing? Click the <strong>Household Chores</strong> button to see everyone's tasks.
+                            You can even tap a chore to expand it and see its subtasks!
+                        </p>
+                    </div>
+
+                    {/* Invite Links */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <LinkIcon className="h-5 w-5 text-pink-500" />
+                            Invite Members
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                            Want to add a roommate? Click the <strong>Copy Link</strong> button in the menu to send them a direct invite link.
+                            They'll be added to your household automatically!
                         </p>
                     </div>
 

@@ -230,9 +230,9 @@ export function DashboardHeader({
                             Shopping List
                         </Button>
                     </Link>
-                    <HelpDialog />
                     <PushNotificationManager />
                     <AchievementsDialog achievements={achievementsData} />
+                    <HelpDialog />
                     {membership.role === "ADMIN" && (
                         <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>
                             <Settings className="w-4 h-4" />
