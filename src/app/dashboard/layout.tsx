@@ -37,7 +37,7 @@ export default async function DashboardLayout({
     const householdIds = user.memberships.map((m) => m.householdId);
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const [allAchievements, userAchievements, allMembers] = await Promise.all([
+    const [allAchievements, userAchievements, allMembers, allChores, allRewards] = await Promise.all([
         prisma.achievement.findMany(),
         prisma.userAchievement.findMany({
             where: { userId: user.id },
@@ -45,6 +45,17 @@ export default async function DashboardLayout({
         prisma.membership.findMany({
             where: { householdId: { in: householdIds } },
             include: { user: true },
+        }),
+        prisma.chore.findMany({
+            where: {
+                householdId: { in: householdIds },
+                status: "PENDING",
+            },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.reward.findMany({
+            where: { householdId: { in: householdIds } },
+            orderBy: { cost: "asc" },
         })
     ]);
 
@@ -59,6 +70,8 @@ export default async function DashboardLayout({
             achievementsData={achievementsData}
             allHouseholds={allHouseholds}
             allMembers={allMembers}
+            allChores={allChores}
+            allRewards={allRewards}
         >
             {children}
         </DashboardLayoutClient>

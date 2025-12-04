@@ -3,13 +3,17 @@
 import { useSearchParams } from "next/navigation";
 import { DashboardHeader } from "./dashboard-header";
 import { ReactNode } from "react";
+import { ChoreProvider } from "./chore-context";
+import { RewardProvider } from "./reward-context";
 
 interface DashboardLayoutClientProps {
     children: ReactNode;
     user: any;
     achievementsData: any[];
     allHouseholds: any[];
-    allMembers: any[]; // Flat list of all members from all user's households
+    allMembers: any[];
+    allChores: any[];
+    allRewards: any[];
 }
 
 export function DashboardLayoutClient({
@@ -18,6 +22,8 @@ export function DashboardLayoutClient({
     achievementsData,
     allHouseholds,
     allMembers,
+    allChores,
+    allRewards,
 }: DashboardLayoutClientProps) {
     const searchParams = useSearchParams();
     const householdIdParam = searchParams.get("householdId");
@@ -36,19 +42,30 @@ export function DashboardLayoutClient({
     // Filter members for the current household
     const currentHouseholdMembers = allMembers.filter(m => m.householdId === household.id);
 
+    // Filter chores for the current household
+    const myChores = allChores.filter(c => c.householdId === household.id && c.assignedToId === user.id);
+    const availableChores = allChores.filter(c => c.householdId === household.id && !c.assignedToId);
+
+    // Filter rewards for the current household
+    const rewards = allRewards.filter(r => r.householdId === household.id);
+
     return (
         <div className="min-h-screen bg-muted/30 p-6">
-            <div className="max-w-6xl mx-auto space-y-8">
-                <DashboardHeader
-                    household={household}
-                    user={user}
-                    membership={membership}
-                    achievementsData={achievementsData}
-                    allHouseholds={allHouseholds}
-                    members={currentHouseholdMembers}
-                />
-                {children}
-            </div>
+            <ChoreProvider initialMyChores={myChores} initialAvailableChores={availableChores} userId={user.id} householdId={household.id}>
+                <RewardProvider initialRewards={rewards} householdId={household.id}>
+                    <div className="max-w-6xl mx-auto space-y-8">
+                        <DashboardHeader
+                            household={household}
+                            user={user}
+                            membership={membership}
+                            achievementsData={achievementsData}
+                            allHouseholds={allHouseholds}
+                            members={currentHouseholdMembers}
+                        />
+                        {children}
+                    </div>
+                </RewardProvider>
+            </ChoreProvider>
         </div>
     );
 }
