@@ -63,7 +63,7 @@ export function ChoreProvider({
 
     // Sync with server data
     useEffect(() => {
-        setServerChores(initialChores);
+        setServerChores(initialChores || []);
     }, [initialChores]);
 
     // Real-time Subscription
