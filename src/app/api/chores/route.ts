@@ -47,8 +47,9 @@ export async function POST(req: Request) {
                 reminderTime: body.reminderTime || null,
                 priority: body.priority || "MEDIUM",
                 requireProof: body.requireProof || false,
-                // Strip __CORRELATION__ steps - they're only for client-side optimistic update matching
-                steps: body.steps ? body.steps.filter((s: any) => s.title !== "__CORRELATION__") : null,
+                // Keep steps including __CORRELATION__ - needed for real-time optimistic matching
+                // The correlation step is stripped during rendering in chore-context.tsx useMemo
+                steps: body.steps || null,
                 activityLogs: {
                     create: {
                         userId: session.user.id,
