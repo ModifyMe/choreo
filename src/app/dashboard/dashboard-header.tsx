@@ -104,7 +104,7 @@ export function DashboardHeader({
                             <div className="p-2">
                                 <p className="text-xs text-muted-foreground mb-1">Invite Code</p>
                                 <div className="flex items-center justify-between bg-muted/50 p-2 rounded border border-dashed">
-                                    <code className="font-mono font-bold">{household.inviteCode}</code>
+                                    <code className="font-mono font-bold text-sm">{household.inviteCode}</code>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -117,21 +117,48 @@ export function DashboardHeader({
                                     >
                                         <Copy className="w-3 h-3" />
                                     </Button>
-                                    <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
                                 </div>
                             </div>
 
+                            <DropdownMenuSeparator />
+
+                            <div className="px-2 py-1.5 flex items-center justify-between">
+                                <span className="text-sm font-medium">Vacation Mode</span>
+                                <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
+                            </div>
+
+                            <DropdownMenuSeparator />
+
                             <DropdownMenuItem asChild>
-                                <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
+                                <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
                                     <AchievementsDialog achievements={achievementsData} />
                                     <span className="ml-2">Achievements</span>
                                 </div>
                             </DropdownMenuItem>
+
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard/shopping-list" className="flex items-center w-full cursor-pointer">
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 mr-2">
+                                        <ShoppingCart className="w-4 h-4" />
+                                    </Button>
+                                    <span>Shopping List</span>
+                                </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard/analytics" className="flex items-center w-full cursor-pointer">
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 mr-2">
+                                        <BarChart3 className="w-4 h-4" />
+                                    </Button>
+                                    <span>Analytics</span>
+                                </Link>
+                            </DropdownMenuItem>
+
                             {membership.role === "ADMIN" && (
                                 <>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <div className="flex items-center w-full" onClick={(e) => e.preventDefault()}>
+                                        <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
                                             <SettingsDialog householdId={household.id} currentMode={household.mode} members={members} />
                                             <span className="ml-2">Settings</span>
                                         </div>
@@ -140,7 +167,7 @@ export function DashboardHeader({
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <div className="flex items-center w-full justify-between" onClick={(e) => e.preventDefault()}>
+                                <div className="flex items-center w-full justify-between cursor-pointer" onClick={(e) => e.preventDefault()}>
                                     <span>Theme</span>
                                     <ModeToggle />
                                 </div>
