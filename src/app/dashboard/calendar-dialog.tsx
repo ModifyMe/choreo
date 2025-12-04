@@ -225,8 +225,8 @@ export function CalendarDialog({ chores, userId }: CalendarDialogProps) {
                                                     chore.isProjected
                                                         ? "border-dashed bg-muted/50 text-muted-foreground"
                                                         : chore.status === "COMPLETED"
-                                                            ? "bg-green-50 text-green-700 border-green-200 line-through opacity-70"
-                                                            : "bg-white border-border shadow-sm"
+                                                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 line-through opacity-70"
+                                                            : "bg-card text-card-foreground border-border shadow-sm"
                                                 )}
                                                 title={`${chore.title} (${chore.points} XP)`}
                                             >
