@@ -43,6 +43,7 @@ interface DashboardHeaderProps {
         balance: number;
         currentStreak: number;
         isAway: boolean;
+        totalPoints: number;
     };
     achievementsData: any[];
     allHouseholds: { id: string; name: string }[];
@@ -57,7 +58,7 @@ export function DashboardHeader({
     allHouseholds,
     members,
 }: DashboardHeaderProps) {
-    const levelData = getLevel(user.totalPoints || 0);
+    const levelData = getLevel(membership.totalPoints || 0);
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

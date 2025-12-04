@@ -98,6 +98,7 @@ model Membership {
   balance     Int       @default(0)
   isAway      Boolean   @default(false)
   currentStreak Int     @default(0)
+  totalPoints Int       @default(0)
   lastChoreDate DateTime?
   
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)

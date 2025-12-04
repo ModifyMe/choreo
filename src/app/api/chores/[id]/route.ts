@@ -106,15 +106,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         },
                     },
                 }),
-                prisma.user.update({
-                    where: { id: session.user.id },
-                    data: {
-                        totalPoints: {
-                            increment: chore.points,
-                        },
-                    },
-                }),
-                // Update Membership Streak
+                // Update Membership Streak & Points
                 prisma.membership.update({
                     where: {
                         userId_householdId: {
@@ -125,6 +117,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     data: {
                         currentStreak: newStreak,
                         lastChoreDate: new Date(),
+                        totalPoints: {
+                            increment: chore.points,
+                        },
                     },
                 }),
             ];
@@ -199,7 +194,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         householdId: chore.householdId,
                         isAway: false // Exclude members on vacation
                     },
-                    include: { user: { select: { totalPoints: true } } },
+                    include: { user: true }, // We need user info, but points are now on membership
                 });
 
                 let nextAssigneeId = session.user.id; // Default to self if alone or everyone is away
@@ -215,7 +210,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
                     if (candidates.length > 0) {
                         // Sort by lowest points (Load Balancing)
-                        candidates.sort((a, b) => a.user.totalPoints - b.user.totalPoints);
+                        candidates.sort((a, b) => a.totalPoints - b.totalPoints);
                         nextAssigneeId = candidates[0].userId;
                     }
                 }

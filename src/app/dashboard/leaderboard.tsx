@@ -11,7 +11,7 @@ export async function Leaderboard({ householdId }: { householdId: string }) {
     });
 
     // Sort by points descending
-    const sortedMembers = members.sort((a: any, b: any) => b.user.totalPoints - a.user.totalPoints);
+    const sortedMembers = members.sort((a: any, b: any) => b.totalPoints - a.totalPoints);
 
     return (
         <div className="space-y-4">
@@ -31,7 +31,7 @@ export async function Leaderboard({ householdId }: { householdId: string }) {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="font-bold">{member.user.totalPoints}</span>
+                        <span className="font-bold">{member.totalPoints}</span>
                         <Trophy className={`w-4 h-4 ${index === 0 ? "text-yellow-500" : "text-muted-foreground"}`} />
                     </div>
                 </div>

@@ -56,11 +56,11 @@ export async function checkAchievements(userId: string) {
         where: { userId, action: "REDEEMED" },
     });
 
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
+    const userMemberships = await prisma.membership.findMany({
+        where: { userId },
         select: { totalPoints: true },
     });
-    const totalPoints = user?.totalPoints || 0;
+    const totalPoints = userMemberships.reduce((sum, m) => sum + m.totalPoints, 0);
 
     // 3. Check and award
     const newUnlocks: string[] = [];
