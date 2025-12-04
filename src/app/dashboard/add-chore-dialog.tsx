@@ -253,42 +253,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                             </div>
                         )}
 
-                        {userRole === "ADMIN" && (
-                            <div className="grid gap-2">
-                                <Label htmlFor="assign-to">Assign To (Optional)</Label>
-                                <Select
-                                    value={formData.assignedToId}
-                                    onValueChange={(value) =>
-                                        setFormData({ ...formData, assignedToId: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Unassigned" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="NONE">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
-                                                    <span className="text-xs text-muted-foreground">?</span>
-                                                </div>
-                                                <span>Unassigned</span>
-                                            </div>
-                                        </SelectItem>
-                                        {members.map((member) => (
-                                            <SelectItem key={member.userId} value={member.userId}>
-                                                <div className="flex items-center gap-2">
-                                                    <Avatar className="w-6 h-6">
-                                                        <AvatarImage src={member.user.image} />
-                                                        <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span>{member.user.name}</span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
+
 
                         <div className="grid gap-2">
                             <Label htmlFor="recurrence">Recurrence</Label>
@@ -404,6 +369,42 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                 </div>
                             </summary>
                             <div className="pt-4 grid gap-4 animate-in slide-in-from-top-2 duration-200">
+                                {userRole === "ADMIN" && (
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="assign-to">Assign To (Optional)</Label>
+                                        <Select
+                                            value={formData.assignedToId}
+                                            onValueChange={(value) =>
+                                                setFormData({ ...formData, assignedToId: value })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Unassigned" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NONE">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
+                                                            <span className="text-xs text-muted-foreground">?</span>
+                                                        </div>
+                                                        <span>Unassigned</span>
+                                                    </div>
+                                                </SelectItem>
+                                                {members.map((member) => (
+                                                    <SelectItem key={member.userId} value={member.userId}>
+                                                        <div className="flex items-center gap-2">
+                                                            <Avatar className="w-6 h-6">
+                                                                <AvatarImage src={member.user.image} />
+                                                                <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
+                                                            </Avatar>
+                                                            <span>{member.user.name}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
                                 <div className="space-y-2">
                                     <Label>Due Date (Optional)</Label>
                                     <Popover>

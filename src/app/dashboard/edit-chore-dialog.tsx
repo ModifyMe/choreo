@@ -21,7 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useChores, Chore } from "./chore-context";
@@ -113,7 +113,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                     title: formData.title,
                     description: formData.description,
                     points: parseInt(formData.points),
-                    recurrence: formData.recurrenceType,
+                    recurrence: formData.recurrenceType === "NONE" ? null : formData.recurrenceType,
                     recurrenceData: JSON.stringify(formData.recurrenceData),
                     assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
                 }),
@@ -219,42 +219,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                             </div>
                         )}
 
-                        {userRole === "ADMIN" && (
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-assign-to">Assign To (Optional)</Label>
-                                <Select
-                                    value={formData.assignedToId}
-                                    onValueChange={(value) =>
-                                        setFormData({ ...formData, assignedToId: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Unassigned" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="NONE">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
-                                                    <span className="text-xs text-muted-foreground">?</span>
-                                                </div>
-                                                <span>Unassigned</span>
-                                            </div>
-                                        </SelectItem>
-                                        {members.map((member) => (
-                                            <SelectItem key={member.userId} value={member.userId}>
-                                                <div className="flex items-center gap-2">
-                                                    <Avatar className="w-6 h-6">
-                                                        <AvatarImage src={member.user.image} />
-                                                        <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span>{member.user.name}</span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
+
 
                         <div className="grid gap-2">
                             <Label htmlFor="edit-recurrence">Recurrence</Label>
@@ -308,6 +273,57 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                                 </div>
                             </div>
                         )}
+
+
+                        <details className="group border-t pt-4">
+                            <summary className="flex items-center gap-2 cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors list-none">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border rounded flex items-center justify-center group-open:bg-muted">
+                                        <Plus className="w-3 h-3 group-open:hidden" />
+                                        <X className="w-3 h-3 hidden group-open:block" />
+                                    </div>
+                                    Advanced Options
+                                </div>
+                            </summary>
+                            <div className="pt-4 grid gap-4 animate-in slide-in-from-top-2 duration-200">
+                                {userRole === "ADMIN" && (
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-assign-to">Assign To (Optional)</Label>
+                                        <Select
+                                            value={formData.assignedToId}
+                                            onValueChange={(value) =>
+                                                setFormData({ ...formData, assignedToId: value })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Unassigned" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NONE">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-dashed">
+                                                            <span className="text-xs text-muted-foreground">?</span>
+                                                        </div>
+                                                        <span>Unassigned</span>
+                                                    </div>
+                                                </SelectItem>
+                                                {members.map((member) => (
+                                                    <SelectItem key={member.userId} value={member.userId}>
+                                                        <div className="flex items-center gap-2">
+                                                            <Avatar className="w-6 h-6">
+                                                                <AvatarImage src={member.user.image} />
+                                                                <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
+                                                            </Avatar>
+                                                            <span>{member.user.name}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+                        </details>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
