@@ -17,59 +17,61 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground relative overflow-hidden">
       <FallingEmojis />
-      {/* Header */}
-      <header className="px-6 py-4 flex justify-between items-center border-b">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-xl tracking-tight">Choreo</span>
-        </div>
-        <nav>
-          <SignInButton text="Login" variant="ghost" className="font-medium" />
-        </nav>
-      </header>
+      <div className="relative z-10 flex flex-col flex-1 w-full">
+        {/* Header */}
+        <header className="px-6 py-4 flex justify-between items-center border-b">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-xl tracking-tight">Choreo</span>
+          </div>
+          <nav>
+            <SignInButton text="Login" variant="ghost" className="font-medium" />
+          </nav>
+        </header>
 
-      {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-12 max-w-4xl mx-auto w-full">
-        <div className="space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
-            Household chores, <br className="hidden md:block" />
-            simplified.
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            A shared space for your family or roommates to track tasks, earn rewards, and stay organized without the hassle.
-          </p>
-          <div className="pt-4">
-            <SignInButton
-              text="Get Started"
-              size="lg"
-              className="px-8 text-lg font-semibold rounded-full"
+        {/* Hero Section */}
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-12 max-w-4xl mx-auto w-full">
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
+              Household chores, <br className="hidden md:block" />
+              simplified.
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              A shared space for your family or roommates to track tasks, earn rewards, and stay organized without the hassle.
+            </p>
+            <div className="pt-4">
+              <SignInButton
+                text="Get Started"
+                size="lg"
+                className="px-8 text-lg font-semibold rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full pt-12 text-left">
+            <Feature
+              icon={<Users className="w-6 h-6 text-blue-500" />}
+              title="Shared Lists"
+              description="Everyone sees what needs to be done. No more confusion or nagging."
+            />
+            <Feature
+              icon={<Zap className="w-6 h-6 text-yellow-500" />}
+              title="Real-time Sync"
+              description="Updates happen instantly across all devices. Always stay in the loop."
+            />
+            <Feature
+              icon={<CheckCircle2 className="w-6 h-6 text-green-500" />}
+              title="Rewards System"
+              description="Gamify chores with points. Redeem them for real-life rewards."
             />
           </div>
-        </div>
+        </main>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full pt-12 text-left">
-          <Feature
-            icon={<Users className="w-6 h-6 text-blue-500" />}
-            title="Shared Lists"
-            description="Everyone sees what needs to be done. No more confusion or nagging."
-          />
-          <Feature
-            icon={<Zap className="w-6 h-6 text-yellow-500" />}
-            title="Real-time Sync"
-            description="Updates happen instantly across all devices. Always stay in the loop."
-          />
-          <Feature
-            icon={<CheckCircle2 className="w-6 h-6 text-green-500" />}
-            title="Rewards System"
-            description="Gamify chores with points. Redeem them for real-life rewards."
-          />
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-8 text-center text-sm text-muted-foreground border-t">
-        <p>&copy; {new Date().getFullYear()} Choreo. All rights reserved.</p>
-      </footer>
+        {/* Footer */}
+        <footer className="py-8 text-center text-sm text-muted-foreground border-t">
+          <p>&copy; {new Date().getFullYear()} Choreo. All rights reserved.</p>
+        </footer>
+      </div>
     </div>
   );
 }

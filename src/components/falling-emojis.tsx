@@ -64,17 +64,17 @@ export function FallingEmojis() {
             const baseDuration = layer === 1 ? 10 : layer === 2 ? 15 : 20;
 
             // Sparse center logic:
-            // 0-30%: 40% chance
-            // 30-70%: 20% chance (Sparse)
-            // 70-100%: 40% chance
+            // 0-20%: 45% chance
+            // 80-100%: 45% chance
+            // 20-80%: 10% chance (Very Sparse Center)
             let xPosition;
             const seed = Math.random();
-            if (seed < 0.4) {
-                xPosition = Math.random() * 30; // Left side
-            } else if (seed > 0.6) {
-                xPosition = 70 + Math.random() * 30; // Right side
+            if (seed < 0.45) {
+                xPosition = Math.random() * 20; // Left side (0-20%)
+            } else if (seed > 0.55) {
+                xPosition = 80 + Math.random() * 20; // Right side (80-100%)
             } else {
-                xPosition = 30 + Math.random() * 40; // Center (sparse)
+                xPosition = 20 + Math.random() * 60; // Center (20-80%)
             }
 
             newEmojis.push({
