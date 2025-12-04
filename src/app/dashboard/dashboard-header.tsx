@@ -9,7 +9,6 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
-import { HouseholdChoresDialog } from "./household-chores-dialog";
 
 
 // ... existing imports ...
@@ -232,7 +231,6 @@ export function DashboardHeader({
                         </Button>
                     </Link>
                     <HelpDialog />
-                    <HouseholdChoresDialog />
                     <PushNotificationManager />
                     <AchievementsDialog achievements={achievementsData} />
                     {membership.role === "ADMIN" && (

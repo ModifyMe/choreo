@@ -10,6 +10,7 @@ import { AddRewardDialog } from "./add-reward-dialog";
 import { ActivityFeed } from "./activity-feed";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { HouseholdChoresDialog } from "./household-chores-dialog";
 // import { TestPushButton } from "./test-push-button";
 
 export const dynamic = "force-dynamic";
@@ -85,8 +86,9 @@ export default async function DashboardPage({
             {/* Main Content Area - Chores */}
             <div className="md:col-span-2 space-y-6">
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle>My Chores</CardTitle>
+                        <HouseholdChoresDialog />
                     </CardHeader>
                     <ChoreList userId={user.id} type="my" />
                 </Card>
