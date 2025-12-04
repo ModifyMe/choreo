@@ -10,7 +10,7 @@ import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
 import { HouseholdChoresDialog } from "./household-chores-dialog";
-import { TestPushButton } from "./test-push-button";
+
 
 // ... existing imports ...
 import { getLevel } from "@/lib/levels";
@@ -216,7 +216,6 @@ export function DashboardHeader({
                     <HelpDialog />
                     <HouseholdChoresDialog />
                     <PushNotificationManager />
-                    <TestPushButton householdId={household.id} />
                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
                     <AchievementsDialog achievements={achievementsData} />
                     {membership.role === "ADMIN" && (
