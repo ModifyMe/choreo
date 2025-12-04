@@ -110,7 +110,9 @@ export function ChoreCard({
         setDialogOpen(false);
     };
 
-    const isLocked = chore.dueDate && isFuture(new Date(chore.dueDate)) && !isToday(new Date(chore.dueDate));
+    // User requested to remove locking for future due dates.
+    // "due means that the chore needs to be done until that date not that the chore is locked until that date"
+    const isLocked = false;
 
     const handlers = useSwipeable({
         onSwipedRight: async () => {

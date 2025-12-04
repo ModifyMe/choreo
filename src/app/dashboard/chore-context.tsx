@@ -68,6 +68,32 @@ export function ChoreProvider({
         setServerChores(initialChores || []);
     }, [initialChores]);
 
+    // Reconciliation: Cleanup optimistic adds when server chores arrive
+    useEffect(() => {
+        if (optimisticAdds.length === 0) return;
+
+        setOptimisticAdds(prev => {
+            const next = prev.filter(optimistic => {
+                // Check if this optimistic chore now exists in server chores
+                const match = serverChores.find(server => {
+                    // Match by ID (unlikely for adds) or by content heuristic
+                    if (server.id === optimistic.id) return true;
+
+                    // Heuristic: Same title and created recently (within 60s)
+                    const sameTitle = server.title === optimistic.title;
+                    const timeDiff = Math.abs(new Date(server.createdAt).getTime() - new Date(optimistic.createdAt).getTime());
+                    return sameTitle && timeDiff < 60000;
+                });
+
+                // Keep it only if NO match found
+                return !match;
+            });
+
+            if (next.length === prev.length) return prev;
+            return next;
+        });
+    }, [serverChores, optimisticAdds]);
+
     // Real-time Subscription
     useEffect(() => {
         const channel = supabase
@@ -92,17 +118,7 @@ export function ChoreProvider({
                             if (prev.some((c) => c.id === newChore.id)) return prev;
                             return [...prev, newChore];
                         });
-
-                        // Cleanup optimistic adds if they match
-                        setOptimisticAdds((prev) =>
-                            prev.filter((opt) => {
-                                // Simple matching heuristic: same title and created recently
-                                const isMatch =
-                                    opt.title === newChore.title &&
-                                    Math.abs(new Date(opt.createdAt).getTime() - new Date(newChore.createdAt).getTime()) < 10000; // 10s window
-                                return !isMatch;
-                            })
-                        );
+                        // Note: The reconciliation useEffect above will handle the cleanup
                     } else if (payload.eventType === "UPDATE") {
                         const updatedChore = payload.new as Chore;
                         // Convert dates

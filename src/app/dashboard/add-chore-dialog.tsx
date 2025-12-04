@@ -96,7 +96,12 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     priority: formData.priority as "LOW" | "MEDIUM" | "HIGH",
                     points: parseInt(formData.points),
                     householdId,
-                    dueDate: formData.dueDate,
+                    // Normalize date to noon to avoid timezone rollover issues
+                    dueDate: formData.dueDate ? (() => {
+                        const d = new Date(formData.dueDate);
+                        d.setHours(12, 0, 0, 0);
+                        return d;
+                    })() : undefined,
                     steps: formData.steps,
                 }),
             });
