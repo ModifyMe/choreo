@@ -111,6 +111,7 @@ export function DashboardHeader({
                             <ShoppingCart className="w-4 h-4" />
                         </Button>
                     </Link>
+                    <PushNotificationManager />
                     <AddChoreDialog householdId={household.id} />
 
                     <DropdownMenu>

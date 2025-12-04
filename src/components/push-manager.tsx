@@ -29,6 +29,18 @@ export function PushNotificationManager() {
         if ("serviceWorker" in navigator && "PushManager" in window) {
             setIsSupported(true);
             registerServiceWorker();
+
+            // Auto-prompt if permission is default
+            if (Notification.permission === "default") {
+                toast("Enable notifications?", {
+                    description: "Stay updated on your chores!",
+                    action: {
+                        label: "Enable",
+                        onClick: () => subscribeToPush(),
+                    },
+                    duration: 10000, // Give them time to see it
+                });
+            }
         }
     }, []);
 
