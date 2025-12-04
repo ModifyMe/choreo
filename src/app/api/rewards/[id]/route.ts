@@ -50,27 +50,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return new NextResponse("Out of stock", { status: 400 });
         }
 
-        // Transaction: Deduct balance, (optional) decrement stock, log activity
-        const transactionOperations = [
-            prisma.membership.update({
+        // Transaction: Deduct balance, (optional) decrement stock
+        await prisma.$transaction(async (tx) => {
+            await tx.membership.update({
                 where: { id: membership.id },
                 data: {
                     balance: { decrement: reward.cost },
                 },
-            }),
-            // We don't have a specific activity log for rewards yet, maybe just log it generally or skip for now
-        ];
+            });
 
-        if (reward.stock !== null) {
-            transactionOperations.push(
-                prisma.reward.update({
+            if (reward.stock !== null) {
+                await tx.reward.update({
                     where: { id },
                     data: { stock: { decrement: 1 } },
-                })
-            );
-        }
-
-        await prisma.$transaction(transactionOperations);
+                });
+            }
+        });
 
         return NextResponse.json({ success: true });
     } catch (error) {
