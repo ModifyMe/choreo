@@ -118,9 +118,18 @@ export function ChoreCard({
     const isLocked = false;
 
     const handlers = useSwipeable({
+        onSwiping: (eventData) => {
+            // Only show visual feedback for horizontal swipes on owned chores
+            if (type === "my" || chore.assignedToId === userId) {
+                // Clamp the x translation to max 100px and only for rightward swipes
+                const x = Math.min(Math.max(0, eventData.deltaX), 100);
+                controls.set({ x });
+            }
+        },
         onSwipedRight: async () => {
             if (isLocked) {
                 toast.error("This chore is locked until its due date!");
+                controls.start({ x: 0 });
                 return;
             }
 
@@ -131,9 +140,17 @@ export function ChoreCard({
                 // Direct complete on swipe (bypass proof)
                 await onAction(chore.id, "COMPLETE");
             }
+            // Reset position after action
+            controls.start({ x: 0 });
+        },
+        onSwiped: () => {
+            // Reset position if swipe didn't complete the action
+            controls.start({ x: 0 });
         },
         trackMouse: true,
         preventScrollOnSwipe: true,
+        delta: 50, // Require 50px horizontal movement before triggering swipe
+        swipeDuration: 500, // Max time for swipe gesture
     });
 
     return (
