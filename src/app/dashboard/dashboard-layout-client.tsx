@@ -50,7 +50,13 @@ export function DashboardLayoutClient({
 
     return (
         <div className="min-h-screen bg-muted/30 p-6">
-            <ChoreProvider initialChores={householdChores} userId={user.id} householdId={household.id}>
+            <ChoreProvider
+                initialChores={householdChores}
+                userId={user.id}
+                householdId={household.id}
+                members={currentHouseholdMembers}
+                userRole={membership.role}
+            >
                 <RewardProvider initialRewards={rewards} householdId={household.id}>
                     <div className="max-w-6xl mx-auto space-y-8">
                         <DashboardHeader

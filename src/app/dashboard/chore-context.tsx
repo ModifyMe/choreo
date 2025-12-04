@@ -39,6 +39,7 @@ interface ChoreContextType {
     removeOptimisticChore: (id: string) => void;
     toggleSubtask: (choreId: string, stepId: string) => void;
     members: any[];
+    userRole: "ADMIN" | "MEMBER";
 }
 
 const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
@@ -49,12 +50,14 @@ export function ChoreProvider({
     userId,
     householdId,
     members = [],
+    userRole = "MEMBER",
 }: {
     children: React.ReactNode;
     initialChores: Chore[];
     userId: string;
     householdId: string;
     members?: any[];
+    userRole?: "ADMIN" | "MEMBER";
 }) {
     // Server state - Single Source of Truth
     const [serverChores, setServerChores] = useState<Chore[]>(initialChores || []);
@@ -316,6 +319,7 @@ export function ChoreProvider({
                 removeOptimisticChore,
                 toggleSubtask,
                 members,
+                userRole,
             }}
         >
             {children}
