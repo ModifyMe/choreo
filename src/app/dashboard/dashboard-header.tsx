@@ -208,8 +208,9 @@ export function DashboardHeader({
                         </Button>
                     </Link>
                     <Link href="/dashboard/shopping-list">
-                        <Button variant="outline" size="icon" title="Shopping List">
+                        <Button variant="secondary" className="gap-2">
                             <ShoppingCart className="w-4 h-4" />
+                            Shopping List
                         </Button>
                     </Link>
                     <HelpDialog />
