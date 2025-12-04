@@ -44,7 +44,7 @@ const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
 
 export function ChoreProvider({
     children,
-    initialChores,
+    initialChores = [],
     userId,
     householdId,
 }: {
@@ -54,7 +54,7 @@ export function ChoreProvider({
     householdId: string;
 }) {
     // Server state - Single Source of Truth
-    const [serverChores, setServerChores] = useState<Chore[]>(initialChores);
+    const [serverChores, setServerChores] = useState<Chore[]>(initialChores || []);
 
     // Optimistic state
     const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
@@ -161,7 +161,7 @@ export function ChoreProvider({
     // Derived State Calculation
     const { myChores, availableChores, householdChores } = React.useMemo(() => {
         // 1. Combine all known chores
-        let allChores = [...serverChores];
+        let allChores = [...(serverChores || [])];
 
         // 2. Add Optimistic Adds (deduplicated by ID)
         const serverIds = new Set(allChores.map(c => c.id));
