@@ -54,7 +54,7 @@ export function VacationToggle({
             <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                     <Plane className={`h-4 w-4 ${isAway ? "text-blue-500" : "text-muted-foreground"}`} />
-                    <span className="text-sm">Vacation Mode</span>
+                    <span className="text-sm font-medium">Vacation Mode</span>
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>

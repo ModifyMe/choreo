@@ -122,8 +122,7 @@ export function DashboardHeader({
 
                             <DropdownMenuSeparator />
 
-                            <div className="px-2 py-1.5 flex items-center justify-between">
-                                <span className="text-sm font-medium">Vacation Mode</span>
+                            <div className="px-2 py-1.5">
                                 <VacationToggle householdId={household.id} initialIsAway={membership.isAway} minimal />
                             </div>
 
