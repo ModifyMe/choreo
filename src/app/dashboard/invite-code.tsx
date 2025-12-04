@@ -16,7 +16,7 @@ export function InviteCodeButton({ code }: { code: string }) {
     };
 
     const copyLink = () => {
-        const url = `https://choreo.top/onboarding?code=${code}`;
+        const url = `${window.location.origin}/onboarding?code=${code}`;
         navigator.clipboard.writeText(url);
         toast.success("Invite link copied!");
     };

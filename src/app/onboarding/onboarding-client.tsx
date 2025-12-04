@@ -17,6 +17,7 @@ export function OnboardingClient({ code }: { code?: string }) {
     const [inviteCode, setInviteCode] = useState("");
 
     useEffect(() => {
+        console.log("OnboardingClient: Mounted with code:", code);
         if (code) {
             setMode("join");
             setInviteCode(code);
