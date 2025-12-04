@@ -105,7 +105,11 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                         d.setHours(12, 0, 0, 0);
                         return d;
                     })() : undefined,
-                    steps: formData.steps,
+                    // Inject correlation ID into steps to robustly identify this chore in real-time updates
+                    steps: [
+                        ...formData.steps,
+                        { id: `cid-${tempId}`, title: "__CORRELATION__", completed: true }
+                    ],
                 }),
             });
 

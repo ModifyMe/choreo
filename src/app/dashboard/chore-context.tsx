@@ -80,10 +80,18 @@ export function ChoreProvider({
             const next = prev.filter(optimistic => {
                 // Check if this optimistic chore now exists in server chores
                 const match = serverChores.find(server => {
-                    // Match by ID (unlikely for adds) or by content heuristic
+                    // 1. Match by ID (exact)
                     if (server.id === optimistic.id) return true;
 
-                    // Heuristic: Same title and created recently (within 60s)
+                    // 2. Match by Correlation ID (Robust)
+                    if (Array.isArray(server.steps)) {
+                        const correlationStep = server.steps.find((s: any) => s.title === "__CORRELATION__");
+                        if (correlationStep && correlationStep.id === `cid-${optimistic.id}`) {
+                            return true;
+                        }
+                    }
+
+                    // 3. Heuristic: Same title and created recently (within 60s)
                     const sameTitle = server.title === optimistic.title;
                     const timeDiff = Math.abs(new Date(server.createdAt).getTime() - new Date(optimistic.createdAt).getTime());
                     return sameTitle && timeDiff < 60000;
@@ -163,13 +171,37 @@ export function ChoreProvider({
         // 1. Combine all known chores
         let allChores = [...(serverChores || [])];
 
-        // 2. Add Optimistic Adds (deduplicated by ID and Heuristic)
+        // 2. Identify Server Chores via Correlation ID
+        const serverCorrelationIds = new Set<string>();
+
+        // Clean up server chores (strip correlation step) and track IDs
+        allChores = allChores.map(chore => {
+            if (Array.isArray(chore.steps)) {
+                const correlationStep = chore.steps.find((s: any) => s.title === "__CORRELATION__");
+                if (correlationStep && correlationStep.id && correlationStep.id.startsWith("cid-")) {
+                    const tempId = correlationStep.id.replace("cid-", "");
+                    serverCorrelationIds.add(tempId);
+
+                    // Return chore without the correlation step
+                    return {
+                        ...chore,
+                        steps: chore.steps.filter((s: any) => s.title !== "__CORRELATION__")
+                    };
+                }
+            }
+            return chore;
+        });
+
+        // 3. Add Optimistic Adds (deduplicated by Correlation ID and Heuristic)
         const serverIds = new Set(allChores.map(c => c.id));
         const uniqueAdds = optimisticAdds.filter(optimistic => {
-            // 1. Check ID match
+            // 1. Check ID match (exact)
             if (serverIds.has(optimistic.id)) return false;
 
-            // 2. Check Heuristic match (Title + CreatedAt) to prevent flicker
+            // 2. Check Correlation ID match (Robust)
+            if (serverCorrelationIds.has(optimistic.id)) return false;
+
+            // 3. Check Heuristic match (Fallback for older chores or other sources)
             const match = allChores.find(server => {
                 const sameTitle = server.title === optimistic.title;
                 const timeDiff = Math.abs(new Date(server.createdAt).getTime() - new Date(optimistic.createdAt).getTime());
@@ -180,7 +212,7 @@ export function ChoreProvider({
         });
         allChores = [...allChores, ...uniqueAdds];
 
-        // 3. Apply Optimistic Updates
+        // 4. Apply Optimistic Updates
         allChores = allChores.map(chore => {
             if (optimisticUpdates.has(chore.id)) {
                 return { ...chore, ...optimisticUpdates.get(chore.id) };
@@ -188,10 +220,10 @@ export function ChoreProvider({
             return chore;
         });
 
-        // 4. Filter Pending Deletes
+        // 5. Filter Pending Deletes
         allChores = allChores.filter(chore => !pendingDeletes.has(chore.id));
 
-        // 5. Hydrate assignedTo if missing
+        // 6. Hydrate assignedTo if missing
         allChores = allChores.map(chore => {
             if (chore.assignedToId && !chore.assignedTo && members.length > 0) {
                 const member = members.find(m => m.userId === chore.assignedToId);
@@ -208,7 +240,7 @@ export function ChoreProvider({
             return chore;
         });
 
-        // 6. Split lists
+        // 7. Split lists
         const my = allChores.filter(c => c.assignedToId === userId && c.status === "PENDING");
         const available = allChores.filter(c => c.assignedToId === null && c.status === "PENDING");
         const household = allChores.filter(c => c.assignedToId !== null && c.assignedToId !== userId && c.status === "PENDING");
