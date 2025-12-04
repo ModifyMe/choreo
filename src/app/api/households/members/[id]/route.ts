@@ -50,11 +50,9 @@ export async function DELETE(
         }
 
         // Delete the membership
-        console.log(`[REMOVE_MEMBER] Deleting membership ${memberIdToRemove} for household ${householdId}`);
-        const deleted = await prisma.membership.delete({
+        await prisma.membership.delete({
             where: { id: memberIdToRemove },
         });
-        console.log(`[REMOVE_MEMBER] Deleted membership:`, deleted);
 
         return NextResponse.json({ success: true });
     } catch (error) {
