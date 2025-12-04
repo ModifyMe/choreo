@@ -24,7 +24,7 @@ function FallingEmoji({ emoji, delay, duration, x, layer }: EmojiProps) {
 
     return (
         <motion.div
-            initial={{ y: -100, x: `${x}%`, rotate: 0, opacity: 0 }}
+            initial={{ y: -100, rotate: 0, opacity: 0 }}
             animate={{
                 y: "110vh",
                 rotate: 360,
@@ -39,7 +39,7 @@ function FallingEmoji({ emoji, delay, duration, x, layer }: EmojiProps) {
             style={{
                 position: "absolute",
                 top: 0,
-                left: 0,
+                left: `${x}%`,
                 fontSize: "2rem",
                 scale,
                 filter: `blur(${blur})`,
@@ -56,20 +56,32 @@ export function FallingEmojis() {
     const [emojis, setEmojis] = useState<EmojiProps[]>([]);
 
     useEffect(() => {
-        const count = 30; // Total emojis
+        const count = 40; // Increased count slightly
         const newEmojis: EmojiProps[] = [];
 
         for (let i = 0; i < count; i++) {
             const layer = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
-            // Adjust duration based on layer (further away = slower apparent movement usually, but for "falling" parallax, closer often moves faster)
-            // Let's say closer (layer 1) falls faster.
             const baseDuration = layer === 1 ? 10 : layer === 2 ? 15 : 20;
+
+            // Sparse center logic:
+            // 0-30%: 40% chance
+            // 30-70%: 20% chance (Sparse)
+            // 70-100%: 40% chance
+            let xPosition;
+            const seed = Math.random();
+            if (seed < 0.4) {
+                xPosition = Math.random() * 30; // Left side
+            } else if (seed > 0.6) {
+                xPosition = 70 + Math.random() * 30; // Right side
+            } else {
+                xPosition = 30 + Math.random() * 40; // Center (sparse)
+            }
 
             newEmojis.push({
                 emoji: CHORE_EMOJIS[Math.floor(Math.random() * CHORE_EMOJIS.length)],
                 delay: Math.random() * 20, // Spread start times
                 duration: baseDuration + Math.random() * 5,
-                x: Math.random() * 100, // Random horizontal position
+                x: xPosition,
                 layer: layer,
             });
         }
