@@ -145,7 +145,7 @@ export function CalendarDialog({ chores, userId }: CalendarDialogProps) {
                     <CalendarIcon className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-[90vw] max-w-6xl h-[85vh] flex flex-col p-0">
+            <DialogContent className="!w-[90vw] !max-w-6xl h-[85vh] flex flex-col p-0">
                 <div className="p-4 border-b flex items-center justify-between">
                     <DialogTitle className="flex items-center gap-2">
                         <CalendarIcon className="h-5 w-5" />
