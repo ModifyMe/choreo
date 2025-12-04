@@ -21,6 +21,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import imageCompression from "browser-image-compression";
+import Webcam from "react-webcam";
 
 export function SettingsDialog({
     householdId,
@@ -216,6 +217,8 @@ function ProfileSettings({ user }: { user: any }) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const cameraInputRef = useRef<HTMLInputElement>(null);
+    const webcamRef = useRef<Webcam>(null);
+    const [showCamera, setShowCamera] = useState(false);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -237,6 +240,89 @@ function ProfileSettings({ user }: { user: any }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const uploadFile = async (file: File) => {
+        setLoading(true);
+        try {
+            // Compress image
+            const options = {
+                maxSizeMB: 0.5, // Compress to ~500KB
+                maxWidthOrHeight: 1024,
+                useWebWorker: true,
+            };
+
+            let compressedFile = file;
+            try {
+                compressedFile = await imageCompression(file, options);
+            } catch (error) {
+                console.error("Compression failed, using original file", error);
+            }
+
+            // 1. Get Signed Upload Token
+            const fileExt = file.name.split('.').pop() || "jpg";
+            const fileName = `avatar-${Math.random()}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const tokenRes = await fetch("/api/upload", {
+                method: "POST",
+                body: JSON.stringify({ filePath, bucketName: 'avatars' }), // Use avatars bucket
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!tokenRes.ok) throw new Error("Failed to get upload token");
+            const { token, path } = await tokenRes.json();
+
+            // 2. Upload to Supabase
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .uploadToSignedUrl(path, token, compressedFile);
+
+            if (uploadError) throw uploadError;
+
+            // 3. Get Public URL
+            const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+            const publicUrl = data.publicUrl;
+
+            // 4. Update User Profile
+            const updateRes = await fetch("/api/user/profile", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: publicUrl }),
+            });
+
+            if (!updateRes.ok) throw new Error("Failed to update profile image");
+
+            toast.success("Profile picture updated!");
+            router.refresh();
+            setShowCamera(false);
+        } catch (error) {
+            console.error("Avatar upload failed", error);
+            toast.error("Failed to upload avatar");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const capture = async () => {
+        const imageSrc = webcamRef.current?.getScreenshot();
+        if (imageSrc) {
+            try {
+                const res = await fetch(imageSrc);
+                const blob = await res.blob();
+                const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+                await uploadFile(file);
+            } catch (error) {
+                console.error("Failed to convert screenshot to file", error);
+                toast.error("Failed to capture photo");
+            }
+        }
+    };
+
+    const handleAvatarUploadNew = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await uploadFile(file);
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -304,66 +390,91 @@ function ProfileSettings({ user }: { user: any }) {
     };
 
     return (
-        <form onSubmit={handleUpdateProfile} className="space-y-4">
-            <div className="flex flex-col items-center gap-4">
-                <div className="relative group cursor-pointer">
-                    <Avatar className="h-24 w-24 border-2 border-border">
-                        <AvatarImage src={user?.image} />
-                        <AvatarFallback className="text-2xl">{user?.name?.[0] || "?"}</AvatarFallback>
-                    </Avatar>
-                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Upload className="w-8 h-8 text-white" />
+        <div className="space-y-4">
+            {showCamera ? (
+                <div className="flex flex-col items-center gap-4">
+                    <div className="relative rounded-full overflow-hidden border-4 border-primary w-64 h-64 shadow-xl bg-black">
+                        <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={{ facingMode: "user", width: 400, height: 400, aspectRatio: 1 }}
+                            className="w-full h-full object-cover"
+                        />
                     </div>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        onChange={handleAvatarUpload}
-                        disabled={loading}
-                        title="Upload image"
-                    />
+                    <div className="flex gap-2">
+                        <Button onClick={capture} disabled={loading}>
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
+                            Capture
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowCamera(false)} disabled={loading}>
+                            Cancel
+                        </Button>
+                    </div>
                 </div>
+            ) : (
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="relative group cursor-pointer">
+                            <Avatar className="h-24 w-24 border-2 border-border">
+                                <AvatarImage src={user?.image} />
+                                <AvatarFallback className="text-2xl">{user?.name?.[0] || "?"}</AvatarFallback>
+                            </Avatar>
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Upload className="w-8 h-8 text-white" />
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={handleAvatarUploadNew}
+                                disabled={loading}
+                                title="Upload image"
+                            />
+                        </div>
 
-                <div className="flex flex-col items-center gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => cameraInputRef.current?.click()}
-                        disabled={loading}
-                    >
-                        <Camera className="w-4 h-4 mr-2" />
-                        Take Selfie
+                        <div className="flex flex-col items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowCamera(true)}
+                                disabled={loading}
+                            >
+                                <Camera className="w-4 h-4 mr-2" />
+                                Take Selfie
+                            </Button>
+                            <p className="text-xs text-muted-foreground">or tap avatar to upload</p>
+                        </div>
+
+                        <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="user"
+                            className="hidden"
+                            onChange={handleAvatarUploadNew}
+                            disabled={loading}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Display Name</Label>
+                        <Input
+                            id="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            disabled={loading}
+                            placeholder="Enter your name"
+                        />
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={loading}>
+                        {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Save Changes
                     </Button>
-                    <p className="text-xs text-muted-foreground">or tap avatar to upload</p>
-                </div>
-
-                <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    className="hidden"
-                    onChange={handleAvatarUpload}
-                    disabled={loading}
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="name">Display Name</Label>
-                <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={loading}
-                    placeholder="Enter your name"
-                />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Changes
-            </Button>
-        </form>
+                </form>
+            )}
+        </div>
     );
 }
