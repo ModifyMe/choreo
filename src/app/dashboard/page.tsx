@@ -12,7 +12,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChoreProvider } from "./chore-context";
 import { RewardProvider } from "./reward-context";
-import { DashboardHeader } from "./dashboard-header";
 // import { TestPushButton } from "./test-push-button";
 
 export const dynamic = "force-dynamic";
@@ -61,7 +60,7 @@ export default async function DashboardPage({
     const household = membership.household;
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const [myChores, availableChores, rewards, allAchievements, userAchievements, members] = await Promise.all([
+    const [myChores, availableChores, rewards] = await Promise.all([
         prisma.chore.findMany({
             where: {
                 householdId: household.id,
@@ -82,97 +81,68 @@ export default async function DashboardPage({
             where: { householdId: household.id },
             orderBy: { cost: "asc" },
         }) : Promise.resolve([]),
-        prisma.achievement.findMany(),
-        prisma.userAchievement.findMany({
-            where: { userId: user.id },
-        }),
-        prisma.membership.findMany({
-            where: { householdId: household.id },
-            include: { user: true },
-        })
     ]);
 
-    const achievementsData = allAchievements.map((ach) => ({
-        ...ach,
-        unlockedAt: userAchievements.find((ua) => ua.achievementId === ach.id)?.unlockedAt,
-    }));
-
     return (
-        <div className="min-h-screen bg-muted/30 p-6">
-            <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id} householdId={household.id}>
-                <RewardProvider initialRewards={rewards as any} householdId={household.id}>
-                    <div className="max-w-6xl mx-auto space-y-8">
-                        <DashboardHeader
-                            household={household as any}
-                            user={user}
-                            membership={membership as any}
-                            achievementsData={achievementsData}
-                            allHouseholds={allHouseholds}
-                            members={members as any}
-                        />
+        <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id} householdId={household.id}>
+            <RewardProvider initialRewards={rewards as any} householdId={household.id}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Main Content Area - Chores */}
+                    <div className="md:col-span-2 space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>My Chores</CardTitle>
+                            </CardHeader>
+                            <ChoreList userId={user.id} type="my" />
+                        </Card>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Main Content Area - Chores */}
-                            <div className="md:col-span-2 space-y-6">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>My Chores</CardTitle>
-                                    </CardHeader>
-                                    <ChoreList userId={user.id} type="my" />
-                                </Card>
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Available Chores</CardTitle>
-                                    </CardHeader>
-                                    <ChoreList userId={user.id} type="available" />
-                                </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Available Chores</CardTitle>
+                            </CardHeader>
+                            <ChoreList userId={user.id} type="available" />
+                        </Card>
 
 
-                                {household.mode === "ECONOMY" && (
-                                    <div className="space-y-4 pt-4 border-t">
-                                        <div className="flex justify-between items-center">
-                                            <h2 className="text-xl font-semibold tracking-tight">Rewards Shop</h2>
-                                            {membership.role === "ADMIN" && (
-                                                <AddRewardDialog householdId={household.id} />
-                                            )}
-                                        </div>
-                                        <Shop
-                                            userBalance={membership.balance}
-                                            isAdmin={membership.role === "ADMIN"}
-                                        />
-                                    </div>
-                                )}
+                        {household.mode === "ECONOMY" && (
+                            <div className="space-y-4 pt-4 border-t">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-semibold tracking-tight">Rewards Shop</h2>
+                                    {membership.role === "ADMIN" && (
+                                        <AddRewardDialog householdId={household.id} />
+                                    )}
+                                </div>
+                                <Shop
+                                    userBalance={membership.balance}
+                                    isAdmin={membership.role === "ADMIN"}
+                                />
                             </div>
-
-                            {/* Sidebar - Leaderboard & Activity */}
-                            <div className="space-y-6">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Leaderboard</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Leaderboard householdId={household.id} />
-                                    </CardContent>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Recent Activity</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-0">
-                                        <ActivityFeed householdId={household.id} />
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
+                        )}
                     </div>
-                </RewardProvider>
-            </ChoreProvider>
 
-            {/* Hidden Test Push Button */}
-            {/* <TestPushButton householdId={household.id} /> */}
-        </div>
+                    {/* Sidebar - Leaderboard & Activity */}
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Leaderboard</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Leaderboard householdId={household.id} />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Recent Activity</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <ActivityFeed householdId={household.id} />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </RewardProvider>
+        </ChoreProvider>
     );
 }
 
