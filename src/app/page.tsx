@@ -33,6 +33,9 @@ export default async function Home() {
         <main className="flex-1 flex flex-col items-center justify-center p-6 space-y-12 max-w-6xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
             <div className="space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 mx-auto lg:mx-0">
+                ✨ No ads. No bullshit.
+              </div>
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
                 Household chores, <br className="hidden md:block" />
                 simplified.
