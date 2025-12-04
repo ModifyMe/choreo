@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { OnboardingClient } from "./onboarding-client";
+import { AutoSignIn } from "./auto-sign-in";
 
 export default async function OnboardingPage({
     searchParams,
@@ -14,7 +14,7 @@ export default async function OnboardingPage({
 
     if (!session?.user?.email) {
         const callbackUrl = code ? `/onboarding?code=${code}` : "/onboarding";
-        redirect(`/api/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+        return <AutoSignIn callbackUrl={callbackUrl} />;
     }
 
     return <OnboardingClient code={code} />;
