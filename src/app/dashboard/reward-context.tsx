@@ -57,7 +57,7 @@ export function RewardProvider({
                     filter: undefined, // Subscribe to ALL events on the table, filter client-side
                 },
                 (payload) => {
-                    console.log('Real-time reward change received!', payload);
+                    // Real-time reward change received
 
                     // Client-side filtering
                     const record = payload.new || payload.old;
@@ -93,9 +93,7 @@ export function RewardProvider({
                     }
                 }
             )
-            .subscribe((status) => {
-                console.log(`Real-time reward subscription status: ${status}`);
-            });
+            .subscribe();
 
         return () => {
             supabase.removeChannel(channel);

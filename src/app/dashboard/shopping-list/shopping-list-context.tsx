@@ -66,7 +66,7 @@ export function ShoppingListProvider({
                     filter: `householdId=eq.${householdId}`,
                 },
                 (payload) => {
-                    console.log('Realtime update:', payload);
+                    // Realtime update received
                     mutate((currentItems: ShoppingItem[] | undefined) => {
                         const prev = currentItems || [];
                         if (payload.eventType === 'INSERT') {

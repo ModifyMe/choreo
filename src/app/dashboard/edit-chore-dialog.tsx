@@ -48,7 +48,11 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
         recurrenceType: "DAILY",
         recurrenceData: [] as string[],
         assignedToId: "NONE",
+        dueDate: "",
     });
+
+    // Store original chore for reverting optimistic updates on error
+    const [originalChore, setOriginalChore] = useState<Chore | null>(null);
 
     useEffect(() => {
         if (chore) {
@@ -61,8 +65,8 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                         parsedRecurrenceData = [];
                     }
                 }
-            } catch (e) {
-                console.error("Failed to parse recurrence data", e);
+            } catch {
+                // Failed to parse recurrence data, use empty array
                 parsedRecurrenceData = [];
             }
 
@@ -80,7 +84,9 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 recurrenceType: chore.recurrence || "DAILY",
                 recurrenceData: parsedRecurrenceData,
                 assignedToId: chore.assignedToId || "NONE",
+                dueDate: chore.dueDate ? new Date(chore.dueDate).toISOString().split('T')[0] : "",
             });
+            setOriginalChore(chore);
         }
     }, [chore]);
 
@@ -98,6 +104,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 recurrence: formData.recurrenceType,
                 recurrenceData: JSON.stringify(formData.recurrenceData),
                 assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
+                dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
             };
 
             updateChore(chore.id, updates);
@@ -117,6 +124,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                     recurrence: formData.recurrenceType === "NONE" ? null : formData.recurrenceType,
                     recurrenceData: JSON.stringify(formData.recurrenceData),
                     assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
+                    dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
                 }),
             });
 
@@ -125,9 +133,12 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
             }
 
             router.refresh();
-        } catch (error) {
+        } catch {
             toast.error("Something went wrong");
-            console.error(error);
+            // Revert optimistic update
+            if (originalChore) {
+                updateChore(chore.id, originalChore);
+            }
         } finally {
             setLoading(false);
         }

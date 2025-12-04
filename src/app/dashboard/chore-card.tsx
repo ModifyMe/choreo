@@ -208,7 +208,7 @@ export function ChoreCard({
                                     <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary transition-all duration-300"
-                                            style={{ width: `${((chore.steps as any[]).filter(s => s.completed).length / (chore.steps as any[]).length) * 100}%` }}
+                                            style={{ width: `${(visibleSteps.filter(s => s.completed).length / visibleSteps.length) * 100}%` }}
                                         />
                                     </div>
 

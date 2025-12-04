@@ -17,7 +17,7 @@ export async function sendPushNotification(userId: string, title: string, body: 
         });
 
         if (subscriptions.length === 0) {
-            console.log(`No subscriptions found for user ${userId}`);
+            // No push subscriptions for this user
             return { success: 0, failure: 0, total: 0 };
         }
 
@@ -46,21 +46,19 @@ export async function sendPushNotification(userId: string, title: string, body: 
             } catch (error: any) {
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     // Subscription is gone, delete it
-                    console.log(`Subscription expired for user ${userId}, deleting...`);
                     await prisma.pushSubscription.delete({
                         where: { id: sub.id },
                     });
-                } else {
-                    console.error("Error sending push notification:", error);
                 }
+                // Other errors are silently ignored - monitoring can be added if needed
                 failureCount++;
             }
         });
 
         await Promise.all(promises);
         return { success: successCount, failure: failureCount, total: subscriptions.length };
-    } catch (error) {
-        console.error("Failed to send push notification:", error);
-        return { success: 0, failure: 0, total: 0, error };
+    } catch {
+        // Failed to send push notification
+        return { success: 0, failure: 0, total: 0 };
     }
 }

@@ -61,11 +61,10 @@ export function PushNotificationManager() {
                 if (!res.ok) {
                     throw new Error("Failed to sync push subscription");
                 }
-                console.log("Push subscription synced with server");
+                // Push subscription synced successfully
             }
         } catch (error) {
-            console.error("Service Worker registration failed:", error);
-            // Only show toast if it's a sync error, not a registration error (which happens in incognito etc)
+            // Service Worker registration failed - can happen in incognito etc
             if (error instanceof Error && error.message.includes("sync")) {
                 toast.error("Failed to sync push notifications. Please re-enable.");
             }
