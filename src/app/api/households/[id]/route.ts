@@ -13,10 +13,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     try {
         const { id } = await params;
         const body = await req.json();
-        const { mode } = body;
+        const { mode, assignmentStrategy } = body;
 
-        if (mode !== "STANDARD" && mode !== "ECONOMY") {
-            return new NextResponse("Invalid mode", { status: 400 });
+        const dataToUpdate: any = {};
+
+        if (mode) {
+            if (mode !== "STANDARD" && mode !== "ECONOMY") {
+                return new NextResponse("Invalid mode", { status: 400 });
+            }
+            dataToUpdate.mode = mode;
+        }
+
+        if (assignmentStrategy) {
+            const validStrategies = ["LOAD_BALANCING", "STRICT_ROTATION", "RANDOM", "NONE"];
+            if (!validStrategies.includes(assignmentStrategy)) {
+                return new NextResponse("Invalid strategy", { status: 400 });
+            }
+            dataToUpdate.assignmentStrategy = assignmentStrategy;
         }
 
         // Verify admin
@@ -35,7 +48,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         const household = await prisma.household.update({
             where: { id },
-            data: { mode },
+            data: dataToUpdate,
         });
 
         return NextResponse.json(household);

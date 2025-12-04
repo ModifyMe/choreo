@@ -82,6 +82,7 @@ model Household {
   inviteCode  String       @unique
   createdAt   DateTime     @default(now())
   mode        HouseholdMode @default(STANDARD)
+  assignmentStrategy AssignmentStrategy @default(LOAD_BALANCING)
   members     Membership[]
   chores      Chore[]
   rewards     Reward[]
@@ -224,4 +225,11 @@ model ShoppingItem {
 enum HouseholdMode {
   STANDARD
   ECONOMY
+}
+
+enum AssignmentStrategy {
+  LOAD_BALANCING
+  STRICT_ROTATION
+  RANDOM
+  NONE
 }

@@ -188,30 +188,52 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     }
                 }
 
-                // Find next assignee (Round Robin with Load Balancing)
-                const members = await prisma.membership.findMany({
-                    where: {
-                        householdId: chore.householdId,
-                        isAway: false // Exclude members on vacation
-                    },
-                    include: { user: true }, // We need user info, but points are now on membership
-                });
+                // Find next assignee based on Strategy
+                const strategy = chore.household.assignmentStrategy || "LOAD_BALANCING";
+                let nextAssigneeId: string | null = session.user.id;
 
-                let nextAssigneeId = session.user.id; // Default to self if alone or everyone is away
+                if (strategy === "NONE") {
+                    nextAssigneeId = null;
+                } else {
+                    const members = await prisma.membership.findMany({
+                        where: {
+                            householdId: chore.householdId,
+                            isAway: false // Exclude members on vacation
+                        },
+                        include: { user: true },
+                        orderBy: { joinedAt: 'asc' } // Consistent order for rotation
+                    });
 
-                if (members.length > 0) {
-                    // Filter out current completer if possible
-                    let candidates = members.filter(m => m.userId !== session.user.id);
+                    if (members.length > 0) {
+                        if (strategy === "RANDOM") {
+                            const randomIndex = Math.floor(Math.random() * members.length);
+                            nextAssigneeId = members[randomIndex].userId;
+                        } else if (strategy === "STRICT_ROTATION") {
+                            // Find current assignee index
+                            const currentIndex = members.findIndex(m => m.userId === chore.assignedToId);
+                            if (currentIndex !== -1) {
+                                const nextIndex = (currentIndex + 1) % members.length;
+                                nextAssigneeId = members[nextIndex].userId;
+                            } else {
+                                // If current assignee not found (e.g. left), start from first
+                                nextAssigneeId = members[0].userId;
+                            }
+                        } else {
+                            // LOAD_BALANCING (Default)
+                            // Filter out current completer if possible
+                            let candidates = members.filter(m => m.userId !== session.user.id);
 
-                    if (candidates.length === 0 && members.length > 0) {
-                        // Only one person available (likely me, if I am not away).
-                        candidates = members;
-                    }
+                            if (candidates.length === 0) {
+                                // Only one person available (likely me)
+                                candidates = members;
+                            }
 
-                    if (candidates.length > 0) {
-                        // Sort by lowest points (Load Balancing)
-                        candidates.sort((a, b) => a.totalPoints - b.totalPoints);
-                        nextAssigneeId = candidates[0].userId;
+                            if (candidates.length > 0) {
+                                // Sort by lowest points
+                                candidates.sort((a, b) => a.totalPoints - b.totalPoints);
+                                nextAssigneeId = candidates[0].userId;
+                            }
+                        }
                     }
                 }
 

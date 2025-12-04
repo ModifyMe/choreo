@@ -9,6 +9,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,12 +33,14 @@ import Webcam from "react-webcam";
 export function SettingsDialog({
     householdId,
     currentMode,
+    currentStrategy = "LOAD_BALANCING",
     members = [],
     open,
     onOpenChange,
 }: {
     householdId: string;
     currentMode: "STANDARD" | "ECONOMY";
+    currentStrategy?: "LOAD_BALANCING" | "STRICT_ROTATION" | "RANDOM" | "NONE";
     members?: any[];
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
@@ -59,6 +68,25 @@ export function SettingsDialog({
             if (!res.ok) throw new Error("Failed to update settings");
 
             toast.success(`Switched to ${newMode} mode`);
+            router.refresh();
+        } catch (error) {
+            toast.error("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStrategyChange = async (value: string) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/households/${householdId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ assignmentStrategy: value }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update settings");
+
+            toast.success("Assignment strategy updated");
             router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
@@ -152,6 +180,48 @@ export function SettingsDialog({
                                 onCheckedChange={handleModeChange}
                                 disabled={loading || !isAdmin}
                             />
+                        </div>
+
+                        <div className="space-y-2 pt-4 border-t">
+                            <Label htmlFor="strategy" className="font-medium">Assignment Strategy</Label>
+                            <p className="text-xs text-muted-foreground mb-2">
+                                How should recurring chores be assigned?
+                            </p>
+                            <Select
+                                value={currentStrategy}
+                                onValueChange={handleStrategyChange}
+                                disabled={loading || !isAdmin}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select strategy" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="LOAD_BALANCING">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">Load Balancing (Recommended)</span>
+                                            <span className="text-xs text-muted-foreground">Assigns to member with lowest XP</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="STRICT_ROTATION">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">Strict Rotation</span>
+                                            <span className="text-xs text-muted-foreground">Passes to the next member in line</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="RANDOM">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">Random</span>
+                                            <span className="text-xs text-muted-foreground">Roll the dice!</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="NONE">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">None</span>
+                                            <span className="text-xs text-muted-foreground">Leave unassigned</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="pt-4 border-t">

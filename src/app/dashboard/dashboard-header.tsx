@@ -35,6 +35,7 @@ interface DashboardHeaderProps {
         name: string;
         inviteCode: string;
         mode: "STANDARD" | "ECONOMY";
+        assignmentStrategy?: "LOAD_BALANCING" | "STRICT_ROTATION" | "RANDOM" | "NONE";
     };
     user: {
         id: string;
@@ -257,6 +258,7 @@ export function DashboardHeader({
                 <SettingsDialog
                     householdId={household.id}
                     currentMode={household.mode}
+                    currentStrategy={household.assignmentStrategy}
                     members={members}
                     open={settingsOpen}
                     onOpenChange={setSettingsOpen}
