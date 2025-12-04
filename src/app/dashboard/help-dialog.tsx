@@ -32,18 +32,21 @@ export function HelpDialog() {
                 </DialogHeader>
 
                 <div className="space-y-6 pt-4">
-                    {/* Smart Assignment */}
+                    {/* Assignment Strategies */}
                     <div className="space-y-2">
                         <h3 className="text-lg font-semibold flex items-center gap-2">
                             <RefreshCw className="h-5 w-5 text-blue-500" />
-                            Smart Assignment (Round Robin)
+                            Assignment Strategies
                         </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                            Recurring chores are automatically assigned to keep things fair.
-                            Instead of a strict rotation, we use a <strong>Load Balancing</strong> system:
-                            the system assigns the next chore to the person with the <strong>lowest XP</strong>.
-                            This helps everyone catch up and ensures no one gets left behind!
+                            Admins can now choose how recurring chores are assigned in <strong>Settings</strong>:
                         </p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-1">
+                            <li><strong>Load Balancing</strong> (Default): Assigns to the member with the lowest XP.</li>
+                            <li><strong>Strict Rotation</strong>: Passes to the next member in line.</li>
+                            <li><strong>Random</strong>: Picks a random member.</li>
+                            <li><strong>None</strong>: Leaves the chore unassigned.</li>
+                        </ul>
                     </div>
 
                     {/* Vacation Mode */}
@@ -127,7 +130,6 @@ export function HelpDialog() {
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                             <li>Swipe a chore to the right to complete it quickly.</li>
                             <li>Upload a photo proof to show off your hard work.</li>
-                            <li>Check the Calendar view to plan your week ahead.</li>
                         </ul>
                     </div>
                 </div>
