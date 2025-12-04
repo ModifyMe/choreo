@@ -144,7 +144,7 @@ export function DashboardHeader({
                                             className="h-6 w-6"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                const url = `${window.location.origin}/onboarding?code=${household.inviteCode}`;
+                                                const url = `https://choreo.top/onboarding?code=${household.inviteCode}`;
                                                 navigator.clipboard.writeText(url);
                                                 toast.success("Invite link copied!");
                                             }}
