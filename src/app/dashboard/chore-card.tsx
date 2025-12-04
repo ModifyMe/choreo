@@ -193,10 +193,10 @@ export function ChoreCard({
                 {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}
 
                 {/* Subtasks Progress */}
-                {chore.steps && (chore.steps as any[]).filter(s => s.title !== "__CORRELATION__").length > 0 && (
+                {chore.steps && chore.steps.filter(s => s.title !== "__CORRELATION__").length > 0 && (
                     <div className="mt-2">
                         {(() => {
-                            const visibleSteps = (chore.steps as any[]).filter(s => s.title !== "__CORRELATION__");
+                            const visibleSteps = chore.steps!.filter(s => s.title !== "__CORRELATION__");
                             return (
                                 <>
                                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">

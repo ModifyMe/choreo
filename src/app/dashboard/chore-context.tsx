@@ -4,6 +4,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
+export interface Step {
+    id: string;
+    title: string;
+    completed: boolean;
+}
+
 export interface Chore {
     id: string;
     title: string;
@@ -17,7 +23,7 @@ export interface Chore {
     reminderTime?: string | null;
     priority?: "LOW" | "MEDIUM" | "HIGH";
     householdId: string;
-    steps?: any;
+    steps?: Step[];
     createdAt: Date;
     updatedAt: Date;
     assignedTo?: {
@@ -317,7 +323,7 @@ export function ChoreProvider({
                 status: "PENDING",
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                steps: chore.steps ? (chore.steps as any[]).map((s: any) => ({ ...s, completed: false })) : undefined
+                steps: chore.steps ? chore.steps.map(s => ({ ...s, completed: false })) : undefined
             };
 
             addChore(nextChore);
@@ -351,7 +357,7 @@ export function ChoreProvider({
 
         if (!chore || !chore.steps) return;
 
-        const newSteps = (chore.steps as any[]).map(step =>
+        const newSteps = chore.steps.map(step =>
             step.id === stepId ? { ...step, completed: !step.completed } : step
         );
 

@@ -95,7 +95,7 @@ export function HouseholdChoresDialog() {
                                         <div className="px-3 pb-3 pt-1 border-t border-dashed">
                                             <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">Subtasks</p>
                                             <div className="space-y-1">
-                                                {(chore.steps as any[]).map((step: any) => (
+                                                {chore.steps?.map((step) => (
                                                     <div key={step.id} className="flex items-center gap-2 text-sm">
                                                         {step.completed ? (
                                                             <CheckCircle className="h-3 w-3 text-primary" />
