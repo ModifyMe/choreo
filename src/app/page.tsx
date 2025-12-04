@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { FallingEmojis } from "@/components/falling-emojis";
+import { InteractiveChoreCard } from "@/components/landing/interactive-chore-card";
 
 export const dynamic = "force-dynamic";
 
@@ -29,21 +30,33 @@ export default async function Home() {
         </header>
 
         {/* Hero Section */}
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-12 max-w-4xl mx-auto w-full">
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
-              Household chores, <br className="hidden md:block" />
-              simplified.
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              A shared space for your family or roommates to track tasks, earn rewards, and stay organized without the hassle.
-            </p>
-            <div className="pt-4">
-              <SignInButton
-                text="Get Started"
-                size="lg"
-                className="px-8 text-lg font-semibold rounded-full"
-              />
+        <main className="flex-1 flex flex-col items-center justify-center p-6 space-y-12 max-w-6xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            <div className="space-y-6 text-center lg:text-left">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary">
+                Household chores, <br className="hidden md:block" />
+                simplified.
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                A shared space for your family or roommates to track tasks, earn rewards, and stay organized without the hassle.
+              </p>
+              <div className="pt-4 flex justify-center lg:justify-start">
+                <SignInButton
+                  text="Get Started"
+                  size="lg"
+                  className="px-8 text-lg font-semibold rounded-full"
+                />
+              </div>
+            </div>
+
+            {/* Interactive Demo */}
+            <div className="flex justify-center lg:justify-end relative">
+              <div className="relative z-20 w-full max-w-md">
+                <InteractiveChoreCard />
+                {/* Decorative elements behind the card */}
+                <div className="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/20 rounded-full blur-2xl -z-10" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl -z-10" />
+              </div>
             </div>
           </div>
 
