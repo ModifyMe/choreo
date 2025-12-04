@@ -60,20 +60,19 @@ export default async function DashboardPage({
     const household = membership.household;
     const allHouseholds = user.memberships.map((m) => m.household);
 
-    const [myChores, availableChores, rewards] = await Promise.all([
+    const [allChores, rewards] = await Promise.all([
         prisma.chore.findMany({
             where: {
                 householdId: household.id,
-                assignedToId: user.id,
                 status: "PENDING",
             },
-            orderBy: { createdAt: "desc" },
-        }),
-        prisma.chore.findMany({
-            where: {
-                householdId: household.id,
-                assignedToId: null,
-                status: "PENDING",
+            include: {
+                assignedTo: {
+                    select: {
+                        name: true,
+                        image: true,
+                    }
+                }
             },
             orderBy: { createdAt: "desc" },
         }),
@@ -84,7 +83,7 @@ export default async function DashboardPage({
     ]);
 
     return (
-        <ChoreProvider initialMyChores={myChores as any} initialAvailableChores={availableChores as any} userId={user.id} householdId={household.id}>
+        <ChoreProvider initialChores={allChores as any} userId={user.id} householdId={household.id}>
             <RewardProvider initialRewards={rewards as any} householdId={household.id}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Main Content Area - Chores */}

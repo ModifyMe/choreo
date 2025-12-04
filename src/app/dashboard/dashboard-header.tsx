@@ -9,7 +9,10 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
+import { HouseholdChoresDialog } from "./household-chores-dialog";
 import { TestPushButton } from "./test-push-button";
+
+// ... existing imports ...
 import { getLevel } from "@/lib/levels";
 import { Progress } from "@/components/ui/progress";
 import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings } from "lucide-react";
@@ -209,6 +212,7 @@ export function DashboardHeader({
                         </Button>
                     </Link>
                     <HelpDialog />
+                    <HouseholdChoresDialog />
                     <PushNotificationManager />
                     <TestPushButton householdId={household.id} />
                     <VacationToggle householdId={household.id} initialIsAway={membership.isAway} />
