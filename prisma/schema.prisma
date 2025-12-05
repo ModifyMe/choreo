@@ -203,6 +203,7 @@ model UserAchievement {
   achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
+  @@index([userId])
 }
 
 enum Role {
@@ -241,6 +242,8 @@ model ShoppingItem {
 
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   addedBy     User      @relation(fields: [addedById], references: [id])
+
+  @@index([householdId])
 }
 
 enum HouseholdMode {

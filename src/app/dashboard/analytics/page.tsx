@@ -2,10 +2,25 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { AnalyticsCharts } from "./charts";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+// Lazy load recharts bundle (~200KB) - only loads when analytics page is visited
+const AnalyticsCharts = dynamic(() => import("./charts").then(mod => ({ default: mod.AnalyticsCharts })), {
+    loading: () => (
+        <div className="grid gap-6 md:grid-cols-2">
+            <div className="col-span-2 md:col-span-1 h-[400px] rounded-lg border bg-card flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+            <div className="col-span-2 md:col-span-1 h-[400px] rounded-lg border bg-card flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        </div>
+    ),
+    ssr: false
+});
 
 export default async function AnalyticsPage() {
     const session = await getServerSession(authOptions);
