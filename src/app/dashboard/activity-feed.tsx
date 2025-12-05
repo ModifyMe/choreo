@@ -5,15 +5,20 @@ import { useCallback, useState } from "react";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow, differenceInMinutes } from "date-fns";
-import { CheckCircle2, Plus, ShoppingBag, UserPlus, Repeat, Undo2, RotateCcw, Loader2 } from "lucide-react";
+import { CheckCircle2, Plus, ShoppingBag, UserPlus, Repeat, Undo2, RotateCcw, Loader2, SmilePlus } from "lucide-react";
 import { InfiniteList } from "@/components/ui/infinite-list";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ActivityLog {
     id: string;
     action: string;
-    createdAt: string; // Supabase returns string
+    createdAt: string;
     choreId?: string | null;
     proofImage?: string | null;
     user: {
@@ -28,9 +33,20 @@ interface ActivityLog {
         choreTitle?: string;
         chorePoints?: number;
     } | null;
+    reactions?: {
+        emoji: string;
+        userId: string;
+    }[];
 }
 
+const REACTION_EMOJIS = ["👏", "🎉", "❤️", "🔥", "😂"];
+
 export function ActivityFeed({ householdId }: { householdId: string }) {
+    const router = useRouter();
+    const [undoingId, setUndoingId] = useState<string | null>(null);
+    const [reactingId, setReactingId] = useState<string | null>(null);
+    const [localReactions, setLocalReactions] = useState<Record<string, { emoji: string; userId: string }[]>>({});
+
     const getIcon = (action: string) => {
         switch (action) {
             case "CREATED":
@@ -52,7 +68,6 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
 
     const getMessage = (log: ActivityLog) => {
         const userName = log.user?.name || "Someone";
-        // Use metadata if available (snapshot), otherwise fall back to relation (live data)
         const choreTitle = log.metadata?.choreTitle || log.chore?.title || "a chore";
         const chorePoints = log.metadata?.chorePoints || log.chore?.points;
 
@@ -96,41 +111,34 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
             case "RECURRED":
                 return (
                     <span>
-                        <span className="font-medium">{choreTitle}</span> is due again
-                        {chorePoints && <span className="text-muted-foreground ml-1">({chorePoints} XP)</span>}
+                        <span className="font-medium">{choreTitle}</span> was auto-renewed
                     </span>
                 );
             case "RESTORED":
                 return (
                     <span>
-                        <span className="font-medium">{userName}</span> undid{" "}
+                        <span className="font-medium">{userName}</span> restored{" "}
                         <span className="font-medium">{choreTitle}</span>
-                        {chorePoints && <span className="text-orange-600 font-medium ml-1">(-{chorePoints} XP)</span>}
                     </span>
                 );
             default:
-                return <span>{userName} performed an action</span>;
+                return <span>{userName} did something</span>;
         }
     };
 
-
-    const [undoingId, setUndoingId] = useState<string | null>(null);
-    const router = useRouter();
-
-    const handleUndo = async (choreId: string, logId: string) => {
-        setUndoingId(logId);
+    const handleUndo = async (choreId: string, activityLogId: string) => {
+        setUndoingId(activityLogId);
         try {
             const res = await fetch(`/api/chores/${choreId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "RESTORE" }),
+                body: JSON.stringify({ action: "UNDO", activityLogId }),
             });
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text || "Failed to undo");
             }
             toast.success("Chore restored!");
-            // Refresh to sync chores for everyone
             router.refresh();
         } catch (error: any) {
             toast.error(error.message || "Failed to undo");
@@ -139,10 +147,48 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
         }
     };
 
+    const handleReaction = async (activityLogId: string, emoji: string) => {
+        setReactingId(activityLogId);
+        try {
+            const res = await fetch("/api/reactions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ activityLogId, emoji }),
+            });
+            if (!res.ok) throw new Error("Failed to react");
+
+            // Optimistically update local state
+            const data = await res.json();
+            setLocalReactions(prev => {
+                const current = prev[activityLogId] || [];
+                if (data.action === "removed") {
+                    return { ...prev, [activityLogId]: current.filter(r => r.emoji !== emoji) };
+                } else if (data.action === "updated") {
+                    return { ...prev, [activityLogId]: current.map(r => ({ ...r, emoji })) };
+                } else {
+                    return { ...prev, [activityLogId]: [...current, { emoji, userId: "me" }] };
+                }
+            });
+        } catch {
+            toast.error("Failed to add reaction");
+        } finally {
+            setReactingId(null);
+        }
+    };
+
+    const getReactionCounts = (reactions: { emoji: string }[]) => {
+        const counts: Record<string, number> = {};
+        reactions.forEach(r => {
+            counts[r.emoji] = (counts[r.emoji] || 0) + 1;
+        });
+        return counts;
+    };
+
     const renderItem = (item: any, index: number) => {
         const log = item as ActivityLog;
+        const allReactions = [...(log.reactions || []), ...(localReactions[log.id] || [])];
+        const reactionCounts = getReactionCounts(allReactions);
 
-        // Check if this COMPLETED activity is within 60 minutes (eligible for undo)
         let canUndo = false;
         if (log.action === "COMPLETED" && log.chore?.id) {
             let dateStr = log.createdAt;
@@ -161,7 +207,6 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                     <p className="leading-none">{getMessage(log)}</p>
                     <p className="text-xs text-muted-foreground">
                         {(() => {
-                            // Ensure date is treated as UTC if it comes without timezone info
                             let dateStr = log.createdAt;
                             if (!dateStr.endsWith("Z") && !dateStr.includes("+")) {
                                 dateStr += "Z";
@@ -180,6 +225,46 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                             </a>
                         </div>
                     )}
+                    {/* Reactions display */}
+                    <div className="flex items-center gap-1 mt-1 flex-wrap">
+                        {Object.entries(reactionCounts).map(([emoji, count]) => (
+                            <button
+                                key={emoji}
+                                onClick={() => handleReaction(log.id, emoji)}
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                            >
+                                <span>{emoji}</span>
+                                <span className="text-muted-foreground">{count}</span>
+                            </button>
+                        ))}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button
+                                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-muted transition-colors"
+                                    disabled={reactingId === log.id}
+                                >
+                                    {reactingId === log.id ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <SmilePlus className="w-3.5 h-3.5 text-muted-foreground" />
+                                    )}
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-1" align="start">
+                                <div className="flex gap-0.5">
+                                    {REACTION_EMOJIS.map(emoji => (
+                                        <button
+                                            key={emoji}
+                                            onClick={() => handleReaction(log.id, emoji)}
+                                            className="p-1.5 text-lg hover:bg-muted rounded transition-colors"
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                 </div>
                 {canUndo && (
                     <Button
@@ -212,7 +297,7 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
         <CardContent className="h-[400px] p-0">
             <InfiniteList
                 tableName="ActivityLog"
-                columns="*, user:User(name), chore:Chore(id, title)"
+                columns="*, user:User(name), chore:Chore(id, title), reactions:ActivityReaction(emoji, userId)"
                 pageSize={10}
                 className="p-6"
                 trailingQuery={trailingQuery}

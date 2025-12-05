@@ -177,10 +177,24 @@ model ActivityLog {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   chore       Chore?    @relation(fields: [choreId], references: [id])
   reward      Reward?   @relation(fields: [rewardId], references: [id])
+  reactions   ActivityReaction[]
 
   @@index([householdId])
   @@index([userId])
   @@index([householdId, createdAt]) // For activity feed pagination
+}
+
+model ActivityReaction {
+  id            String      @id @default(cuid())
+  activityLogId String
+  userId        String
+  emoji         String      // 👏, 🎉, ❤️, 🔥, 😂
+  createdAt     DateTime    @default(now())
+
+  activityLog   ActivityLog @relation(fields: [activityLogId], references: [id], onDelete: Cascade)
+
+  @@unique([activityLogId, userId]) // One reaction per user per activity
+  @@index([activityLogId])
 }
 
 model Achievement {
