@@ -236,18 +236,51 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                             }
                         } else {
                             // LOAD_BALANCING (Default)
+                            // Weighted scoring that penalizes laziness:
+                            // - Each pending chore = 1 point
+                            // - Each day a chore has been pending = +0.1 points (stale penalty)
+                            // - Overdue chores count DOUBLE (2 points each + stale penalty)
+
                             // Filter out current completer if possible
                             let candidates = members.filter(m => m.userId !== session.user.id);
 
                             if (candidates.length === 0) {
-                                // Only one person available (likely me)
                                 candidates = members;
                             }
 
                             if (candidates.length > 0) {
-                                // Sort by lowest points
-                                candidates.sort((a, b) => a.totalPoints - b.totalPoints);
-                                nextAssigneeId = candidates[0].userId;
+                                const now = new Date();
+
+                                const choreScores = await Promise.all(
+                                    candidates.map(async (member) => {
+                                        // Get all pending chores for this member
+                                        const pendingChores = await prisma.chore.findMany({
+                                            where: {
+                                                householdId: chore.householdId,
+                                                assignedToId: member.userId,
+                                                status: "PENDING",
+                                            },
+                                            select: { createdAt: true, dueDate: true }
+                                        });
+
+                                        let score = 0;
+                                        for (const c of pendingChores) {
+                                            // Base score: 1 per chore (2 if overdue)
+                                            const isOverdue = c.dueDate && new Date(c.dueDate) < now;
+                                            score += isOverdue ? 2 : 1;
+
+                                            // Stale penalty: 0.1 per day sitting
+                                            const daysOld = Math.floor((now.getTime() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+                                            score += daysOld * 0.1;
+                                        }
+
+                                        return { userId: member.userId, score };
+                                    })
+                                );
+
+                                // Assign to person with LOWEST score
+                                choreScores.sort((a, b) => a.score - b.score);
+                                nextAssigneeId = choreScores[0].userId;
                             }
                         }
                     }
@@ -413,6 +446,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                         },
                     })
                 );
+            }
+
+            // If this was a recurring chore, delete the next pending instance that was created
+            if (chore.recurrence && chore.recurrence !== "NONE") {
+                // Find the next pending chore with same title created after this one was completed
+                const nextInstance = await prisma.chore.findFirst({
+                    where: {
+                        householdId: chore.householdId,
+                        title: chore.title,
+                        status: "PENDING",
+                        recurrence: chore.recurrence,
+                        createdAt: { gt: chore.updatedAt }, // Created after this chore was updated (completed)
+                    },
+                    orderBy: { createdAt: "asc" },
+                });
+
+                if (nextInstance) {
+                    // Delete the next instance and its activity logs
+                    transactionOperations.push(
+                        prisma.activityLog.deleteMany({
+                            where: { choreId: nextInstance.id },
+                        }),
+                        prisma.chore.delete({
+                            where: { id: nextInstance.id },
+                        })
+                    );
+                }
             }
 
             await prisma.$transaction(transactionOperations);
