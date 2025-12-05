@@ -518,7 +518,7 @@ function TemplateSelector({ onSelect }: { onSelect: (t: ChoreTemplate) => void }
                     Use a Template
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] h-[80vh]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] h-[80vh]">
                 <DialogHeader>
                     <DialogTitle>Choose a Template</DialogTitle>
                     <DialogDescription>

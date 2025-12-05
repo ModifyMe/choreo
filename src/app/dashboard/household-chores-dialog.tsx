@@ -39,7 +39,7 @@ export function HouseholdChoresDialog() {
                     <Users className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[425px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Household Chores</DialogTitle>
                     <DialogDescription>

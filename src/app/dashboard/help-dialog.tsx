@@ -20,7 +20,7 @@ export function HelpDialog() {
                     <span className="sr-only">Help</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                         <HelpCircle className="h-6 w-6 text-primary" />

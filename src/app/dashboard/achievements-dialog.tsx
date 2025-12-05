@@ -30,7 +30,7 @@ export function AchievementsDialog({ achievements }: { achievements: Achievement
                     <Trophy className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Achievements</DialogTitle>
                     <DialogDescription>

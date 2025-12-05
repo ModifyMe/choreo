@@ -354,7 +354,7 @@ export function ChoreCard({
                                         Complete
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
+                                <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[85vh] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle>Complete "{chore.title}"</DialogTitle>
                                         <DialogDescription>

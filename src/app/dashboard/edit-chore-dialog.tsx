@@ -150,7 +150,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[425px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Edit Chore</DialogTitle>
                     <DialogDescription>

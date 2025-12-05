@@ -83,7 +83,7 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
                     Add Reward
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[425px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New Reward</DialogTitle>
                     <DialogDescription>
