@@ -99,7 +99,7 @@ export function DashboardLayoutClient({
                             onOpenChange={setCalendarOpen}
                         />
                     )}
-                    {settingsOpen && membership.role === "ADMIN" && (
+                    {settingsOpen && (
                         <SettingsDialog
                             householdId={household.id}
                             currentMode={household.mode}
