@@ -36,6 +36,9 @@ export function PullToRefresh({ children, className }: PullToRefreshProps) {
         const diff = currentY - startY;
 
         if (diff > 0 && window.scrollY === 0) {
+            // Prevent native pull-to-refresh
+            e.preventDefault();
+
             // Apply resistance to pull
             const resistance = 0.5;
             const distance = Math.min(diff * resistance, MAX_PULL);
@@ -68,6 +71,7 @@ export function PullToRefresh({ children, className }: PullToRefreshProps) {
     return (
         <div
             className={cn("relative", className)}
+            style={{ overscrollBehaviorY: "contain" }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
