@@ -25,7 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { Chore } from "./chore-context";
-import imageCompression from "browser-image-compression";
+import { compressImage } from "@/lib/image-compression";
 import { cn } from "@/lib/utils";
 import { ChoreDetailDialog } from "./chore-detail-dialog";
 import { PostSwapDialog } from "./post-swap-dialog";
@@ -70,15 +70,12 @@ export function ChoreCard({
             setUploading(true);
             try {
                 // Compress image
-                const options = {
-                    maxSizeMB: 0.5, // Compress to ~500KB
-                    maxWidthOrHeight: 1024,
-                    useWebWorker: true,
-                };
-
                 let compressedFile = proofFile;
                 try {
-                    compressedFile = await imageCompression(proofFile, options);
+                    compressedFile = await compressImage(proofFile, {
+                        maxSizeMB: 0.5,
+                        maxWidthOrHeight: 1024,
+                    });
                 } catch (error) {
                     console.error("Compression failed, using original file", error);
                 }

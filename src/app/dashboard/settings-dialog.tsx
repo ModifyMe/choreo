@@ -27,8 +27,8 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import imageCompression from "browser-image-compression";
 import Webcam from "react-webcam";
+import { compressImage } from "@/lib/image-compression";
 
 export function SettingsDialog({
     householdId,
@@ -433,15 +433,12 @@ function ProfileSettings({ user }: { user: any }) {
         setLoading(true);
         try {
             // Compress image
-            const options = {
-                maxSizeMB: 0.5, // Compress to ~500KB
-                maxWidthOrHeight: 1024,
-                useWebWorker: true,
-            };
-
             let compressedFile = file;
             try {
-                compressedFile = await imageCompression(file, options);
+                compressedFile = await compressImage(file, {
+                    maxSizeMB: 0.5,
+                    maxWidthOrHeight: 1024,
+                });
             } catch (error) {
                 console.error("Compression failed, using original file", error);
             }

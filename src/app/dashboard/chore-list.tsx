@@ -38,7 +38,7 @@ import {
 import dynamic from "next/dynamic";
 import { useChores, Chore } from "./chore-context";
 import { ChoreCard } from "./chore-card";
-import imageCompression from "browser-image-compression";
+import { compressImage } from "@/lib/image-compression";
 
 // Lazy load heavy dialog component
 const EditChoreDialog = dynamic(() => import("./edit-chore-dialog").then(mod => mod.EditChoreDialog), {
@@ -135,15 +135,12 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
             setUploading(true);
             try {
                 // Compress image
-                const options = {
-                    maxSizeMB: 0.5, // Compress to ~500KB
-                    maxWidthOrHeight: 1024,
-                    useWebWorker: true,
-                };
-
                 let compressedFile = proofFile;
                 try {
-                    compressedFile = await imageCompression(proofFile, options);
+                    compressedFile = await compressImage(proofFile, {
+                        maxSizeMB: 0.5,
+                        maxWidthOrHeight: 1024,
+                    });
                 } catch (error) {
                     console.error("Compression failed, using original file", error);
                 }
