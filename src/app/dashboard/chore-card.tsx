@@ -194,7 +194,8 @@ export function ChoreCard({
                                         return (
                                             <div className="flex gap-0.5">
                                                 {days.map(d => {
-                                                    const isToday = dayMap[d] === todayDay;
+                                                    const dayUpper = d.toUpperCase();
+                                                    const isToday = dayMap[dayUpper] === todayDay;
                                                     // 2-letter abbreviations to distinguish Tu/Th, Sa/Su
                                                     const abbrevMap: { [key: string]: string } = {
                                                         "SUN": "Su", "MON": "Mo", "TUE": "Tu", "WED": "We",
