@@ -387,32 +387,10 @@ export function ChoreProvider({
     }, [updateChore]);
 
     const completeChore = useCallback((id: string) => {
-        const allChores = [...serverChores, ...optimisticAdds];
-        const chore = allChores.find(c => c.id === id);
-
-        if (chore && chore.recurrence && chore.recurrence !== "NONE") {
-            const nextDueDate = new Date();
-            if (chore.recurrence === "DAILY") nextDueDate.setDate(nextDueDate.getDate() + 1);
-            else if (chore.recurrence === "WEEKLY") nextDueDate.setDate(nextDueDate.getDate() + 7);
-            else if (chore.recurrence === "MONTHLY") nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-            else if (chore.recurrence === "BI_MONTHLY") nextDueDate.setMonth(nextDueDate.getMonth() + 2);
-            else nextDueDate.setDate(nextDueDate.getDate() + 7);
-
-            const nextChore: Chore = {
-                ...chore,
-                id: `temp-${Date.now()}`,
-                dueDate: nextDueDate,
-                status: "PENDING",
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                steps: chore.steps ? chore.steps.map(s => ({ ...s, completed: false })) : undefined
-            };
-
-            addChore(nextChore);
-        }
-
+        // Just mark as completed - let real-time handle the next occurrence
+        // This ensures correct assignment from server's rotation strategy
         updateChore(id, { status: "COMPLETED" });
-    }, [serverChores, optimisticAdds, updateChore, addChore]);
+    }, [updateChore]);
 
     const restoreChore = useCallback((id: string) => {
         setPendingDeletes((prev) => {
