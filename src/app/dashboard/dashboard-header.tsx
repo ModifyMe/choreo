@@ -18,7 +18,7 @@ const CalendarDialog = dynamic(() => import("./calendar-dialog").then(mod => mod
 // ... existing imports ...
 import { getLevel } from "@/lib/levels";
 import { Progress } from "@/components/ui/progress";
-import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings, Link as LinkIcon } from "lucide-react";
+import { Coins, BarChart3, Flame, Menu, MoreHorizontal, Copy, ShoppingCart, Settings, Link as LinkIcon, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -195,6 +195,13 @@ export function DashboardHeader({
                                     </Button>
                                     <span>Analytics</span>
                                 </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem asChild>
+                                <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    <CalendarDialog userId={user.id} />
+                                </div>
                             </DropdownMenuItem>
 
                             {membership.role === "ADMIN" && (
