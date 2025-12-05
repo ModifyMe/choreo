@@ -11,6 +11,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuShortcut,
     DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
+    DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -44,18 +48,6 @@ export function UserNav({ user, households, currentHouseholdId, inviteCode, isAw
     const { theme, setTheme } = useTheme();
     const [achievementsOpen, setAchievementsOpen] = useState(false);
 
-    const cycleTheme = () => {
-        if (theme === "light") setTheme("dark");
-        else if (theme === "dark") setTheme("system");
-        else setTheme("light");
-    };
-
-    const getThemeLabel = () => {
-        if (theme === "light") return "Light";
-        if (theme === "dark") return "Dark";
-        return "System";
-    };
-
     return (
         <>
             <DropdownMenu>
@@ -88,12 +80,28 @@ export function UserNav({ user, households, currentHouseholdId, inviteCode, isAw
                         <span>Achievements</span>
                     </DropdownMenuItem>
 
-                    {/* Theme - entire row is clickable */}
-                    <DropdownMenuItem onClick={cycleTheme}>
-                        <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                        <Moon className="absolute ml-0 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                        <span className="ml-6">Theme: {getThemeLabel()}</span>
-                    </DropdownMenuItem>
+                    {/* Theme - submenu with options */}
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute ml-0 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="ml-6">Theme</span>
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => setTheme("light")}>
+                                    <Sun className="mr-2 h-4 w-4" />
+                                    Light
+                                    {theme === "light" && <Check className="ml-auto h-4 w-4" />}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                                    <Moon className="mr-2 h-4 w-4" />
+                                    Dark
+                                    {theme === "dark" && <Check className="ml-auto h-4 w-4" />}
+                                </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
 
                     <DropdownMenuSeparator />
 
