@@ -136,19 +136,27 @@ export function ChoreProvider({
             setServerChores((prev) => {
                 let next = [...prev];
 
-                // Apply inserts (skip duplicates)
+                // Apply inserts (skip duplicates and only add PENDING chores)
                 inserts.forEach((chore) => {
-                    if (!next.some((c) => c.id === chore.id)) {
+                    if (!next.some((c) => c.id === chore.id) && chore.status === "PENDING") {
                         next.push(chore);
                     }
                 });
 
-                // Apply updates
+                // Apply updates - if status is COMPLETED, remove from list; otherwise update
                 if (updates.length > 0) {
                     const updateMap = new Map(updates.map(u => [u.id, u]));
+                    const completedIds = new Set(
+                        updates.filter(u => u.status === "COMPLETED").map(u => u.id)
+                    );
+
+                    // Remove completed chores
+                    next = next.filter((c) => !completedIds.has(c.id));
+
+                    // Update remaining chores
                     next = next.map((c) => {
                         const update = updateMap.get(c.id);
-                        if (update) {
+                        if (update && update.status === "PENDING") {
                             return { ...update, createdAt: c.createdAt };
                         }
                         return c;
