@@ -120,13 +120,28 @@ export function ChoreCard({
     const handlers = useSwipeable({
         onSwiping: (eventData) => {
             // Only show visual feedback for horizontal swipes on owned chores
-            if (type === "my" || chore.assignedToId === userId) {
+            // Require swipe to be more horizontal than vertical (ratio > 1.5)
+            const absX = Math.abs(eventData.deltaX);
+            const absY = Math.abs(eventData.deltaY);
+            const isHorizontal = absX > absY * 1.5;
+
+            if ((type === "my" || chore.assignedToId === userId) && isHorizontal) {
                 // Clamp the x translation to max 100px and only for rightward swipes
                 const x = Math.min(Math.max(0, eventData.deltaX), 100);
                 controls.set({ x });
             }
         },
-        onSwipedRight: async () => {
+        onSwipedRight: async (eventData) => {
+            // Additional check: require swipe to be more horizontal than vertical
+            const absX = Math.abs(eventData.deltaX);
+            const absY = Math.abs(eventData.deltaY);
+            const isHorizontal = absX > absY * 1.5;
+
+            if (!isHorizontal) {
+                controls.start({ x: 0 });
+                return;
+            }
+
             if (isLocked) {
                 toast.error("This chore is locked until its due date!");
                 controls.start({ x: 0 });
@@ -153,9 +168,9 @@ export function ChoreCard({
             controls.start({ x: 0 });
         },
         trackMouse: true,
-        preventScrollOnSwipe: true,
-        delta: 50, // Require 50px horizontal movement before triggering swipe
-        swipeDuration: 500, // Max time for swipe gesture
+        preventScrollOnSwipe: false, // Allow scroll, only prevent when clearly horizontal
+        delta: 100, // Require 100px horizontal movement before triggering swipe (was 50)
+        swipeDuration: 400, // Faster swipes only (was 500)
     });
 
     return (
