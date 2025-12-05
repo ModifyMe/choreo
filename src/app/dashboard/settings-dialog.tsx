@@ -243,25 +243,25 @@ export function SettingsDialog({
                                     <SelectItem value="LOAD_BALANCING">
                                         <div className="flex flex-col">
                                             <span className="font-medium">Load Balancing (Recommended)</span>
-                                            <span className="text-xs text-muted-foreground">Assigns to member with lowest XP</span>
+                                            <span className="text-xs text-muted-foreground">Assigns to person with least workload. Overdue chores count double. Fast completers may get more tasks but earn more XP.</span>
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="STRICT_ROTATION">
                                         <div className="flex flex-col">
                                             <span className="font-medium">Strict Rotation</span>
-                                            <span className="text-xs text-muted-foreground">Passes to the next member in line</span>
+                                            <span className="text-xs text-muted-foreground">True equality: cycles through members in order. Everyone gets exactly 1/N of the chores.</span>
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="RANDOM">
                                         <div className="flex flex-col">
                                             <span className="font-medium">Random</span>
-                                            <span className="text-xs text-muted-foreground">Roll the dice!</span>
+                                            <span className="text-xs text-muted-foreground">Roll the dice! Completely random assignment.</span>
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="NONE">
                                         <div className="flex flex-col">
-                                            <span className="font-medium">None</span>
-                                            <span className="text-xs text-muted-foreground">Leave unassigned</span>
+                                            <span className="font-medium">None (First-Come-First-Serve)</span>
+                                            <span className="text-xs text-muted-foreground">Leave unassigned. Members can claim chores themselves.</span>
                                         </div>
                                     </SelectItem>
                                 </SelectContent>
