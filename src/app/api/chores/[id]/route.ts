@@ -269,7 +269,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                             create: {
                                 userId: session.user.id,
                                 householdId: chore.householdId,
-                                action: "CREATED",
+                                action: "RECURRED",
+                                metadata: {
+                                    choreTitle: chore.title,
+                                    chorePoints: chore.points,
+                                },
                             }
                         }
                     },

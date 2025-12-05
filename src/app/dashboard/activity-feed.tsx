@@ -5,7 +5,7 @@ import { useCallback } from "react";
 
 import { CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, Plus, ShoppingBag, UserPlus } from "lucide-react";
+import { CheckCircle2, Plus, ShoppingBag, UserPlus, Repeat } from "lucide-react";
 import { InfiniteList } from "@/components/ui/infinite-list";
 
 interface ActivityLog {
@@ -37,6 +37,8 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 return <UserPlus className="w-4 h-4 text-purple-500" />;
             case "REDEEMED":
                 return <ShoppingBag className="w-4 h-4 text-yellow-500" />;
+            case "RECURRED":
+                return <Repeat className="w-4 h-4 text-blue-400" />;
             default:
                 return <Plus className="w-4 h-4 text-gray-500" />;
         }
@@ -83,6 +85,13 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 return (
                     <span>
                         <span className="font-medium">{userName}</span> redeemed a reward
+                    </span>
+                );
+            case "RECURRED":
+                return (
+                    <span>
+                        <span className="font-medium">{choreTitle}</span> is due again
+                        {chorePoints && <span className="text-muted-foreground ml-1">({chorePoints} XP)</span>}
                     </span>
                 );
             default:
