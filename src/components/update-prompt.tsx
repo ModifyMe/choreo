@@ -1,85 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function UpdatePrompt() {
     const [showPrompt, setShowPrompt] = useState(false);
-    const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+    const initialVersionRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
-            return;
-        }
+        if (typeof window === "undefined") return;
 
-        const handleUpdate = async () => {
+        const checkVersion = async () => {
             try {
-                const registration = await navigator.serviceWorker.ready;
+                const res = await fetch("/api/version", { cache: "no-store" });
+                if (!res.ok) return;
 
-                // Check for updates on focus (user returns to tab)
-                const checkForUpdates = () => {
-                    registration.update().catch(console.error);
-                };
+                const data = await res.json();
+                const currentVersion = data.version;
 
-                // Check for updates when tab becomes visible
-                document.addEventListener("visibilitychange", () => {
-                    if (document.visibilityState === "visible") {
-                        checkForUpdates();
-                    }
-                });
-
-                // Also check periodically (every 5 minutes)
-                const interval = setInterval(checkForUpdates, 5 * 60 * 1000);
-
-                // Listen for new service worker installing
-                registration.addEventListener("updatefound", () => {
-                    const newWorker = registration.installing;
-                    if (!newWorker) return;
-
-                    newWorker.addEventListener("statechange", () => {
-                        // New service worker is installed and waiting
-                        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                            setWaitingWorker(newWorker);
-                            setShowPrompt(true);
-                        }
-                    });
-                });
-
-                // If there's already a waiting worker on page load
-                if (registration.waiting) {
-                    setWaitingWorker(registration.waiting);
-                    setShowPrompt(true);
+                // Store initial version on first check
+                if (initialVersionRef.current === null) {
+                    initialVersionRef.current = currentVersion;
+                    return;
                 }
 
-                return () => {
-                    clearInterval(interval);
-                };
+                // Show prompt if version changed
+                if (currentVersion !== initialVersionRef.current) {
+                    setShowPrompt(true);
+                }
             } catch (error) {
-                console.error("SW registration error:", error);
+                console.error("Version check failed:", error);
             }
         };
 
-        handleUpdate();
+        // Check immediately
+        checkVersion();
 
-        // Listen for controller change (when skipWaiting is called)
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-            if (refreshing) return;
-            refreshing = true;
-            window.location.reload();
-        });
+        // Check every 30 seconds
+        const interval = setInterval(checkVersion, 30 * 1000);
+
+        // Also check when tab becomes visible
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") {
+                checkVersion();
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, []);
 
     const handleRefresh = () => {
-        if (waitingWorker) {
-            // Tell the waiting service worker to take over
-            waitingWorker.postMessage({ type: "SKIP_WAITING" });
-        } else {
-            // Fallback: just reload
-            window.location.reload();
-        }
+        window.location.reload();
     };
 
     const handleDismiss = () => {
@@ -103,7 +80,7 @@ export function UpdatePrompt() {
                 <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">Update Available</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                        A new version of Choreo is ready. Refresh to get the latest features!
+                        A new version of Choreo is ready!
                     </p>
                 </div>
                 <Button
@@ -130,7 +107,7 @@ export function UpdatePrompt() {
                     onClick={handleRefresh}
                 >
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh Now
+                    Refresh
                 </Button>
             </div>
         </div>
