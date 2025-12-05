@@ -27,6 +27,7 @@ import { supabase } from "@/lib/supabase";
 import { Chore } from "./chore-context";
 import imageCompression from "browser-image-compression";
 import { cn } from "@/lib/utils";
+import { ChoreDetailDialog } from "./chore-detail-dialog";
 
 interface ChoreCardProps {
     chore: Chore;
@@ -52,6 +53,7 @@ export function ChoreCard({
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [detailOpen, setDetailOpen] = useState(false);
     const controls = useAnimation();
 
     // Check if this is an optimistic chore that hasn't been saved yet
@@ -174,282 +176,293 @@ export function ChoreCard({
     });
 
     return (
-        <motion.div
-            {...handlers}
-            animate={controls}
-            className={`flex items-center justify-between p-4 border rounded-lg bg-card touch-pan-y ${isOverdue ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}`}
-        >
-            <div className="space-y-1 flex-1 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
-                    <h3 className="font-medium truncate">{chore.title}</h3>
-                    {chore.recurrence && chore.recurrence !== "NONE" && (
-                        <div className="flex gap-1">
-                            {chore.recurrence === "CUSTOM" && chore.recurrenceData ? (
-                                (() => {
-                                    try {
-                                        const days = JSON.parse(chore.recurrenceData) as string[];
-                                        const dayMap: { [key: string]: number } = { "SUN": 0, "MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SAT": 6 };
-                                        const todayDay = new Date().getDay();
+        <>
+            <motion.div
+                {...handlers}
+                animate={controls}
+                className={`flex items-center justify-between p-4 border rounded-lg bg-card touch-pan-y ${isOverdue ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}`}
+            >
+                <div
+                    className="space-y-1 flex-1 min-w-0 cursor-pointer"
+                    onClick={() => setDetailOpen(true)}
+                >
+                    <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="font-medium truncate">{chore.title}</h3>
+                        {chore.recurrence && chore.recurrence !== "NONE" && (
+                            <div className="flex gap-1">
+                                {chore.recurrence === "CUSTOM" && chore.recurrenceData ? (
+                                    (() => {
+                                        try {
+                                            const days = JSON.parse(chore.recurrenceData) as string[];
+                                            const dayMap: { [key: string]: number } = { "SUN": 0, "MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SAT": 6 };
+                                            const todayDay = new Date().getDay();
 
-                                        return (
-                                            <div className="flex gap-0.5">
-                                                {days.map(d => {
-                                                    const dayUpper = d.toUpperCase();
-                                                    const isToday = dayMap[dayUpper] === todayDay;
-                                                    // 2-letter abbreviations to distinguish Tu/Th, Sa/Su
-                                                    const abbrevMap: { [key: string]: string } = {
-                                                        "SUN": "Su", "MON": "Mo", "TUE": "Tu", "WED": "We",
-                                                        "THU": "Th", "FRI": "Fr", "SAT": "Sa"
-                                                    };
-                                                    return (
-                                                        <span
-                                                            key={d}
-                                                            className={cn(
-                                                                "text-[9px] px-1 py-0.5 rounded-sm font-bold",
-                                                                isToday
-                                                                    ? "bg-green-500 text-white shadow-sm ring-1 ring-green-400"
-                                                                    : "bg-muted text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {abbrevMap[d] || d.substring(0, 2)}
-                                                        </span>
-                                                    );
-                                                })}
-                                            </div>
-                                        );
-                                    } catch (e) {
-                                        return (
-                                            <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
-                                                CUSTOM
+                                            return (
+                                                <div className="flex gap-0.5">
+                                                    {days.map(d => {
+                                                        const dayUpper = d.toUpperCase();
+                                                        const isToday = dayMap[dayUpper] === todayDay;
+                                                        // 2-letter abbreviations to distinguish Tu/Th, Sa/Su
+                                                        const abbrevMap: { [key: string]: string } = {
+                                                            "SUN": "Su", "MON": "Mo", "TUE": "Tu", "WED": "We",
+                                                            "THU": "Th", "FRI": "Fr", "SAT": "Sa"
+                                                        };
+                                                        return (
+                                                            <span
+                                                                key={d}
+                                                                className={cn(
+                                                                    "text-[9px] px-1 py-0.5 rounded-sm font-bold",
+                                                                    isToday
+                                                                        ? "bg-green-500 text-white shadow-sm ring-1 ring-green-400"
+                                                                        : "bg-muted text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                {abbrevMap[d] || d.substring(0, 2)}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            );
+                                        } catch (e) {
+                                            return (
+                                                <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                                                    CUSTOM
+                                                </span>
+                                            );
+                                        }
+                                    })()
+                                ) : (
+                                    <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                                        {chore.recurrence}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}
+
+                    {/* Subtasks Progress */}
+                    {chore.steps && chore.steps.filter(s => s.title !== "__CORRELATION__").length > 0 && (
+                        <div className="mt-2">
+                            {(() => {
+                                const visibleSteps = chore.steps!.filter(s => s.title !== "__CORRELATION__");
+                                return (
+                                    <>
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                            <span>Subtasks</span>
+                                            <span>
+                                                {visibleSteps.filter(s => s.completed).length}/{visibleSteps.length}
                                             </span>
-                                        );
-                                    }
-                                })()
+                                        </div>
+                                        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary transition-all duration-300"
+                                                style={{ width: `${(visibleSteps.filter(s => s.completed).length / visibleSteps.length) * 100}%` }}
+                                            />
+                                        </div>
+
+                                        {/* Expandable Subtasks List */}
+                                        {(type === "my" || chore.assignedToId === userId) && (
+                                            <div className="mt-2 space-y-1">
+                                                {visibleSteps.map((step: any) => (
+                                                    <div
+                                                        key={step.id}
+                                                        className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 p-1 rounded"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onToggleSubtask(chore.id, step.id);
+                                                        }}
+                                                    >
+                                                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${step.completed ? "bg-primary border-primary" : "border-muted-foreground"}`}>
+                                                            {step.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
+                                                        </div>
+                                                        <span className={step.completed ? "line-through text-muted-foreground" : ""}>{step.title}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+                        <span className="font-semibold text-primary">{chore.points} pts</span>
+                        {chore.dueDate && (
+                            <span className={`flex items-center gap-1 ${isOverdue ? "text-red-600 font-bold" : ""}`}>
+                                <Clock className="w-3 h-3" />
+                                {isToday(new Date(chore.dueDate)) ? "Today" :
+                                    isTomorrow(new Date(chore.dueDate)) ? "Tomorrow" :
+                                        format(new Date(chore.dueDate), "MMM d")}
+                                {chore.reminderTime && (
+                                    <span className="ml-1 text-[10px] opacity-80">
+                                        (@ {chore.reminderTime})
+                                    </span>
+                                )}
+                            </span>
+                        )}
+                        {chore.priority && chore.priority !== "MEDIUM" && (
+                            <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${chore.priority === "HIGH" ? "text-orange-600" : "text-slate-500"
+                                }`}>
+                                {chore.priority === "HIGH" && <Flame className="w-3 h-3" />}
+                                {chore.priority} Priority
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 ml-4">
+                    {type === "available" ? (
+                        <Button
+                            size="sm"
+                            onClick={() => onAction(chore.id, "CLAIM")}
+                            disabled={loadingId === chore.id || isOptimistic}
+                        >
+                            {loadingId === chore.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : isOptimistic ? (
+                                <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Syncing...</>
                             ) : (
-                                <span className="text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
-                                    {chore.recurrence}
-                                </span>
+                                "Claim"
+                            )}
+                        </Button>
+                    ) : (
+                        <div className="flex gap-2">
+                            {chore.assignedToId && chore.assignedToId !== userId && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={async () => {
+                                        toast.promise(
+                                            fetch(`/api/chores/${chore.id}/nudge`, { method: "POST" }),
+                                            {
+                                                loading: 'Nudging...',
+                                                success: 'Nudge sent! 🔔',
+                                                error: 'Failed to send nudge'
+                                            }
+                                        );
+                                    }}
+                                    title="Nudge Assignee"
+                                >
+                                    <Bell className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                            )}
+
+                            {isLocked ? (
+                                <Button size="sm" variant="secondary" disabled className="opacity-50 cursor-not-allowed">
+                                    <Lock className="w-4 h-4 mr-2" />
+                                    Locked
+                                </Button>
+                            ) : (
+                                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-2"
+                                        >
+                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                            Complete
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[85vh] overflow-y-auto">
+                                        <DialogHeader>
+                                            <DialogTitle>Complete "{chore.title}"</DialogTitle>
+                                            <DialogDescription>
+                                                Upload a photo proof (optional) to complete this chore.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="grid w-full gap-4 py-4">
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="picture" className="text-sm font-medium">Proof Photo</Label>
+                                                <input
+                                                    id="picture"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    capture="environment"
+                                                    className="hidden"
+                                                    ref={(input) => {
+                                                        if (input) input.onclick = (e) => { (e.target as HTMLInputElement).value = '' }
+                                                    }}
+                                                    onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                                                />
+
+                                                {proofFile ? (
+                                                    <div className="relative group">
+                                                        <img
+                                                            src={URL.createObjectURL(proofFile)}
+                                                            alt="Proof preview"
+                                                            className="w-full h-64 object-cover rounded-lg border shadow-sm"
+                                                        />
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="absolute top-2 right-2 h-8 w-8 opacity-90 hover:opacity-100 transition-opacity"
+                                                            onClick={() => setProofFile(null)}
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="h-40 w-full border-dashed border-2 flex flex-col gap-3 hover:bg-muted/50 transition-colors"
+                                                        onClick={() => document.getElementById('picture')?.click()}
+                                                    >
+                                                        <div className="p-3 bg-background rounded-full shadow-sm">
+                                                            <Camera className="w-6 h-6 text-primary" />
+                                                        </div>
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="font-medium">Tap to Take Photo</span>
+                                                            <span className="text-xs text-muted-foreground">or upload from gallery</span>
+                                                        </div>
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <DialogFooter className="sm:justify-between gap-2">
+                                            <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                                            <Button onClick={handleCompleteWithProof} disabled={uploading || loadingId === chore.id} className="w-full sm:w-auto">
+                                                {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                                {uploading ? "Uploading..." : "Complete Chore"}
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
                             )}
                         </div>
                     )}
-                </div>
-                {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}
 
-                {/* Subtasks Progress */}
-                {chore.steps && chore.steps.filter(s => s.title !== "__CORRELATION__").length > 0 && (
-                    <div className="mt-2">
-                        {(() => {
-                            const visibleSteps = chore.steps!.filter(s => s.title !== "__CORRELATION__");
-                            return (
-                                <>
-                                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                                        <span>Subtasks</span>
-                                        <span>
-                                            {visibleSteps.filter(s => s.completed).length}/{visibleSteps.length}
-                                        </span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-primary transition-all duration-300"
-                                            style={{ width: `${(visibleSteps.filter(s => s.completed).length / visibleSteps.length) * 100}%` }}
-                                        />
-                                    </div>
-
-                                    {/* Expandable Subtasks List */}
-                                    {(type === "my" || chore.assignedToId === userId) && (
-                                        <div className="mt-2 space-y-1">
-                                            {visibleSteps.map((step: any) => (
-                                                <div
-                                                    key={step.id}
-                                                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 p-1 rounded"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onToggleSubtask(chore.id, step.id);
-                                                    }}
-                                                >
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${step.completed ? "bg-primary border-primary" : "border-muted-foreground"}`}>
-                                                        {step.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
-                                                    </div>
-                                                    <span className={step.completed ? "line-through text-muted-foreground" : ""}>{step.title}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </>
-                            );
-                        })()}
-                    </div>
-                )}
-
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-                    <span className="font-semibold text-primary">{chore.points} pts</span>
-                    {chore.dueDate && (
-                        <span className={`flex items-center gap-1 ${isOverdue ? "text-red-600 font-bold" : ""}`}>
-                            <Clock className="w-3 h-3" />
-                            {isToday(new Date(chore.dueDate)) ? "Today" :
-                                isTomorrow(new Date(chore.dueDate)) ? "Tomorrow" :
-                                    format(new Date(chore.dueDate), "MMM d")}
-                            {chore.reminderTime && (
-                                <span className="ml-1 text-[10px] opacity-80">
-                                    (@ {chore.reminderTime})
-                                </span>
-                            )}
-                        </span>
-                    )}
-                    {chore.priority && chore.priority !== "MEDIUM" && (
-                        <span className={`flex items-center gap-1 text-[10px] font-bold uppercase ${chore.priority === "HIGH" ? "text-orange-600" : "text-slate-500"
-                            }`}>
-                            {chore.priority === "HIGH" && <Flame className="w-3 h-3" />}
-                            {chore.priority} Priority
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            <div className="flex items-center gap-2 ml-4">
-                {type === "available" ? (
-                    <Button
-                        size="sm"
-                        onClick={() => onAction(chore.id, "CLAIM")}
-                        disabled={loadingId === chore.id || isOptimistic}
-                    >
-                        {loadingId === chore.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : isOptimistic ? (
-                            <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Syncing...</>
-                        ) : (
-                            "Claim"
-                        )}
-                    </Button>
-                ) : (
-                    <div className="flex gap-2">
-                        {chore.assignedToId && chore.assignedToId !== userId && (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={async () => {
-                                    toast.promise(
-                                        fetch(`/api/chores/${chore.id}/nudge`, { method: "POST" }),
-                                        {
-                                            loading: 'Nudging...',
-                                            success: 'Nudge sent! 🔔',
-                                            error: 'Failed to send nudge'
-                                        }
-                                    );
-                                }}
-                                title="Nudge Assignee"
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onEdit(chore)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onDelete(chore.id)}
+                                className="text-red-600 focus:text-red-600"
                             >
-                                <Bell className="w-4 h-4 text-muted-foreground" />
-                            </Button>
-                        )}
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </motion.div>
 
-                        {isLocked ? (
-                            <Button size="sm" variant="secondary" disabled className="opacity-50 cursor-not-allowed">
-                                <Lock className="w-4 h-4 mr-2" />
-                                Locked
-                            </Button>
-                        ) : (
-                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="gap-2"
-                                    >
-                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                        Complete
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[85vh] overflow-y-auto">
-                                    <DialogHeader>
-                                        <DialogTitle>Complete "{chore.title}"</DialogTitle>
-                                        <DialogDescription>
-                                            Upload a photo proof (optional) to complete this chore.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="grid w-full gap-4 py-4">
-                                        <div className="flex flex-col gap-2">
-                                            <Label htmlFor="picture" className="text-sm font-medium">Proof Photo</Label>
-                                            <input
-                                                id="picture"
-                                                type="file"
-                                                accept="image/*"
-                                                capture="environment"
-                                                className="hidden"
-                                                ref={(input) => {
-                                                    if (input) input.onclick = (e) => { (e.target as HTMLInputElement).value = '' }
-                                                }}
-                                                onChange={(e) => setProofFile(e.target.files?.[0] || null)}
-                                            />
-
-                                            {proofFile ? (
-                                                <div className="relative group">
-                                                    <img
-                                                        src={URL.createObjectURL(proofFile)}
-                                                        alt="Proof preview"
-                                                        className="w-full h-64 object-cover rounded-lg border shadow-sm"
-                                                    />
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="icon"
-                                                        className="absolute top-2 right-2 h-8 w-8 opacity-90 hover:opacity-100 transition-opacity"
-                                                        onClick={() => setProofFile(null)}
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    className="h-40 w-full border-dashed border-2 flex flex-col gap-3 hover:bg-muted/50 transition-colors"
-                                                    onClick={() => document.getElementById('picture')?.click()}
-                                                >
-                                                    <div className="p-3 bg-background rounded-full shadow-sm">
-                                                        <Camera className="w-6 h-6 text-primary" />
-                                                    </div>
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <span className="font-medium">Tap to Take Photo</span>
-                                                        <span className="text-xs text-muted-foreground">or upload from gallery</span>
-                                                    </div>
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <DialogFooter className="sm:justify-between gap-2">
-                                        <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                                        <Button onClick={handleCompleteWithProof} disabled={uploading || loadingId === chore.id} className="w-full sm:w-auto">
-                                            {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                                            {uploading ? "Uploading..." : "Complete Chore"}
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        )}
-                    </div>
-                )}
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(chore)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => onDelete(chore.id)}
-                            className="text-red-600 focus:text-red-600"
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </motion.div>
+            <ChoreDetailDialog
+                chore={chore}
+                open={detailOpen}
+                onOpenChange={setDetailOpen}
+            />
+        </>
     );
 }
