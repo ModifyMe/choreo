@@ -49,6 +49,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
         recurrenceData: [] as string[],
         assignedToId: "NONE",
         dueDate: "",
+        requireProof: false,
     });
 
     // Store original chore for reverting optimistic updates on error
@@ -85,6 +86,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 recurrenceData: parsedRecurrenceData,
                 assignedToId: chore.assignedToId || "NONE",
                 dueDate: chore.dueDate ? new Date(chore.dueDate).toISOString().split('T')[0] : "",
+                requireProof: chore.requireProof || false,
             });
             setOriginalChore(chore);
         }
@@ -105,6 +107,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                 recurrenceData: JSON.stringify(formData.recurrenceData),
                 assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
                 dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+                requireProof: formData.requireProof,
             };
 
             updateChore(chore.id, updates);
@@ -125,6 +128,7 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                     recurrenceData: JSON.stringify(formData.recurrenceData),
                     assignedToId: formData.assignedToId === "NONE" ? null : formData.assignedToId,
                     dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+                    requireProof: formData.requireProof,
                 }),
             });
 
@@ -343,6 +347,21 @@ export function EditChoreDialog({ chore, open, onOpenChange }: EditChoreDialogPr
                                         onChange={(e) =>
                                             setFormData({ ...formData, dueDate: e.target.value })
                                         }
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-3">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="edit-requireProof" className="cursor-pointer">Require Photo Proof</Label>
+                                        <p className="text-[0.8rem] text-muted-foreground">
+                                            Must upload a photo when completing
+                                        </p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        id="edit-requireProof"
+                                        checked={formData.requireProof}
+                                        onChange={(e) => setFormData({ ...formData, requireProof: e.target.checked })}
+                                        className="h-5 w-5 rounded border-gray-300 accent-primary cursor-pointer"
                                     />
                                 </div>
                             </div>

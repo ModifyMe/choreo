@@ -276,7 +276,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         if (action === "EDIT") {
-            const { title, description, points, dueDate, recurrence, recurrenceData, assignedToId } = body;
+            const { title, description, points, dueDate, recurrence, recurrenceData, assignedToId, requireProof } = body;
 
             const updatedChore = await prisma.chore.update({
                 where: { id },
@@ -288,6 +288,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     recurrence,
                     recurrenceData,
                     assignedToId: assignedToId === undefined ? undefined : (assignedToId || null), // Allow clearing assignment
+                    requireProof: requireProof !== undefined ? requireProof : undefined, // Only update if provided
                     activityLogs: {
                         create: {
                             userId: session.user.id,
