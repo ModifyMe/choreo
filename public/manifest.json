@@ -2,20 +2,54 @@
     "name": "Choreo",
     "short_name": "Choreo",
     "description": "Gamified household chore management",
-    "start_url": "/",
+    "start_url": "/dashboard",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#000000",
+    "orientation": "portrait",
+    "background_color": "#0a0a0a",
+    "theme_color": "#0a0a0a",
+    "categories": [
+        "productivity",
+        "lifestyle"
+    ],
     "icons": [
         {
             "src": "/icon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/icon-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
-    ]
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Add Chore",
+            "short_name": "Add",
+            "url": "/dashboard?action=add",
+            "icons": [
+                {
+                    "src": "/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Shopping List",
+            "short_name": "Shop",
+            "url": "/dashboard/shopping-list",
+            "icons": [
+                {
+                    "src": "/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "prefer_related_applications": false
 }
