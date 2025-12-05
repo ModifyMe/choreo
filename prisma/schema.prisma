@@ -130,6 +130,12 @@ model Chore {
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   assignedTo  User?     @relation(fields: [assignedToId], references: [id])
   activityLogs ActivityLog[]
+
+  @@index([householdId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([householdId, status]) // Composite for dashboard queries
 }
 
 model Reward {
@@ -144,6 +150,8 @@ model Reward {
 
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   activityLogs ActivityLog[]
+
+  @@index([householdId])
 }
 
 model ActivityLog {
@@ -162,6 +170,10 @@ model ActivityLog {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   chore       Chore?    @relation(fields: [choreId], references: [id])
   reward      Reward?   @relation(fields: [rewardId], references: [id])
+
+  @@index([householdId])
+  @@index([userId])
+  @@index([householdId, createdAt]) // For activity feed pagination
 }
 
 model Achievement {

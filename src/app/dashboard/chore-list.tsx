@@ -35,10 +35,15 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EditChoreDialog } from "./edit-chore-dialog";
+import dynamic from "next/dynamic";
 import { useChores, Chore } from "./chore-context";
 import { ChoreCard } from "./chore-card";
 import imageCompression from "browser-image-compression";
+
+// Lazy load heavy dialog component
+const EditChoreDialog = dynamic(() => import("./edit-chore-dialog").then(mod => mod.EditChoreDialog), {
+    ssr: false,
+});
 
 export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
     const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore, toggleSubtask, updateChore } = useChores();

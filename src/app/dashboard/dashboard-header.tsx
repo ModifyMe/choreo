@@ -2,14 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { InviteCodeButton } from "./invite-code";
-import { AddChoreDialog } from "./add-chore-dialog";
-import { SettingsDialog } from "./settings-dialog";
-import { HelpDialog } from "./help-dialog";
+import dynamic from "next/dynamic";
 import { ModeToggle } from "@/components/mode-toggle";
-import { AchievementsDialog } from "./achievements-dialog";
 import { VacationToggle } from "./vacation-toggle";
 import { PushNotificationManager } from "@/components/push-manager";
-import { CalendarDialog } from "./calendar-dialog";
+
+// Lazy load heavy dialog components
+const AddChoreDialog = dynamic(() => import("./add-chore-dialog").then(mod => mod.AddChoreDialog), { ssr: false });
+const SettingsDialog = dynamic(() => import("./settings-dialog").then(mod => mod.SettingsDialog), { ssr: false });
+const HelpDialog = dynamic(() => import("./help-dialog").then(mod => mod.HelpDialog), { ssr: false });
+const AchievementsDialog = dynamic(() => import("./achievements-dialog").then(mod => mod.AchievementsDialog), { ssr: false });
+const CalendarDialog = dynamic(() => import("./calendar-dialog").then(mod => mod.CalendarDialog), { ssr: false });
 
 
 // ... existing imports ...
