@@ -6,7 +6,6 @@ import { ReactNode, useState } from "react";
 import { ChoreProvider } from "./chore-context";
 import { RewardProvider } from "./reward-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
-import { PullToRefresh } from "./pull-to-refresh";
 import dynamic from "next/dynamic";
 
 // Lazy load dialogs for bottom nav
@@ -71,20 +70,18 @@ export function DashboardLayoutClient({
                 userRole={membership.role}
             >
                 <RewardProvider initialRewards={rewards} householdId={household.id}>
-                    <PullToRefresh className="md:contents">
-                        <div className="max-w-6xl mx-auto space-y-8 p-4 md:p-6 pb-20 md:pb-6">
-                            <DashboardHeader
-                                household={household}
-                                user={user}
-                                membership={membership}
-                                achievementsData={achievementsData}
-                                allHouseholds={allHouseholds}
-                                members={currentHouseholdMembers}
-                                householdChores={householdChores}
-                            />
-                            {children}
-                        </div>
-                    </PullToRefresh>
+                    <div className="max-w-6xl mx-auto space-y-8 p-4 md:p-6 pb-20 md:pb-6">
+                        <DashboardHeader
+                            household={household}
+                            user={user}
+                            membership={membership}
+                            achievementsData={achievementsData}
+                            allHouseholds={allHouseholds}
+                            members={currentHouseholdMembers}
+                            householdChores={householdChores}
+                        />
+                        {children}
+                    </div>
 
                     {/* Mobile Bottom Navigation */}
                     <MobileBottomNav
