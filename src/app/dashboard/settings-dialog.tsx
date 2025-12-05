@@ -157,6 +157,29 @@ export function SettingsDialog({
         }
     };
 
+    const handleRoleChange = async (memberId: string, newRole: "ADMIN" | "MEMBER") => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/households/${householdId}/members/${memberId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role: newRole }),
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText);
+            }
+
+            toast.success(`Role updated to ${newRole}`);
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update role");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const currentUserId = session?.user?.email;
     const currentUserMember = members.find(m => m.user.email === session?.user?.email);
     const isAdmin = currentUserMember?.role === "ADMIN";
@@ -294,7 +317,24 @@ export function SettingsDialog({
                                                 {member.user.name}
                                                 {member.user.email === session?.user?.email && " (You)"}
                                             </span>
-                                            <span className="text-xs text-muted-foreground capitalize">{member.role.toLowerCase()}</span>
+                                            {/* Role display/dropdown */}
+                                            {isAdmin && member.user.email !== session?.user?.email ? (
+                                                <Select
+                                                    value={member.role}
+                                                    onValueChange={(value) => handleRoleChange(member.id, value as "ADMIN" | "MEMBER")}
+                                                    disabled={loading}
+                                                >
+                                                    <SelectTrigger className="h-6 w-24 text-xs">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="ADMIN">Admin</SelectItem>
+                                                        <SelectItem value="MEMBER">Member</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground capitalize">{member.role.toLowerCase()}</span>
+                                            )}
                                         </div>
                                     </div>
 
