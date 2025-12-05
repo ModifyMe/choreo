@@ -2,9 +2,17 @@
 
 import { useSearchParams } from "next/navigation";
 import { DashboardHeader } from "./dashboard-header";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { ChoreProvider } from "./chore-context";
 import { RewardProvider } from "./reward-context";
+import { MobileBottomNav } from "./mobile-bottom-nav";
+import { PullToRefresh } from "./pull-to-refresh";
+import dynamic from "next/dynamic";
+
+// Lazy load dialogs for bottom nav
+const CalendarDialog = dynamic(() => import("./calendar-dialog").then(mod => ({ default: mod.CalendarDialog })), { ssr: false });
+const SettingsDialog = dynamic(() => import("./settings-dialog").then(mod => ({ default: mod.SettingsDialog })), { ssr: false });
+const AchievementsDialog = dynamic(() => import("./achievements-dialog").then(mod => ({ default: mod.AchievementsDialog })), { ssr: false });
 
 interface DashboardLayoutClientProps {
     children: ReactNode;
@@ -28,6 +36,11 @@ export function DashboardLayoutClient({
     const searchParams = useSearchParams();
     const householdIdParam = searchParams.get("householdId");
 
+    // Dialog states for bottom nav
+    const [calendarOpen, setCalendarOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [achievementsOpen, setAchievementsOpen] = useState(false);
+
     // Determine current membership/household
     let membership = user.memberships[0];
     if (householdIdParam) {
@@ -49,7 +62,7 @@ export function DashboardLayoutClient({
     const rewards = allRewards.filter(r => r.householdId === household.id);
 
     return (
-        <div className="min-h-screen bg-muted/30 p-6">
+        <div className="min-h-screen bg-muted/30">
             <ChoreProvider
                 initialChores={householdChores}
                 userId={user.id}
@@ -58,20 +71,58 @@ export function DashboardLayoutClient({
                 userRole={membership.role}
             >
                 <RewardProvider initialRewards={rewards} householdId={household.id}>
-                    <div className="max-w-6xl mx-auto space-y-8">
-                        <DashboardHeader
-                            household={household}
-                            user={user}
-                            membership={membership}
-                            achievementsData={achievementsData}
-                            allHouseholds={allHouseholds}
-                            members={currentHouseholdMembers}
-                            householdChores={householdChores}
+                    <PullToRefresh className="md:contents">
+                        <div className="max-w-6xl mx-auto space-y-8 p-4 md:p-6 pb-20 md:pb-6">
+                            <DashboardHeader
+                                household={household}
+                                user={user}
+                                membership={membership}
+                                achievementsData={achievementsData}
+                                allHouseholds={allHouseholds}
+                                members={currentHouseholdMembers}
+                                householdChores={householdChores}
+                            />
+                            {children}
+                        </div>
+                    </PullToRefresh>
+
+                    {/* Mobile Bottom Navigation */}
+                    <MobileBottomNav
+                        householdId={household.id}
+                        onCalendarClick={() => setCalendarOpen(true)}
+                        onSettingsClick={() => setSettingsOpen(true)}
+                        onAchievementsClick={() => setAchievementsOpen(true)}
+                    />
+
+                    {/* Dialogs triggered by bottom nav */}
+                    {calendarOpen && (
+                        <CalendarDialog
+                            userId={user.id}
+                            open={calendarOpen}
+                            onOpenChange={setCalendarOpen}
                         />
-                        {children}
-                    </div>
+                    )}
+                    {settingsOpen && membership.role === "ADMIN" && (
+                        <SettingsDialog
+                            householdId={household.id}
+                            currentMode={household.mode}
+                            currentStrategy={household.assignmentStrategy}
+                            allowMemberDelete={household.allowMemberDelete}
+                            members={currentHouseholdMembers}
+                            open={settingsOpen}
+                            onOpenChange={setSettingsOpen}
+                        />
+                    )}
+                    {achievementsOpen && (
+                        <AchievementsDialog
+                            achievements={achievementsData}
+                            open={achievementsOpen}
+                            onOpenChange={setAchievementsOpen}
+                        />
+                    )}
                 </RewardProvider>
             </ChoreProvider>
         </div>
     );
 }
+

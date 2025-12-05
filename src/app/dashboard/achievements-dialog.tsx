@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trophy } from "lucide-react";
 import { AchievementsList } from "./achievements-list";
+import { useState } from "react";
 
 interface Achievement {
     id: string;
@@ -20,16 +21,29 @@ interface Achievement {
     unlockedAt?: Date;
 }
 
-export function AchievementsDialog({ achievements }: { achievements: Achievement[] }) {
+interface AchievementsDialogProps {
+    achievements: Achievement[];
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}
+
+export function AchievementsDialog({ achievements, open, onOpenChange }: AchievementsDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const unlockedCount = achievements.filter((a) => a.unlockedAt).length;
 
+    const isControlled = open !== undefined;
+    const finalOpen = isControlled ? open : internalOpen;
+    const finalSetOpen = isControlled ? onOpenChange : setInternalOpen;
+
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="icon" title="Achievements">
-                    <Trophy className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={finalOpen} onOpenChange={finalSetOpen}>
+            {!isControlled && (
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" title="Achievements" className="min-h-[44px] min-w-[44px]">
+                        <Trophy className="h-4 w-4" />
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Achievements</DialogTitle>
@@ -44,3 +58,4 @@ export function AchievementsDialog({ achievements }: { achievements: Achievement
         </Dialog>
     );
 }
+

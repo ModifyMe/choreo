@@ -31,11 +31,18 @@ import { useChores } from "./chore-context";
 
 interface CalendarDialogProps {
     userId: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export function CalendarDialog({ userId }: CalendarDialogProps) {
+export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const { myChores, availableChores, householdChores } = useChores();
     const chores = [...myChores, ...availableChores, ...householdChores];
+
+    const isControlled = open !== undefined;
+    const finalOpen = isControlled ? open : internalOpen;
+    const finalSetOpen = isControlled ? onOpenChange : setInternalOpen;
 
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [viewMode, setViewMode] = useState<"mine" | "all">("mine");
@@ -142,12 +149,14 @@ export function CalendarDialog({ userId }: CalendarDialogProps) {
     };
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="icon" title="Calendar View">
-                    <CalendarIcon className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={finalOpen} onOpenChange={finalSetOpen}>
+            {!isControlled && (
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" title="Calendar View" className="min-h-[44px] min-w-[44px]">
+                        <CalendarIcon className="h-4 w-4" />
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="w-[calc(100vw-1rem)] max-w-6xl h-[90vh] md:h-[85vh] flex flex-col p-0 overflow-hidden">
                 {/* Header - stacks on mobile */}
                 <div className="p-3 md:p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
