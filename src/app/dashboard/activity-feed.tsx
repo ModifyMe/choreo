@@ -8,6 +8,7 @@ import { formatDistanceToNow, differenceInMinutes } from "date-fns";
 import { CheckCircle2, Plus, ShoppingBag, UserPlus, Repeat, Undo2, RotateCcw, Loader2 } from "lucide-react";
 import { InfiniteList } from "@/components/ui/infinite-list";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ActivityLog {
     id: string;
@@ -112,7 +113,9 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
         }
     };
 
+
     const [undoingId, setUndoingId] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleUndo = async (choreId: string, logId: string) => {
         setUndoingId(logId);
@@ -127,6 +130,8 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                 throw new Error(text || "Failed to undo");
             }
             toast.success("Chore restored!");
+            // Refresh to sync chores for everyone
+            router.refresh();
         } catch (error: any) {
             toast.error(error.message || "Failed to undo");
         } finally {
