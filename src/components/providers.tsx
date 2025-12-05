@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { UpdatePrompt } from "@/components/update-prompt";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             >
                 {children}
                 <Toaster />
+                <UpdatePrompt />
             </ThemeProvider>
         </SessionProvider>
     );
