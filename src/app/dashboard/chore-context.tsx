@@ -25,6 +25,7 @@ export interface Chore {
     requireProof?: boolean;
     householdId: string;
     steps?: Step[];
+    swapOfferCount?: number;
     createdAt: Date;
     updatedAt: Date;
     assignedTo?: {

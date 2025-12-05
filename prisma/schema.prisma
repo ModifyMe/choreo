@@ -27,6 +27,8 @@ model User {
   achievements  UserAchievement[]
   pushSubscriptions PushSubscription[]
   addedShoppingItems ShoppingItem[]
+  createdSwapOffers  SwapOffer[] @relation("CreatedSwaps")
+  acceptedSwapOffers SwapOffer[] @relation("AcceptedSwaps")
 }
 
 model PushSubscription {
@@ -90,6 +92,7 @@ model Household {
   rewards     Reward[]
   activityLogs ActivityLog[]
   shoppingItems ShoppingItem[]
+  swapOffers  SwapOffer[]
 }
 
 model Membership {
@@ -125,12 +128,15 @@ model Chore {
   priority    Priority  @default(MEDIUM)
   requireProof Boolean  @default(false) // If true, completing chore requires photo proof
   steps       Json?     // Optional JSON for subtasks: [{ id, title, completed }]
+  swapOfferCount Int     @default(0)  // Max 2 allowed for swap board
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   assignedTo  User?     @relation(fields: [assignedToId], references: [id])
   activityLogs ActivityLog[]
+  offeredInSwaps SwapOffer[] @relation("OfferedChore")
+  wantedInSwaps  SwapOffer[] @relation("WantedChore")
 
   @@index([householdId])
   @@index([assignedToId])
@@ -247,4 +253,46 @@ enum AssignmentStrategy {
   STRICT_ROTATION
   RANDOM
   NONE
+}
+
+enum SwapStatus {
+  ACTIVE
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+  COUNTERED
+}
+
+model SwapOffer {
+  id                String      @id @default(cuid())
+  offeredChoreId    String
+  offeredChore      Chore       @relation("OfferedChore", fields: [offeredChoreId], references: [id], onDelete: Cascade)
+  
+  // What they want in return
+  wantedDescription String      // Free text: "I'll do your dishes"
+  wantedChoreId     String?     // Optional: link to specific chore
+  wantedChore       Chore?      @relation("WantedChore", fields: [wantedChoreId], references: [id])
+  
+  createdById       String
+  createdBy         User        @relation("CreatedSwaps", fields: [createdById], references: [id])
+  householdId       String
+  household         Household   @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  
+  status            SwapStatus  @default(ACTIVE)
+  expiresAt         DateTime
+  createdAt         DateTime    @default(now())
+  
+  // When accepted
+  acceptedById      String?
+  acceptedBy        User?       @relation("AcceptedSwaps", fields: [acceptedById], references: [id])
+  acceptedAt        DateTime?
+  
+  // Counter-offer chain
+  counterToId       String?
+  counterTo         SwapOffer?  @relation("CounterOffers", fields: [counterToId], references: [id])
+  counterOffers     SwapOffer[] @relation("CounterOffers")
+  
+  @@index([householdId, status])
+  @@index([offeredChoreId])
+  @@index([createdById])
 }

@@ -13,6 +13,7 @@ const SettingsDialog = dynamic(() => import("./settings-dialog").then(mod => mod
 const HelpDialog = dynamic(() => import("./help-dialog").then(mod => mod.HelpDialog), { ssr: false });
 const AchievementsDialog = dynamic(() => import("./achievements-dialog").then(mod => mod.AchievementsDialog), { ssr: false });
 const CalendarDialog = dynamic(() => import("./calendar-dialog").then(mod => mod.CalendarDialog), { ssr: false });
+const SwapBoardDialog = dynamic(() => import("./swap-board-dialog").then(mod => mod.SwapBoardDialog), { ssr: false });
 
 
 // ... existing imports ...
@@ -115,6 +116,7 @@ export function DashboardHeader({
                 {/* Mobile: Simplified - just Add Chore, Notifications, User */}
                 <div className="flex md:hidden items-center justify-end gap-2 w-full">
                     <PushNotificationManager />
+                    <SwapBoardDialog householdId={household.id} userId={user.id} />
                     <AddChoreDialog householdId={household.id} />
                     <UserNav
                         user={user}
@@ -142,6 +144,7 @@ export function DashboardHeader({
                     </Link>
                     <PushNotificationManager />
                     <CalendarDialog userId={user.id} />
+                    <SwapBoardDialog householdId={household.id} userId={user.id} />
                     <HelpDialog />
                     {membership.role === "ADMIN" && (
                         <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>

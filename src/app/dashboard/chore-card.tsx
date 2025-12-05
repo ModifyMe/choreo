@@ -3,7 +3,7 @@
 import { useSwipeable } from "react-swipeable";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, Loader2, Camera, X, Bell, Lock, MoreVertical, Pencil, Trash2, Flame } from "lucide-react";
+import { CheckCircle, Clock, Loader2, Camera, X, Bell, Lock, MoreVertical, Pencil, Trash2, Flame, ArrowLeftRight } from "lucide-react";
 import { format, isPast, isToday, isTomorrow, isFuture } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import { Chore } from "./chore-context";
 import imageCompression from "browser-image-compression";
 import { cn } from "@/lib/utils";
 import { ChoreDetailDialog } from "./chore-detail-dialog";
+import { PostSwapDialog } from "./post-swap-dialog";
 
 interface ChoreCardProps {
     chore: Chore;
@@ -54,6 +55,7 @@ export function ChoreCard({
     const [uploading, setUploading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [swapOpen, setSwapOpen] = useState(false);
     const controls = useAnimation();
 
     // Check if this is an optimistic chore that hasn't been saved yet
@@ -446,6 +448,12 @@ export function ChoreCard({
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                             </DropdownMenuItem>
+                            {type === "my" && (
+                                <DropdownMenuItem onClick={() => setSwapOpen(true)}>
+                                    <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                    Offer Swap
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                                 onClick={() => onDelete(chore.id)}
                                 className="text-red-600 focus:text-red-600"
@@ -462,6 +470,12 @@ export function ChoreCard({
                 chore={chore}
                 open={detailOpen}
                 onOpenChange={setDetailOpen}
+            />
+
+            <PostSwapDialog
+                chore={chore}
+                open={swapOpen}
+                onOpenChange={setSwapOpen}
             />
         </>
     );
