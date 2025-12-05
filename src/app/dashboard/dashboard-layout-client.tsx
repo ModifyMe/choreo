@@ -105,6 +105,7 @@ export function DashboardLayoutClient({
                             currentMode={household.mode}
                             currentStrategy={household.assignmentStrategy}
                             allowMemberDelete={household.allowMemberDelete}
+                            allowMemberDelegation={household.allowMemberDelegation}
                             members={currentHouseholdMembers}
                             open={settingsOpen}
                             onOpenChange={setSettingsOpen}

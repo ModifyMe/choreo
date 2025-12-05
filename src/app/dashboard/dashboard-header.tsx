@@ -41,6 +41,7 @@ interface DashboardHeaderProps {
         mode: "STANDARD" | "ECONOMY";
         assignmentStrategy?: "LOAD_BALANCING" | "STRICT_ROTATION" | "RANDOM" | "NONE";
         allowMemberDelete?: boolean;
+        allowMemberDelegation?: boolean;
     };
     user: {
         id: string;
@@ -169,6 +170,7 @@ export function DashboardHeader({
                     currentMode={household.mode}
                     currentStrategy={household.assignmentStrategy}
                     allowMemberDelete={household.allowMemberDelete}
+                    allowMemberDelegation={household.allowMemberDelegation}
                     members={members}
                     open={settingsOpen}
                     onOpenChange={setSettingsOpen}

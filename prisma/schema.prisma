@@ -84,6 +84,7 @@ model Household {
   mode        HouseholdMode @default(STANDARD)
   assignmentStrategy AssignmentStrategy @default(LOAD_BALANCING)
   allowMemberDelete  Boolean            @default(true)
+  allowMemberDelegation Boolean         @default(false)
   members     Membership[]
   chores      Chore[]
   rewards     Reward[]

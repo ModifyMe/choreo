@@ -35,6 +35,7 @@ export function SettingsDialog({
     currentMode,
     currentStrategy = "LOAD_BALANCING",
     allowMemberDelete = true,
+    allowMemberDelegation = false,
     members = [],
     open,
     onOpenChange,
@@ -43,6 +44,7 @@ export function SettingsDialog({
     currentMode: "STANDARD" | "ECONOMY";
     currentStrategy?: "LOAD_BALANCING" | "STRICT_ROTATION" | "RANDOM" | "NONE";
     allowMemberDelete?: boolean;
+    allowMemberDelegation?: boolean;
     members?: any[];
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
@@ -103,6 +105,25 @@ export function SettingsDialog({
             const res = await fetch(`/api/households/${householdId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ allowMemberDelete: checked }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update settings");
+
+            toast.success("Settings updated");
+            router.refresh();
+        } catch (error) {
+            toast.error("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAllowDelegationChange = async (checked: boolean) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/households/${householdId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ allowMemberDelegation: checked }),
             });
 
             if (!res.ok) throw new Error("Failed to update settings");
@@ -282,6 +303,23 @@ export function SettingsDialog({
                                 id="allow-delete"
                                 checked={allowMemberDelete}
                                 onCheckedChange={handleAllowDeleteChange}
+                                disabled={loading || !isAdmin}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between space-x-2 pt-4 border-t">
+                            <div className="flex flex-col space-y-1">
+                                <Label htmlFor="allow-delegation" className="font-medium">
+                                    Member Delegation
+                                </Label>
+                                <span className="text-xs text-muted-foreground">
+                                    Allow non-admin members to assign chores to others.
+                                </span>
+                            </div>
+                            <Switch
+                                id="allow-delegation"
+                                checked={allowMemberDelegation}
+                                onCheckedChange={handleAllowDelegationChange}
                                 disabled={loading || !isAdmin}
                             />
                         </div>
