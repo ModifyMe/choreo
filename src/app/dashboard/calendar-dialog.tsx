@@ -148,54 +148,61 @@ export function CalendarDialog({ userId }: CalendarDialogProps) {
                     <CalendarIcon className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="!w-[90vw] !max-w-6xl h-[85vh] flex flex-col p-0">
-                <div className="p-4 border-b flex items-center justify-between">
-                    <DialogTitle className="flex items-center gap-2">
-                        <CalendarIcon className="h-5 w-5" />
-                        Chore Calendar
+            <DialogContent className="w-[calc(100vw-1rem)] max-w-6xl h-[90vh] md:h-[85vh] flex flex-col p-0 overflow-hidden">
+                {/* Header - stacks on mobile */}
+                <div className="p-3 md:p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <DialogTitle className="flex items-center gap-2 text-base md:text-lg">
+                        <CalendarIcon className="h-4 w-4 md:h-5 md:w-5" />
+                        <span className="hidden sm:inline">Chore Calendar</span>
+                        <span className="sm:hidden">Calendar</span>
                     </DialogTitle>
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex bg-muted rounded-lg p-1">
+                    <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4">
+                        {/* View Toggle */}
+                        <div className="flex bg-muted rounded-lg p-0.5 md:p-1">
                             <button
                                 onClick={() => setViewMode("mine")}
                                 className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    "px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
                                     viewMode === "mine" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                My Chores
+                                Mine
                             </button>
                             <button
                                 onClick={() => setViewMode("all")}
                                 className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    "px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
                                     viewMode === "all" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                All Chores
+                                All
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="icon" onClick={prevMonth}>
-                                <ChevronLeft className="h-4 w-4" />
+                        {/* Month Navigation */}
+                        <div className="flex items-center gap-1 md:gap-2">
+                            <Button variant="outline" size="icon" className="h-7 w-7 md:h-9 md:w-9" onClick={prevMonth}>
+                                <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
-                            <span className="font-semibold min-w-[120px] text-center">
-                                {format(currentMonth, "MMMM yyyy")}
+                            <span className="font-semibold text-xs md:text-sm min-w-[80px] md:min-w-[120px] text-center">
+                                {format(currentMonth, "MMM yyyy")}
                             </span>
-                            <Button variant="outline" size="icon" onClick={nextMonth}>
-                                <ChevronRight className="h-4 w-4" />
+                            <Button variant="outline" size="icon" className="h-7 w-7 md:h-9 md:w-9" onClick={nextMonth}>
+                                <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto p-4">
-                    <div className="grid grid-cols-7 gap-px bg-muted rounded-lg overflow-hidden border">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                            <div key={day} className="bg-background p-2 text-center text-sm font-medium text-muted-foreground">
-                                {day}
+                {/* Calendar Grid */}
+                <div className="flex-1 overflow-auto p-2 md:p-4">
+                    <div className="grid grid-cols-7 gap-px bg-muted rounded-lg overflow-hidden border min-w-0">
+                        {/* Day Headers - abbreviated on mobile */}
+                        {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
+                            <div key={i} className="bg-background p-1 md:p-2 text-center text-[10px] md:text-sm font-medium text-muted-foreground">
+                                <span className="md:hidden">{day}</span>
+                                <span className="hidden md:inline">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}</span>
                             </div>
                         ))}
                         {calendarDays.map((day, dayIdx) => {
@@ -207,24 +214,25 @@ export function CalendarDialog({ userId }: CalendarDialogProps) {
                                 <div
                                     key={day.toString()}
                                     className={cn(
-                                        "bg-background min-h-[100px] p-2 flex flex-col gap-1 transition-colors hover:bg-muted/30",
+                                        "bg-background min-h-[50px] md:min-h-[100px] p-1 md:p-2 flex flex-col transition-colors hover:bg-muted/30",
                                         !isCurrentMonth && "bg-muted/10 text-muted-foreground",
-                                        isToday && "bg-blue-50/50"
+                                        isToday && "bg-blue-50/50 dark:bg-blue-950/20"
                                     )}
                                 >
                                     <div className={cn(
-                                        "text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full mb-1",
+                                        "text-[10px] md:text-xs font-medium w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full mb-0.5 md:mb-1",
                                         isToday ? "bg-blue-600 text-white" : "text-muted-foreground"
                                     )}>
                                         {format(day, "d")}
                                     </div>
 
-                                    <div className="flex flex-col gap-1">
-                                        {dayChores.map((chore) => (
+                                    <div className="flex flex-col gap-0.5 md:gap-1 overflow-hidden">
+                                        {/* Show limited chores on mobile, more on desktop */}
+                                        {dayChores.slice(0, 2).map((chore) => (
                                             <div
                                                 key={chore.id}
                                                 className={cn(
-                                                    "text-[10px] px-1.5 py-0.5 rounded border truncate flex items-center gap-1",
+                                                    "text-[8px] md:text-[10px] px-1 py-0.5 rounded border truncate flex items-center gap-0.5",
                                                     chore.isProjected
                                                         ? "border-dashed bg-muted/50 text-muted-foreground"
                                                         : chore.status === "COMPLETED"
@@ -233,10 +241,16 @@ export function CalendarDialog({ userId }: CalendarDialogProps) {
                                                 )}
                                                 title={`${chore.title} (${chore.points} XP)`}
                                             >
-                                                {chore.isProjected && <RefreshCw className="w-2 h-2 shrink-0 opacity-50" />}
-                                                {chore.title}
+                                                {chore.isProjected && <RefreshCw className="w-2 h-2 shrink-0 opacity-50 hidden md:block" />}
+                                                <span className="truncate">{chore.title}</span>
                                             </div>
                                         ))}
+                                        {/* Show "+N more" if there are more chores */}
+                                        {dayChores.length > 2 && (
+                                            <div className="text-[8px] text-muted-foreground text-center">
+                                                +{dayChores.length - 2} more
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -244,18 +258,19 @@ export function CalendarDialog({ userId }: CalendarDialogProps) {
                     </div>
                 </div>
 
-                <div className="p-4 border-t bg-muted/10 text-xs text-muted-foreground flex gap-4">
+                {/* Legend - compact on mobile */}
+                <div className="p-2 md:p-4 border-t bg-muted/10 text-[10px] md:text-xs text-muted-foreground flex flex-wrap gap-2 md:gap-4 justify-center md:justify-start">
                     <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-white border shadow-sm rounded"></div>
-                        <span>Active Chore</span>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-white border shadow-sm rounded"></div>
+                        <span>Active</span>
                     </div>
                     <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-muted/50 border border-dashed rounded"></div>
-                        <span>Projected (Recurring)</span>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-muted/50 border border-dashed rounded"></div>
+                        <span>Recurring</span>
                     </div>
                     <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-green-50 border border-green-200 rounded"></div>
-                        <span>Completed</span>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-green-50 border border-green-200 rounded"></div>
+                        <span>Done</span>
                     </div>
                 </div>
             </DialogContent>
