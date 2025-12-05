@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -74,6 +74,13 @@ export function ChoreProvider({
     const [optimisticAdds, setOptimisticAdds] = useState<Chore[]>([]);
     const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string, Partial<Chore>>>(new Map());
 
+    // Debounce refs for batching rapid real-time updates
+    const updateQueueRef = useRef<Map<string, Chore>>(new Map());
+    const insertQueueRef = useRef<Map<string, Chore>>(new Map());
+    const deleteQueueRef = useRef<Set<string>>(new Set());
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const DEBOUNCE_MS = 100; // Batch updates within 100ms window
+
     // Sync with server data
     useEffect(() => {
         setServerChores(initialChores || []);
@@ -113,7 +120,71 @@ export function ChoreProvider({
         });
     }, [serverChores, optimisticAdds]);
 
-    // Real-time Subscription
+    // Flush queued updates to state (called after debounce delay)
+    const flushUpdateQueue = useCallback(() => {
+        const inserts = Array.from(insertQueueRef.current.values());
+        const updates = Array.from(updateQueueRef.current.values());
+        const deletes = Array.from(deleteQueueRef.current);
+
+        // Clear queues
+        insertQueueRef.current.clear();
+        updateQueueRef.current.clear();
+        deleteQueueRef.current.clear();
+
+        // Batch all state changes
+        if (inserts.length > 0 || updates.length > 0 || deletes.length > 0) {
+            setServerChores((prev) => {
+                let next = [...prev];
+
+                // Apply inserts (skip duplicates)
+                inserts.forEach((chore) => {
+                    if (!next.some((c) => c.id === chore.id)) {
+                        next.push(chore);
+                    }
+                });
+
+                // Apply updates
+                if (updates.length > 0) {
+                    const updateMap = new Map(updates.map(u => [u.id, u]));
+                    next = next.map((c) => {
+                        const update = updateMap.get(c.id);
+                        if (update) {
+                            return { ...update, createdAt: c.createdAt };
+                        }
+                        return c;
+                    });
+                }
+
+                // Apply deletes
+                if (deletes.length > 0) {
+                    const deleteSet = new Set(deletes);
+                    next = next.filter((c) => !deleteSet.has(c.id));
+                }
+
+                return next;
+            });
+
+            // Clear optimistic updates for updated items
+            if (updates.length > 0) {
+                setOptimisticUpdates((prev) => {
+                    const next = new Map(prev);
+                    updates.forEach((u) => next.delete(u.id));
+                    return next;
+                });
+            }
+
+            // Clear pending deletes
+            if (deletes.length > 0) {
+                setPendingDeletes((prev) => {
+                    const next = new Set(prev);
+                    deletes.forEach((id) => next.delete(id));
+                    return next;
+                });
+            }
+        }
+    }, []);
+
+    // Real-time Subscription with Debouncing
     useEffect(() => {
         const channel = supabase
             .channel("chore-updates")
@@ -126,60 +197,39 @@ export function ChoreProvider({
                     filter: `householdId=eq.${householdId}`,
                 },
                 (payload) => {
+                    // Queue the update instead of immediate state change
                     if (payload.eventType === "INSERT") {
                         const newChore = payload.new as Chore;
-                        // Convert dates
                         newChore.createdAt = new Date(newChore.createdAt);
                         newChore.updatedAt = new Date(newChore.updatedAt);
                         if (newChore.dueDate) newChore.dueDate = new Date(newChore.dueDate);
-
-                        setServerChores((prev) => {
-                            if (prev.some((c) => c.id === newChore.id)) return prev;
-                            return [...prev, newChore];
-                        });
-                        // Note: The reconciliation useEffect above will handle the cleanup
+                        insertQueueRef.current.set(newChore.id, newChore);
                     } else if (payload.eventType === "UPDATE") {
                         const updatedChore = payload.new as Chore;
-                        // Convert dates
                         updatedChore.updatedAt = new Date(updatedChore.updatedAt);
                         if (updatedChore.dueDate) updatedChore.dueDate = new Date(updatedChore.dueDate);
-
-                        setServerChores((prev) =>
-                            prev.map((c) => {
-                                if (c.id === updatedChore.id) {
-                                    // Preserve original createdAt to keep list position stable
-                                    return {
-                                        ...updatedChore,
-                                        createdAt: c.createdAt,
-                                    };
-                                }
-                                return c;
-                            })
-                        );
-
-                        // Clear optimistic update for this ID as server state is now fresh
-                        setOptimisticUpdates((prev) => {
-                            const next = new Map(prev);
-                            next.delete(updatedChore.id);
-                            return next;
-                        });
+                        updateQueueRef.current.set(updatedChore.id, updatedChore);
                     } else if (payload.eventType === "DELETE") {
                         const deletedId = payload.old.id;
-                        setServerChores((prev) => prev.filter((c) => c.id !== deletedId));
-                        setPendingDeletes((prev) => {
-                            const next = new Set(prev);
-                            next.delete(deletedId);
-                            return next;
-                        });
+                        deleteQueueRef.current.add(deletedId);
                     }
+
+                    // Debounce: reset timer and flush after delay
+                    if (debounceTimerRef.current) {
+                        clearTimeout(debounceTimerRef.current);
+                    }
+                    debounceTimerRef.current = setTimeout(flushUpdateQueue, DEBOUNCE_MS);
                 }
             )
             .subscribe();
 
         return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
             supabase.removeChannel(channel);
         };
-    }, [householdId]);
+    }, [householdId, flushUpdateQueue]);
 
     // Derived State Calculation
     const { myChores, availableChores, householdChores } = React.useMemo(() => {
