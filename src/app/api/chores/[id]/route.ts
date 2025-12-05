@@ -141,7 +141,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
             // Handle Recurrence & Auto-Delegation
             if (chore.recurrence && chore.recurrence !== "NONE") {
-                let nextDueDate = new Date();
+                // Use original due date as base to preserve weekday pattern
+                // Falls back to current date if no due date was set
+                let nextDueDate = chore.dueDate ? new Date(chore.dueDate) : new Date();
 
                 if (chore.recurrence === "DAILY") {
                     nextDueDate.setDate(nextDueDate.getDate() + 1);
