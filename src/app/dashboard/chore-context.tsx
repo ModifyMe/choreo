@@ -145,10 +145,22 @@ export function ChoreProvider({
 
                     // Check for duplicates by title + same due date (for recurring chores)
                     const choreDueDate = chore.dueDate ? new Date(chore.dueDate).toDateString() : null;
+                    const choreCreatedAt = new Date(chore.createdAt).getTime();
+
                     if (next.some((c) => {
                         if (c.title !== chore.title) return false;
                         const cDueDate = c.dueDate ? new Date(c.dueDate).toDateString() : null;
-                        return choreDueDate === cDueDate;
+
+                        // If both have due dates, compare them
+                        if (choreDueDate && cDueDate) return choreDueDate === cDueDate;
+
+                        // If neither has due date, check if created within 60 seconds
+                        if (!choreDueDate && !cDueDate) {
+                            const timeDiff = Math.abs(new Date(c.createdAt).getTime() - choreCreatedAt);
+                            return timeDiff < 60000;
+                        }
+
+                        return false;
                     })) return;
 
                     next.push(chore);
