@@ -206,8 +206,8 @@ export function ChoreCard({
                                                             className={cn(
                                                                 "text-[9px] px-1 py-0.5 rounded-sm font-bold",
                                                                 isToday
-                                                                    ? "bg-blue-600 text-white shadow-sm"
-                                                                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                                                    ? "bg-green-500 text-white shadow-sm ring-1 ring-green-400"
+                                                                    : "bg-muted text-muted-foreground"
                                                             )}
                                                         >
                                                             {abbrevMap[d] || d.substring(0, 2)}
