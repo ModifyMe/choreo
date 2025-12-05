@@ -13,9 +13,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   output: "standalone",
-  experimental: {
-    reactCompiler: true,
-  },
 };
 
 export default withPWA(nextConfig);

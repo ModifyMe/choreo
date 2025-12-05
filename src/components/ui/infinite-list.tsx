@@ -9,6 +9,7 @@ import {
 } from '@/hooks/use-infinite-query'
 import * as React from 'react'
 
+
 interface InfiniteListProps<TableName extends SupabaseTableName> {
     tableName: TableName
     columns?: string

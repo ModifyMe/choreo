@@ -2,8 +2,10 @@ import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
+import { User } from "next-auth"
+import { AdapterUser } from "next-auth/adapters"
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
         GoogleProvider({
@@ -12,13 +14,12 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        session: async ({ session, user }) => {
+        session: async ({ session, user }: { session: any; user: User | AdapterUser }) => {
             if (session?.user) {
                 session.user.id = user.id;
-                // We can add more fields here from the database if needed
             }
             return session;
         },
     },
     trustHost: true,
-} as any
+} as NextAuthOptions

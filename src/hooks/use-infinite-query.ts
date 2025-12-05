@@ -3,10 +3,17 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 
 export type SupabaseTableName = 'ActivityLog' | 'Chore' | 'Reward' // Add other tables as needed
 
+// Generic type for table data - just a record with id for flexibility
+export type SupabaseTableData<T extends SupabaseTableName> = {
+    id: string;
+    [key: string]: unknown;
+}
+
 interface RecordWithId {
     id: string;
     [key: string]: unknown;
 }
+
 
 export type SupabaseQueryHandler<T extends SupabaseTableName> = (
     query: any
