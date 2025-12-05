@@ -39,13 +39,13 @@ export function HelpDialog() {
                             Assignment Strategies
                         </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                            Admins can now choose how recurring chores are assigned in <strong>Settings</strong>:
+                            Admins can choose how recurring chores are assigned in <strong>Settings</strong>:
                         </p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-1">
-                            <li><strong>Load Balancing</strong> (Default): Assigns to the member with the lowest XP.</li>
-                            <li><strong>Strict Rotation</strong>: Passes to the next member in line.</li>
-                            <li><strong>Random</strong>: Picks a random member.</li>
-                            <li><strong>None</strong>: Leaves the chore unassigned.</li>
+                            <li><strong>Load Balancing</strong> (Default): Assigns to the person with the least pending chores. Overdue chores count double, and chores sitting longer add to the score. Fast completers may get more work but earn more XP!</li>
+                            <li><strong>Strict Rotation</strong>: True equality - cycles through members in order, everyone gets exactly their share.</li>
+                            <li><strong>Random</strong>: Picks a random available member.</li>
+                            <li><strong>None</strong>: Leaves chores unassigned for first-come-first-serve claiming.</li>
                         </ul>
                     </div>
 
@@ -56,7 +56,7 @@ export function HelpDialog() {
                             Vacation Mode
                         </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                            Going away? Turn on <strong>Vacation Mode</strong> in the menu.
+                            Going away? Turn on <strong>Vacation Mode</strong> in your profile menu.
                             While active, you won't be assigned any new recurring chores.
                             The system will automatically skip you and assign tasks to other available members.
                         </p>
@@ -119,8 +119,8 @@ export function HelpDialog() {
                             Invite Members
                         </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                            Want to add a roommate? Click the <strong>Copy Link</strong> button in the menu to send them a direct invite link.
-                            They'll be added to your household automatically!
+                            Want to add a roommate? Find the <strong>Invite Code</strong> in your profile menu (tap your avatar).
+                            Copy the code or link to send them a direct invite!
                         </p>
                     </div>
 
@@ -129,8 +129,10 @@ export function HelpDialog() {
                         <h4 className="font-semibold mb-2">💡 Pro Tips</h4>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                             <li>Swipe a chore to the right to complete it quickly.</li>
-                            <li>Upload a photo proof to show off your hard work.</li>
+                            <li>Tap on any chore to see its full details and description.</li>
+                            <li>Made a mistake? Undo a completed chore within 1 hour from the Activity Feed.</li>
                             <li>Check the Calendar view to plan your week ahead.</li>
+                            <li>Use templates when creating chores to save time!</li>
                         </ul>
                     </div>
                 </div>
