@@ -162,6 +162,17 @@ export const CHORE_TEMPLATES: Record<string, ChoreTemplate[]> = {
     ],
     "Outdoor": [
         {
+            title: "Trash Day",
+            description: "Take out all trash and recycling",
+            points: 20,
+            difficulty: "EASY",
+            steps: [
+                "Collect all trash bags",
+                "Take recycling out",
+                "Bring bins to curb"
+            ]
+        },
+        {
             title: "Mow Lawn",
             description: "Cut the grass",
             points: 50,

@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { Check, LogOut, PlusCircle, Settings, User as UserIcon } from "lucide-react";
+import { Check, LogOut, PlusCircle, Copy, Link as LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { VacationToggle } from "@/app/dashboard/vacation-toggle";
+import { toast } from "sonner";
 
 interface UserNavProps {
     user: {
@@ -29,6 +30,7 @@ interface UserNavProps {
         name: string;
     }[];
     currentHouseholdId: string;
+    inviteCode: string;
     isAway: boolean;
     achievements: any[];
 }
@@ -36,7 +38,7 @@ interface UserNavProps {
 import { ModeToggle } from "@/components/mode-toggle";
 import { AchievementsDialog } from "@/app/dashboard/achievements-dialog";
 
-export function UserNav({ user, households, currentHouseholdId, isAway, achievements }: UserNavProps) {
+export function UserNav({ user, households, currentHouseholdId, inviteCode, isAway, achievements }: UserNavProps) {
     const router = useRouter();
 
     return (
@@ -77,6 +79,41 @@ export function UserNav({ user, households, currentHouseholdId, isAway, achievem
                         <ModeToggle />
                     </div>
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* Invite Code - mobile accessible */}
+                <div className="px-2 py-2">
+                    <p className="text-xs text-muted-foreground mb-1">Invite Code</p>
+                    <div className="flex items-center gap-1">
+                        <code className="font-mono font-bold text-sm flex-1">{inviteCode}</code>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteCode);
+                                toast.success("Code copied!");
+                            }}
+                            title="Copy Code"
+                        >
+                            <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                                const url = `${window.location.origin}/onboarding?code=${inviteCode}`;
+                                navigator.clipboard.writeText(url);
+                                toast.success("Invite link copied!");
+                            }}
+                            title="Copy Link"
+                        >
+                            <LinkIcon className="w-3 h-3" />
+                        </Button>
+                    </div>
+                </div>
 
                 <DropdownMenuSeparator />
 

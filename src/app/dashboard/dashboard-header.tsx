@@ -119,6 +119,7 @@ export function DashboardHeader({
                         user={user}
                         households={allHouseholds}
                         currentHouseholdId={household.id}
+                        inviteCode={household.inviteCode}
                         isAway={membership.isAway}
                         achievements={achievementsData}
                     />
@@ -153,6 +154,7 @@ export function DashboardHeader({
                             user={user}
                             households={allHouseholds}
                             currentHouseholdId={household.id}
+                            inviteCode={household.inviteCode}
                             isAway={membership.isAway}
                             achievements={achievementsData}
                         />
