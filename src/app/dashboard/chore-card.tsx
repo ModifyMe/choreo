@@ -179,9 +179,9 @@ export function ChoreCard({
             animate={controls}
             className={`flex items-center justify-between p-4 border rounded-lg bg-card touch-pan-y ${isOverdue ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}`}
         >
-            <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{chore.title}</h3>
+            <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="font-medium truncate">{chore.title}</h3>
                     {chore.recurrence && chore.recurrence !== "NONE" && (
                         <div className="flex gap-1">
                             {chore.recurrence === "CUSTOM" && chore.recurrenceData ? (
