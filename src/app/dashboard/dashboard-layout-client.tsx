@@ -11,7 +11,7 @@ import dynamic from "next/dynamic";
 // Lazy load dialogs for bottom nav
 const CalendarDialog = dynamic(() => import("./calendar-dialog").then(mod => ({ default: mod.CalendarDialog })), { ssr: false });
 const SettingsDialog = dynamic(() => import("./settings-dialog").then(mod => ({ default: mod.SettingsDialog })), { ssr: false });
-const AchievementsDialog = dynamic(() => import("./achievements-dialog").then(mod => ({ default: mod.AchievementsDialog })), { ssr: false });
+const SwapBoardDialog = dynamic(() => import("./swap-board-dialog").then(mod => ({ default: mod.SwapBoardDialog })), { ssr: false });
 
 interface DashboardLayoutClientProps {
     children: ReactNode;
@@ -38,7 +38,7 @@ export function DashboardLayoutClient({
     // Dialog states for bottom nav
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [achievementsOpen, setAchievementsOpen] = useState(false);
+    const [swapOpen, setSwapOpen] = useState(false);
 
     // Determine current membership/household
     let membership = user.memberships[0];
@@ -88,7 +88,7 @@ export function DashboardLayoutClient({
                         householdId={household.id}
                         onCalendarClick={() => setCalendarOpen(true)}
                         onSettingsClick={() => setSettingsOpen(true)}
-                        onAchievementsClick={() => setAchievementsOpen(true)}
+                        onSwapClick={() => setSwapOpen(true)}
                     />
 
                     {/* Dialogs triggered by bottom nav */}
@@ -111,11 +111,12 @@ export function DashboardLayoutClient({
                             onOpenChange={setSettingsOpen}
                         />
                     )}
-                    {achievementsOpen && (
-                        <AchievementsDialog
-                            achievements={achievementsData}
-                            open={achievementsOpen}
-                            onOpenChange={setAchievementsOpen}
+                    {swapOpen && (
+                        <SwapBoardDialog
+                            householdId={household.id}
+                            userId={user.id}
+                            open={swapOpen}
+                            onOpenChange={setSwapOpen}
                         />
                     )}
                 </RewardProvider>

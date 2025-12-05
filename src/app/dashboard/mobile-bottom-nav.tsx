@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingCart, Calendar, Settings, Trophy } from "lucide-react";
+import { Home, ShoppingCart, Calendar, Settings, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MobileBottomNavProps {
     householdId: string;
     onCalendarClick?: () => void;
     onSettingsClick?: () => void;
-    onAchievementsClick?: () => void;
+    onSwapClick?: () => void;
 }
 
 export function MobileBottomNav({
     householdId,
     onCalendarClick,
     onSettingsClick,
-    onAchievementsClick
+    onSwapClick
 }: MobileBottomNavProps) {
     const pathname = usePathname();
 
@@ -40,9 +40,9 @@ export function MobileBottomNav({
             isActive: false
         },
         {
-            icon: Trophy,
-            label: "Awards",
-            onClick: onAchievementsClick,
+            icon: ArrowLeftRight,
+            label: "Swap",
+            onClick: onSwapClick,
             isActive: false
         },
         {

@@ -44,12 +44,27 @@ interface SwapOffer {
     };
 }
 
-export function SwapBoardDialog({ householdId, userId }: { householdId: string; userId: string }) {
-    const [open, setOpen] = useState(false);
+export function SwapBoardDialog({
+    householdId,
+    userId,
+    open: controlledOpen,
+    onOpenChange: controlledOnOpenChange
+}: {
+    householdId: string;
+    userId: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const [swapOffers, setSwapOffers] = useState<SwapOffer[]>([]);
     const [loading, setLoading] = useState(true);
     const [acceptingId, setAcceptingId] = useState<string | null>(null);
     const router = useRouter();
+
+    // Support both controlled and uncontrolled modes
+    const isControlled = controlledOpen !== undefined;
+    const open = isControlled ? controlledOpen : internalOpen;
+    const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
     const fetchSwapOffers = useCallback(async () => {
         try {
@@ -123,11 +138,13 @@ export function SwapBoardDialog({ householdId, userId }: { householdId: string; 
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="icon" title="Swap Board">
-                    <ArrowLeftRight className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
+            {!isControlled && (
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" title="Swap Board">
+                        <ArrowLeftRight className="h-4 w-4" />
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="w-[calc(100vw-2rem)] max-w-[500px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
