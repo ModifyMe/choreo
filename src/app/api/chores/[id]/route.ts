@@ -334,6 +334,97 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json(updatedChore);
         }
 
+        if (action === "RESTORE") {
+            // Only allow restoring completed chores
+            if (chore.status !== "COMPLETED") {
+                return new NextResponse("Can only restore completed chores", { status: 400 });
+            }
+
+            // Find the COMPLETED activity log for this chore to check timing
+            const completedLog = await prisma.activityLog.findFirst({
+                where: {
+                    choreId: chore.id,
+                    action: "COMPLETED",
+                },
+                orderBy: { createdAt: "desc" },
+            });
+
+            // Only allow restore within 1 hour of completion
+            if (completedLog) {
+                const completedAt = new Date(completedLog.createdAt);
+                const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+                if (completedAt < oneHourAgo) {
+                    return new NextResponse("Can only undo within 1 hour of completion", { status: 400 });
+                }
+            }
+
+            // Get the user who completed it (to subtract their points)
+            const completedByUserId = completedLog?.userId || session.user.id;
+
+            const transactionOperations: any[] = [
+                // Restore chore to PENDING
+                prisma.chore.update({
+                    where: { id },
+                    data: {
+                        status: "PENDING",
+                        activityLogs: {
+                            create: {
+                                userId: session.user.id,
+                                householdId: chore.householdId,
+                                action: "RESTORED",
+                                metadata: {
+                                    choreTitle: chore.title,
+                                    chorePoints: chore.points,
+                                },
+                            },
+                        },
+                    },
+                }),
+                // Subtract points from the user who completed it
+                prisma.membership.update({
+                    where: {
+                        userId_householdId: {
+                            userId: completedByUserId,
+                            householdId: chore.householdId,
+                        },
+                    },
+                    data: {
+                        totalPoints: {
+                            decrement: chore.points,
+                        },
+                    },
+                }),
+            ];
+
+            // If economy mode, also subtract balance
+            if (chore.household.mode === "ECONOMY") {
+                transactionOperations.push(
+                    prisma.membership.update({
+                        where: {
+                            userId_householdId: {
+                                userId: completedByUserId,
+                                householdId: chore.householdId,
+                            },
+                        },
+                        data: {
+                            balance: {
+                                decrement: chore.points,
+                            },
+                        },
+                    })
+                );
+            }
+
+            await prisma.$transaction(transactionOperations);
+
+            const restoredChore = await prisma.chore.findUnique({
+                where: { id },
+                include: { assignedTo: true },
+            });
+
+            return NextResponse.json(restoredChore);
+        }
+
         if (action === "TOGGLE_STEP") {
             const { stepId } = body;
             const currentSteps = (chore.steps as any[]) || [];
