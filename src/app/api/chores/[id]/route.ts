@@ -149,10 +149,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     nextDueDate.setDate(nextDueDate.getDate() + 1);
                 } else if (chore.recurrence === "WEEKLY") {
                     nextDueDate.setDate(nextDueDate.getDate() + 7);
-                } else if (chore.recurrence === "MONTHLY") {
-                    nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-                } else if (chore.recurrence === "BI_MONTHLY") {
-                    nextDueDate.setMonth(nextDueDate.getMonth() + 2);
+                } else if (chore.recurrence === "MONTHLY" || chore.recurrence === "BI_MONTHLY") {
+                    // Find same weekday occurrence in next month
+                    // e.g., "2nd Monday of the month" stays "2nd Monday"
+                    const originalDayOfWeek = nextDueDate.getDay();
+                    const originalDate = nextDueDate.getDate();
+
+                    // Calculate which occurrence this is (1st, 2nd, 3rd, 4th Monday, etc.)
+                    const weekOfMonth = Math.ceil(originalDate / 7);
+
+                    // Move to next month (or +2 for bi-monthly)
+                    const monthsToAdd = chore.recurrence === "BI_MONTHLY" ? 2 : 1;
+                    nextDueDate.setMonth(nextDueDate.getMonth() + monthsToAdd);
+                    nextDueDate.setDate(1); // Go to first of month
+
+                    // Find the first occurrence of the target weekday
+                    while (nextDueDate.getDay() !== originalDayOfWeek) {
+                        nextDueDate.setDate(nextDueDate.getDate() + 1);
+                    }
+
+                    // Move to the Nth occurrence (weekOfMonth - 1 more weeks)
+                    nextDueDate.setDate(nextDueDate.getDate() + (weekOfMonth - 1) * 7);
+
+                    // If we went past the month, fall back to last occurrence of that weekday
+                    const targetMonth = (new Date().getMonth() + monthsToAdd) % 12;
+                    if (nextDueDate.getMonth() !== targetMonth) {
+                        nextDueDate.setDate(nextDueDate.getDate() - 7);
+                    }
                 } else if (chore.recurrence === "CUSTOM" && chore.recurrenceData) {
                     try {
                         const days = JSON.parse(chore.recurrenceData) as string[];
