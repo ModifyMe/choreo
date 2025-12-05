@@ -195,17 +195,22 @@ export function ChoreCard({
                                             <div className="flex gap-0.5">
                                                 {days.map(d => {
                                                     const isToday = dayMap[d] === todayDay;
+                                                    // 2-letter abbreviations to distinguish Tu/Th, Sa/Su
+                                                    const abbrevMap: { [key: string]: string } = {
+                                                        "SUN": "Su", "MON": "Mo", "TUE": "Tu", "WED": "We",
+                                                        "THU": "Th", "FRI": "Fr", "SAT": "Sa"
+                                                    };
                                                     return (
                                                         <span
                                                             key={d}
                                                             className={cn(
-                                                                "text-[9px] px-1 py-0.5 rounded-sm font-bold uppercase",
+                                                                "text-[9px] px-1 py-0.5 rounded-sm font-bold",
                                                                 isToday
                                                                     ? "bg-blue-600 text-white shadow-sm"
-                                                                    : "bg-blue-100 text-blue-700"
+                                                                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                                                             )}
                                                         >
-                                                            {d.substring(0, 1)}
+                                                            {abbrevMap[d] || d.substring(0, 2)}
                                                         </span>
                                                     );
                                                 })}
