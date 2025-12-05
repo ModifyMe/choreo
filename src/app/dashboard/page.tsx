@@ -11,7 +11,8 @@ import { ActivityFeed } from "./activity-feed";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { HouseholdChoresDialog } from "./household-chores-dialog";
-// import { TestPushButton } from "./test-push-button";
+import { Suspense } from "react";
+import { LeaderboardSkeleton, ActivityFeedSkeleton } from "./skeletons";
 
 export const dynamic = "force-dynamic";
 
@@ -117,14 +118,16 @@ export default async function DashboardPage({
                 )}
             </div>
 
-            {/* Sidebar - Leaderboard & Activity */}
+            {/* Sidebar - Leaderboard & Activity (Streamed with Suspense) */}
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Leaderboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Leaderboard householdId={household.id} />
+                        <Suspense fallback={<LeaderboardSkeleton />}>
+                            <Leaderboard householdId={household.id} />
+                        </Suspense>
                     </CardContent>
                 </Card>
 
