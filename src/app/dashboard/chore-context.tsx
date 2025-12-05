@@ -138,9 +138,20 @@ export function ChoreProvider({
 
                 // Apply inserts (skip duplicates and only add PENDING chores)
                 inserts.forEach((chore) => {
-                    if (!next.some((c) => c.id === chore.id) && chore.status === "PENDING") {
-                        next.push(chore);
-                    }
+                    if (chore.status !== "PENDING") return;
+
+                    // Check for duplicates by ID
+                    if (next.some((c) => c.id === chore.id)) return;
+
+                    // Check for duplicates by title + same due date (for recurring chores)
+                    const choreDueDate = chore.dueDate ? new Date(chore.dueDate).toDateString() : null;
+                    if (next.some((c) => {
+                        if (c.title !== chore.title) return false;
+                        const cDueDate = c.dueDate ? new Date(c.dueDate).toDateString() : null;
+                        return choreDueDate === cDueDate;
+                    })) return;
+
+                    next.push(chore);
                 });
 
                 // Apply updates - if status is COMPLETED, remove from list; otherwise update
