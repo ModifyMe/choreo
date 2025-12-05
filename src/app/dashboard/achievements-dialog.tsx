@@ -39,7 +39,7 @@ export function AchievementsDialog({ achievements, open, onOpenChange }: Achieve
         <Dialog open={finalOpen} onOpenChange={finalSetOpen}>
             {!isControlled && (
                 <DialogTrigger asChild>
-                    <Button variant="outline" size="icon" title="Achievements" className="min-h-[44px] min-w-[44px]">
+                    <Button variant="outline" size="icon" title="Achievements" className="h-8 w-8">
                         <Trophy className="h-4 w-4" />
                     </Button>
                 </DialogTrigger>

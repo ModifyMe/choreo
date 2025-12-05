@@ -65,9 +65,9 @@ export function UserNav({ user, households, currentHouseholdId, isAway, achievem
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem asChild>
-                    <div className="flex items-center w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
+                    <div className="flex items-center justify-between w-full cursor-pointer" onClick={(e) => e.preventDefault()}>
+                        <span>Achievements</span>
                         <AchievementsDialog achievements={achievements} />
-                        <span className="ml-2">Achievements</span>
                     </div>
                 </DropdownMenuItem>
 
