@@ -58,29 +58,11 @@ export default async function DashboardPage({
     }
 
     const household = membership.household;
-    const allHouseholds = user.memberships.map((m) => m.household);
-
-    const [allChores, rewards] = await Promise.all([
-        prisma.chore.findMany({
-            where: {
-                householdId: household.id,
-                status: "PENDING",
-            },
-            include: {
-                assignedTo: {
-                    select: {
-                        name: true,
-                        image: true,
-                    }
-                }
-            },
-            orderBy: { createdAt: "desc" },
-        }),
-        household.mode === "ECONOMY" ? prisma.reward.findMany({
-            where: { householdId: household.id },
-            orderBy: { cost: "asc" },
-        }) : Promise.resolve([]),
-    ]);
+    const latestActivity = await prisma.activityLog.findFirst({
+        where: { householdId: household.id },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+    });
 
     return (
         <div className="grid min-w-0 grid-cols-1 lg:grid-cols-3 gap-6">
@@ -136,7 +118,7 @@ export default async function DashboardPage({
                         <CardTitle>Recent Activity</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <ActivityFeed householdId={household.id} />
+                        <ActivityFeed key={`${household.id}:${latestActivity?.id || "empty"}`} householdId={household.id} />
                     </CardContent>
                 </Card>
             </div>

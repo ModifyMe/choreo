@@ -39,6 +39,7 @@ import dynamic from "next/dynamic";
 import { useChores, Chore } from "./chore-context";
 import { ChoreCard } from "./chore-card";
 import { compressImage } from "@/lib/image-compression";
+import { useChoreAction } from "./use-chore-action";
 
 // Lazy load heavy dialog component
 const EditChoreDialog = dynamic(() => import("./edit-chore-dialog").then(mod => mod.EditChoreDialog), {
@@ -46,7 +47,7 @@ const EditChoreDialog = dynamic(() => import("./edit-chore-dialog").then(mod => 
 });
 
 export function ChoreList({ userId, type }: { userId: string; type: "my" | "available" }) {
-    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore, toggleSubtask, updateChore } = useChores();
+    const { myChores, availableChores, deleteChore, restoreChore, toggleSubtask } = useChores();
     const chores = type === "my" ? myChores : availableChores;
 
     const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -60,39 +61,15 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
 
     const router = useRouter();
 
+    const performAction = useChoreAction(userId);
     const handleAction = async (choreId: string, action: "CLAIM" | "COMPLETE", proofUrl?: string) => {
         setLoadingId(choreId);
-
-        // Optimistic Updates
-        if (action === "CLAIM") {
-            moveChoreToMy(choreId, userId);
-            toast.success("Chore claimed!");
-        } else if (action === "COMPLETE") {
-            completeChore(choreId);
-            toast.success("Chore completed! 🎉");
-            runSideCannons();
-        }
-
         try {
-            const res = await fetch(`/api/chores/${choreId}`, {
-                method: "PATCH",
-                body: JSON.stringify({ action, proofImage: proofUrl }),
-            });
-
-            if (!res.ok) {
-                const error = await res.text();
-                throw new Error(error);
-            }
-
-            // No need to refresh, real-time subscription will handle it
+            await performAction(choreId, action, proofUrl);
+            toast.success(action === "CLAIM" ? "Chore claimed!" : "Chore completed! 🎉");
+            if (action === "COMPLETE") runSideCannons();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Something went wrong");
-
-            // Revert optimistic update
-            if (action === "COMPLETE") {
-                updateChore(choreId, { status: "PENDING" });
-            }
-            // Real-time subscription will sync state on error recovery
         } finally {
             setLoadingId(null);
             setSelectedChoreId(null);
@@ -115,7 +92,7 @@ export function ChoreList({ userId, type }: { userId: string; type: "my" | "avai
 
             if (!res.ok) throw new Error("Failed to delete chore");
 
-            // No need to refresh, real-time subscription will handle it
+            router.refresh();
         } catch (error) {
             toast.error("Failed to delete chore");
             restoreChore(deletingChoreId); // Restore on error

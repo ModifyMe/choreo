@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isSameDay, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { runSideCannons } from "@/lib/confetti";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+
+import { useChoreAction } from "../use-chore-action";
 
 export function CalendarView({ userId }: { userId: string }) {
-    const { myChores, availableChores, moveChoreToMy, completeChore, deleteChore, restoreChore, toggleSubtask } = useChores();
+    const { myChores, availableChores, toggleSubtask } = useChores();
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [loadingId, setLoadingId] = useState<string | null>(null);
-    const router = useRouter();
+    const performAction = useChoreAction(userId);
 
     // Combine all chores for calendar display
     const allChores = [...myChores, ...availableChores];
@@ -33,28 +33,12 @@ export function CalendarView({ userId }: { userId: string }) {
     const handleAction = async (choreId: string, action: "CLAIM" | "COMPLETE", proofUrl?: string) => {
         setLoadingId(choreId);
 
-        if (action === "CLAIM") {
-            moveChoreToMy(choreId, userId);
-            toast.success("Chore claimed!");
-        } else if (action === "COMPLETE") {
-            completeChore(choreId);
-            toast.success("Chore completed! 🎉");
-            runSideCannons();
-        }
-
         try {
-            const res = await fetch(`/api/chores/${choreId}`, {
-                method: "PATCH",
-                body: JSON.stringify({ action, proofImage: proofUrl }),
-            });
-
-            if (!res.ok) {
-                const error = await res.text();
-                throw new Error(error);
-            }
+            await performAction(choreId, action, proofUrl);
+            toast.success(action === "CLAIM" ? "Chore claimed!" : "Chore completed! 🎉");
+            if (action === "COMPLETE") runSideCannons();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Something went wrong");
-            router.refresh();
         } finally {
             setLoadingId(null);
         }

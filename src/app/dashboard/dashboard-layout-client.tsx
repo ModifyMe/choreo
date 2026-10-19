@@ -63,6 +63,7 @@ export function DashboardLayoutClient({
     return (
         <div className="dashboard-shell bg-muted/30">
             <ChoreProvider
+                key={household.id}
                 initialChores={householdChores}
                 userId={user.id}
                 householdId={household.id}

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { reconcileChoreUpdates } from "@/lib/chore-actions";
 
 export interface Step {
     id: string;
@@ -40,6 +40,7 @@ interface ChoreContextType {
     householdChores: Chore[]; // Chores assigned to others
     addChore: (chore: Chore) => void;
     updateChore: (id: string, updates: Partial<Chore>) => void;
+    clearChoreUpdate: (id: string) => void;
     deleteChore: (id: string) => void;
     moveChoreToMy: (id: string, userId: string) => void;
     completeChore: (id: string) => void;
@@ -85,6 +86,8 @@ export function ChoreProvider({
     // Sync with server data
     useEffect(() => {
         setServerChores(initialChores || []);
+        setOptimisticUpdates(previous => reconcileChoreUpdates(previous, initialChores || []));
+        setPendingDeletes(previous => new Set([...previous].filter(id => initialChores.some(chore => chore.id === id))));
     }, [initialChores]);
 
     // Reconciliation: Cleanup optimistic adds when server chores arrive
@@ -383,6 +386,14 @@ export function ChoreProvider({
         });
     }, []);
 
+    const clearChoreUpdate = useCallback((id: string) => {
+        setOptimisticUpdates(previous => {
+            const next = new Map(previous);
+            next.delete(id);
+            return next;
+        });
+    }, []);
+
     const moveChoreToMy = useCallback((id: string, targetUserId: string) => {
         updateChore(id, { assignedToId: targetUserId });
     }, [updateChore]);
@@ -441,6 +452,7 @@ export function ChoreProvider({
                 householdChores,
                 addChore,
                 updateChore,
+                clearChoreUpdate,
                 deleteChore,
                 moveChoreToMy,
                 completeChore,
