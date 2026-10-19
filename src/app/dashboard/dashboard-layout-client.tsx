@@ -61,7 +61,7 @@ export function DashboardLayoutClient({
     const rewards = allRewards.filter(r => r.householdId === household.id);
 
     return (
-        <div className="min-h-screen bg-muted/30">
+        <div className="dashboard-shell bg-muted/30">
             <ChoreProvider
                 initialChores={householdChores}
                 userId={user.id}
@@ -70,7 +70,7 @@ export function DashboardLayoutClient({
                 userRole={membership.role}
             >
                 <RewardProvider initialRewards={rewards} householdId={household.id}>
-                    <div className="max-w-6xl mx-auto space-y-8 p-4 md:p-6 pb-20 md:pb-6">
+                    <div className="dashboard-content min-w-0 max-w-6xl mx-auto space-y-6 p-4 md:space-y-8 md:p-6">
                         <DashboardHeader
                             household={household}
                             user={user}

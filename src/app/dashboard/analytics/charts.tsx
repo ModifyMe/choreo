@@ -13,9 +13,9 @@ export function AnalyticsCharts({ choresByMember, activityTrend }: AnalyticsChar
     const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'];
 
     return (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
             {/* Leaderboard Chart */}
-            <Card className="col-span-2 md:col-span-1">
+            <Card className="min-w-0">
                 <CardHeader>
                     <CardTitle>🏆 Choreo Champions</CardTitle>
                     <CardDescription>Total chores completed by each member</CardDescription>
@@ -23,13 +23,14 @@ export function AnalyticsCharts({ choresByMember, activityTrend }: AnalyticsChar
                 <CardContent>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={choresByMember} layout="vertical" margin={{ left: 20 }}>
+                            <BarChart data={choresByMember} layout="vertical" margin={{ left: 0, right: 12 }}>
                                 <XAxis type="number" hide />
                                 <YAxis
                                     dataKey="name"
                                     type="category"
-                                    width={100}
-                                    tick={{ fontSize: 12 }}
+                                    width={88}
+                                    tick={{ fontSize: 11 }}
+                                    tickFormatter={(name: string) => name.length > 14 ? `${name.slice(0, 13)}…` : name}
                                     interval={0}
                                 />
                                 <Tooltip
@@ -48,7 +49,7 @@ export function AnalyticsCharts({ choresByMember, activityTrend }: AnalyticsChar
             </Card>
 
             {/* Activity Trend Chart */}
-            <Card className="col-span-2 md:col-span-1">
+            <Card className="min-w-0">
                 <CardHeader>
                     <CardTitle>📈 Weekly Hustle</CardTitle>
                     <CardDescription>Chores completed over the last 7 days</CardDescription>

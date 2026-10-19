@@ -46,6 +46,7 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
 
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [viewMode, setViewMode] = useState<"mine" | "all">("mine");
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -157,10 +158,10 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                     </Button>
                 </DialogTrigger>
             )}
-            <DialogContent className="w-[calc(100vw-1rem)] max-w-6xl h-[90vh] md:h-[85vh] flex flex-col p-0 overflow-hidden">
+            <DialogContent className="w-[calc(100vw-1.5rem)] max-w-6xl h-[90dvh] md:h-[85dvh] flex flex-col gap-0 p-0 sm:p-0 overflow-hidden">
                 {/* Header - stacks on mobile */}
-                <div className="p-3 md:p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                    <DialogTitle className="flex items-center gap-2 text-base md:text-lg">
+                <div className="shrink-0 p-3 md:p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:pr-14">
+                    <DialogTitle className="flex items-center gap-2 pr-10 md:pr-0 text-base md:text-lg">
                         <CalendarIcon className="h-4 w-4 md:h-5 md:w-5" />
                         <span className="hidden sm:inline">Chore Calendar</span>
                         <span className="sm:hidden">Calendar</span>
@@ -172,7 +173,7 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                             <button
                                 onClick={() => setViewMode("mine")}
                                 className={cn(
-                                    "px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    "min-h-11 min-w-11 px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
                                     viewMode === "mine" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
@@ -181,7 +182,7 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                             <button
                                 onClick={() => setViewMode("all")}
                                 className={cn(
-                                    "px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    "min-h-11 min-w-11 px-2 md:px-3 py-1 text-xs font-medium rounded-md transition-all",
                                     viewMode === "all" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
@@ -191,13 +192,13 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
 
                         {/* Month Navigation */}
                         <div className="flex items-center gap-1 md:gap-2">
-                            <Button variant="outline" size="icon" className="h-7 w-7 md:h-9 md:w-9" onClick={prevMonth}>
+                            <Button variant="outline" size="icon" aria-label="Previous month" onClick={prevMonth}>
                                 <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
                             <span className="font-semibold text-xs md:text-sm min-w-[80px] md:min-w-[120px] text-center">
                                 {format(currentMonth, "MMM yyyy")}
                             </span>
-                            <Button variant="outline" size="icon" className="h-7 w-7 md:h-9 md:w-9" onClick={nextMonth}>
+                            <Button variant="outline" size="icon" aria-label="Next month" onClick={nextMonth}>
                                 <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                             </Button>
                         </div>
@@ -205,7 +206,7 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="flex-1 overflow-auto p-2 md:p-4">
+                <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-2 md:p-4">
                     <div className="grid grid-cols-7 gap-px bg-muted rounded-lg overflow-hidden border min-w-0">
                         {/* Day Headers - abbreviated on mobile */}
                         {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
@@ -220,12 +221,17 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                             const isCurrentMonth = isSameMonth(day, currentMonth);
 
                             return (
-                                <div
+                                <button
+                                    type="button"
                                     key={day.toString()}
+                                    onClick={() => setSelectedDate(day)}
+                                    aria-label={`${format(day, "EEEE, MMMM d")}: ${dayChores.length} chores`}
+                                    aria-pressed={isSameDay(day, selectedDate)}
                                     className={cn(
-                                        "bg-background min-h-[50px] md:min-h-[100px] p-1 md:p-2 flex flex-col transition-colors hover:bg-muted/30",
+                                        "bg-background min-w-0 min-h-[64px] md:min-h-[100px] p-1 md:p-2 flex flex-col text-left transition-colors hover:bg-muted/30 focus-visible:outline-2 focus-visible:outline-primary focus-visible:-outline-offset-2",
                                         !isCurrentMonth && "bg-muted/10 text-muted-foreground",
-                                        isToday && "bg-blue-50/50 dark:bg-blue-950/20"
+                                        isToday && "bg-blue-50/50 dark:bg-blue-950/20",
+                                        isSameDay(day, selectedDate) && "ring-2 ring-inset ring-primary"
                                     )}
                                 >
                                     <div className={cn(
@@ -261,14 +267,27 @@ export function CalendarDialog({ userId, open, onOpenChange }: CalendarDialogPro
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                </button>
                             );
                         })}
+                    </div>
+                    <div className="mt-4 space-y-2 md:hidden" aria-live="polite">
+                        <h3 className="text-sm font-semibold">{format(selectedDate, "EEEE, MMMM d")}</h3>
+                        {getChoresForDate(selectedDate).length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No chores on this day.</p>
+                        ) : getChoresForDate(selectedDate).map(chore => (
+                            <div key={chore.id} className="rounded-lg border p-3">
+                                <p className="break-words text-sm font-medium">{chore.title}</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {chore.points} XP · {chore.isProjected ? "Recurring" : chore.status === "COMPLETED" ? "Completed" : "Pending"}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
                 {/* Legend - compact on mobile */}
-                <div className="p-2 md:p-4 border-t bg-muted/10 text-[10px] md:text-xs text-muted-foreground flex flex-wrap gap-2 md:gap-4 justify-center md:justify-start">
+                <div className="shrink-0 p-2 md:p-4 border-t bg-muted/10 text-[10px] md:text-xs text-muted-foreground flex flex-wrap gap-2 md:gap-4 justify-center md:justify-start">
                     <div className="flex items-center gap-1">
                         <div className="w-2 h-2 md:w-3 md:h-3 bg-white border shadow-sm rounded"></div>
                         <span>Active</span>

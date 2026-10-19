@@ -74,8 +74,8 @@ export function CalendarView({ userId }: { userId: string }) {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-1">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="min-w-0 lg:col-span-1">
                 <CardHeader>
                     <CardTitle>Calendar</CardTitle>
                 </CardHeader>
@@ -95,7 +95,7 @@ export function CalendarView({ userId }: { userId: string }) {
                 </CardContent>
             </Card>
 
-            <Card className="md:col-span-2">
+            <Card className="min-w-0 lg:col-span-2">
                 <CardHeader>
                     <CardTitle>
                         Chores for {date?.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}

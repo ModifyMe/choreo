@@ -164,7 +164,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="px-6 pt-2">
+                <div className="pt-2">
                     <TemplateSelector onSelect={(template) => {
                         setFormData({
                             ...formData,
@@ -437,7 +437,7 @@ export function AddChoreDialog({ householdId }: { householdId: string }) {
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="reminderTime">Reminder Time</Label>
                                         <div className="flex items-center gap-2">
@@ -518,31 +518,32 @@ function TemplateSelector({ onSelect }: { onSelect: (t: ChoreTemplate) => void }
                     Use a Template
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] h-[80vh]">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] h-[80dvh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Choose a Template</DialogTitle>
                     <DialogDescription>
                         Select a template to auto-fill chore details and subtasks.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="h-full pr-4 overflow-y-auto">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div className="space-y-6">
                         {Object.entries(CHORE_TEMPLATES).map(([category, templates]) => (
                             <div key={category}>
                                 <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">{category}</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {templates.map((template) => (
-                                        <div
+                                        <button
+                                            type="button"
                                             key={template.title}
-                                            className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors flex flex-col gap-2"
+                                            className="min-w-0 border rounded-lg p-4 cursor-pointer text-left hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-primary transition-colors flex flex-col gap-2"
                                             onClick={() => {
                                                 onSelect(template);
                                                 setOpen(false);
                                             }}
                                         >
-                                            <div className="flex justify-between items-start">
-                                                <span className="font-medium">{template.title}</span>
-                                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <span className="min-w-0 break-words font-medium">{template.title}</span>
+                                                <span className="shrink-0 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                                     {template.points} XP
                                                 </span>
                                             </div>
@@ -550,7 +551,7 @@ function TemplateSelector({ onSelect }: { onSelect: (t: ChoreTemplate) => void }
                                             <div className="text-xs text-muted-foreground mt-auto pt-2 border-t">
                                                 {template.steps.length} steps
                                             </div>
-                                        </div>
+                                        </button>
                                     ))}
                                 </div>
                             </div>

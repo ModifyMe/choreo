@@ -92,20 +92,20 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                            <Label htmlFor="name" className="sm:text-right">
                                 Name
                             </Label>
                             <Input
                                 id="name"
                                 name="name"
                                 placeholder="e.g. Chocolate Bar"
-                                className="col-span-3"
+                                className="sm:col-span-3"
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="cost" className="text-right">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                            <Label htmlFor="cost" className="sm:text-right">
                                 Cost (Gold)
                             </Label>
                             <Input
@@ -113,7 +113,7 @@ export function AddRewardDialog({ householdId }: { householdId: string }) {
                                 name="cost"
                                 type="number"
                                 placeholder="50"
-                                className="col-span-3"
+                                className="sm:col-span-3"
                                 required
                                 min="1"
                             />

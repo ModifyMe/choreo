@@ -179,14 +179,14 @@ export function ChoreCard({
             <motion.div
                 {...handlers}
                 animate={controls}
-                className={`flex items-center justify-between p-4 border rounded-lg bg-card touch-pan-y ${isOverdue ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}`}
+                className={`flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg bg-card touch-pan-y ${isOverdue ? "border-red-300 bg-red-50 dark:bg-red-950/20" : ""}`}
             >
                 <div
                     className="space-y-1 flex-1 min-w-0 cursor-pointer"
                     onClick={() => setDetailOpen(true)}
                 >
-                    <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="font-medium truncate">{chore.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <h3 className="font-medium break-words">{chore.title}</h3>
                         {chore.recurrence && chore.recurrence !== "NONE" && (
                             <div className="flex gap-1">
                                 {chore.recurrence === "CUSTOM" && chore.recurrenceData ? (
@@ -197,7 +197,7 @@ export function ChoreCard({
                                             const todayDay = new Date().getDay();
 
                                             return (
-                                                <div className="flex gap-0.5">
+                                                <div className="flex flex-wrap gap-0.5">
                                                     {days.map(d => {
                                                         const dayUpper = d.toUpperCase();
                                                         const isToday = dayMap[dayUpper] === todayDay;
@@ -238,7 +238,7 @@ export function ChoreCard({
                             </div>
                         )}
                     </div>
-                    {chore.description && <p className="text-sm text-muted-foreground">{chore.description}</p>}
+                    {chore.description && <p className="text-sm text-muted-foreground break-words">{chore.description}</p>}
 
                     {/* Subtasks Progress */}
                     {chore.steps && chore.steps.filter(s => s.title !== "__CORRELATION__").length > 0 && (
@@ -286,7 +286,7 @@ export function ChoreCard({
                         </div>
                     )}
 
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-2">
                         <span className="font-semibold text-primary">{chore.points} pts</span>
                         {chore.dueDate && (
                             <span className={`flex items-center gap-1 ${isOverdue ? "text-red-600 font-bold" : ""}`}>
@@ -311,7 +311,7 @@ export function ChoreCard({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t pt-3 sm:border-0 sm:pt-0 sm:ml-4">
                     {type === "available" ? (
                         <Button
                             size="sm"
@@ -436,7 +436,7 @@ export function ChoreCard({
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" aria-label={`Actions for ${chore.title}`} className="h-8 w-8">
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>

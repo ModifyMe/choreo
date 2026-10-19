@@ -52,7 +52,7 @@ export function UserNav({ user, households, currentHouseholdId, inviteCode, isAw
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button variant="ghost" aria-label="Account and household menu" className="relative h-11 w-11 rounded-full">
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={user.image || ""} alt={user.name || ""} />
                             <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
@@ -62,13 +62,20 @@ export function UserNav({ user, households, currentHouseholdId, inviteCode, isAw
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">{user.name}</p>
-                            <p className="text-xs leading-none text-muted-foreground">
+                            <p className="break-words text-sm font-medium leading-snug">{user.name}</p>
+                            <p className="break-all text-xs leading-snug text-muted-foreground">
                                 {user.email}
                             </p>
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+
+                    <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/analytics?householdId=${encodeURIComponent(currentHouseholdId)}`}>
+                            <Trophy className="mr-2 h-4 w-4" />
+                            <span>Household stats</span>
+                        </Link>
+                    </DropdownMenuItem>
                     <div className="px-2 py-1.5">
                         <VacationToggle householdId={currentHouseholdId} initialIsAway={isAway} minimal />
                     </div>

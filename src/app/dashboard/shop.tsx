@@ -97,9 +97,9 @@ export function Shop({
             {rewards.map((reward) => (
                 <Card key={reward.id} className="overflow-hidden">
                     <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                            <CardTitle className="text-lg">{reward.name}</CardTitle>
-                            <div className="flex items-center text-yellow-600 font-bold">
+                        <div className="flex min-w-0 justify-between items-start gap-3">
+                            <CardTitle className="min-w-0 text-lg break-words">{reward.name}</CardTitle>
+                            <div className="flex shrink-0 items-center text-yellow-600 font-bold">
                                 <Coins className="w-4 h-4 mr-1" />
                                 {reward.cost}
                             </div>

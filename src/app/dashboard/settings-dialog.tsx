@@ -215,7 +215,7 @@ export function SettingsDialog({
                     </Button>
                 </DialogTrigger>
             )}
-            <DialogContent className="w-[calc(100vw-2rem)] max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[calc(100vw-2rem)] max-w-[425px] max-h-[calc(100dvh-2rem)] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Household Settings</DialogTitle>
                     <DialogDescription>
@@ -223,7 +223,7 @@ export function SettingsDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <Tabs defaultValue="general" className="w-full">
+                <Tabs defaultValue="general" className="w-full min-w-0">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="general">General</TabsTrigger>
                         <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -231,8 +231,8 @@ export function SettingsDialog({
                     </TabsList>
 
                     <TabsContent value="general" className="space-y-4 py-4">
-                        <div className="flex items-center justify-between space-x-2">
-                            <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="min-w-0 flex-1 flex flex-col space-y-1">
                                 <Label htmlFor="economy-mode" className="font-medium">
                                     Economy Mode
                                 </Label>
@@ -258,41 +258,26 @@ export function SettingsDialog({
                                 onValueChange={handleStrategyChange}
                                 disabled={loading || !isAdmin}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="strategy">
                                     <SelectValue placeholder="Select strategy" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="LOAD_BALANCING">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Load Balancing (Recommended)</span>
-                                            <span className="text-xs text-muted-foreground">Assigns to person with least workload. Overdue chores count double. Fast completers may get more tasks but earn more XP.</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="STRICT_ROTATION">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Strict Rotation</span>
-                                            <span className="text-xs text-muted-foreground">True equality: cycles through members in order. Everyone gets exactly 1/N of the chores.</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="RANDOM">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Random</span>
-                                            <span className="text-xs text-muted-foreground">Roll the dice! Completely random assignment.</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="NONE">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">None (First-Come-First-Serve)</span>
-                                            <span className="text-xs text-muted-foreground">Leave unassigned. Members can claim chores themselves.</span>
-                                        </div>
-                                    </SelectItem>
+                                    <SelectItem value="LOAD_BALANCING">Load balancing</SelectItem>
+                                    <SelectItem value="STRICT_ROTATION">Strict rotation</SelectItem>
+                                    <SelectItem value="RANDOM">Random</SelectItem>
+                                    <SelectItem value="NONE">First come, first served</SelectItem>
                                 </SelectContent>
-
                             </Select>
+                            <p className="text-xs leading-relaxed text-muted-foreground">
+                                {currentStrategy === "LOAD_BALANCING" && "Assign to the member with the least workload. Overdue chores count double."}
+                                {currentStrategy === "STRICT_ROTATION" && "Take turns in order so each member gets an equal share of recurring chores."}
+                                {currentStrategy === "RANDOM" && "Assign each recurring chore to a randomly chosen member."}
+                                {currentStrategy === "NONE" && "Leave recurring chores unassigned so members can claim them."}
+                            </p>
                         </div>
 
-                        <div className="flex items-center justify-between space-x-2 pt-4 border-t">
-                            <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between gap-4 pt-4 border-t">
+                            <div className="min-w-0 flex-1 flex flex-col space-y-1">
                                 <Label htmlFor="allow-delete" className="font-medium">
                                     Member Deletion
                                 </Label>
@@ -308,8 +293,8 @@ export function SettingsDialog({
                             />
                         </div>
 
-                        <div className="flex items-center justify-between space-x-2 pt-4 border-t">
-                            <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between gap-4 pt-4 border-t">
+                            <div className="min-w-0 flex-1 flex flex-col space-y-1">
                                 <Label htmlFor="allow-delegation" className="font-medium">
                                     Member Delegation
                                 </Label>
@@ -354,14 +339,14 @@ export function SettingsDialog({
                     <TabsContent value="members" className="space-y-4 py-4">
                         <div className="space-y-4">
                             {members.map((member) => (
-                                <div key={member.id} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
+                                <div key={member.id} className="flex min-w-0 items-center justify-between gap-3">
+                                    <div className="flex min-w-0 flex-1 items-center gap-3">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={member.user.image} />
                                             <AvatarFallback>{member.user.name?.[0] || "?"}</AvatarFallback>
                                         </Avatar>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium">
+                                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                                            <span className="text-sm font-medium break-words">
                                                 {member.user.name}
                                                 {member.user.email === session?.user?.email && " (You)"}
                                             </span>
@@ -372,7 +357,7 @@ export function SettingsDialog({
                                                     onValueChange={(value) => handleRoleChange(member.id, value as "ADMIN" | "MEMBER")}
                                                     disabled={loading}
                                                 >
-                                                    <SelectTrigger className="h-6 w-24 text-xs">
+                                                    <SelectTrigger className="w-28 text-xs">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -390,7 +375,7 @@ export function SettingsDialog({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                            aria-label={`Remove ${member.user.name || "member"}`} className="shrink-0 text-destructive"
                                             onClick={() => handleRemoveMember(member.id)}
                                             disabled={loading}
                                         >
@@ -524,7 +509,7 @@ function ProfileSettings({ user }: { user: any }) {
         <div className="space-y-4">
             {showCamera ? (
                 <div className="flex flex-col items-center gap-4">
-                    <div className="relative rounded-full overflow-hidden border-4 border-primary w-64 h-64 shadow-xl bg-black">
+                    <div className="relative rounded-full overflow-hidden border-4 border-primary w-full max-w-64 aspect-square shadow-xl bg-black">
                         <Webcam
                             audio={false}
                             ref={webcamRef}

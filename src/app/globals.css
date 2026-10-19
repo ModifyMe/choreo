@@ -125,3 +125,71 @@
     max-width: 100vw;
   }
 }
+
+/* Shared mobile geometry: respect browser chrome, keyboards and display cutouts. */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dashboard-shell {
+  min-height: 100dvh;
+}
+
+.dashboard-content {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+@media (max-width: 767px) {
+  .dashboard-content {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"] {
+    max-width: calc(100vw - 1.5rem);
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  [data-slot="button"]:not([data-day]),
+  [data-slot="select-trigger"],
+  [data-slot="input"] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot="button"]:not([data-day]) {
+    min-width: 2.75rem;
+  }
+
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [role="tab"] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot="card-header"],
+  [data-slot="card-content"],
+  [data-slot="card-footer"] {
+    padding-inline: 1rem;
+  }
+}
+
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"] {
+  max-width: calc(100vw - 1.5rem);
+}
+
+[data-slot="card"] {
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

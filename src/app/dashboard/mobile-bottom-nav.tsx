@@ -24,13 +24,13 @@ export function MobileBottomNav({
         {
             icon: Home,
             label: "Home",
-            href: "/dashboard",
+            href: `/dashboard?householdId=${encodeURIComponent(householdId)}`,
             isActive: pathname === "/dashboard"
         },
         {
             icon: ShoppingCart,
             label: "Shop",
-            href: "/dashboard/shopping-list",
+            href: `/dashboard/shopping-list?householdId=${encodeURIComponent(householdId)}`,
             isActive: pathname === "/dashboard/shopping-list"
         },
         {
@@ -54,7 +54,7 @@ export function MobileBottomNav({
     ];
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t z-50 safe-area-bottom">
+        <nav aria-label="Main navigation" className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t z-40 safe-area-bottom">
             <div className="flex justify-around items-center h-16">
                 {navItems.map((item) => {
                     const Icon = item.icon;
@@ -81,6 +81,7 @@ export function MobileBottomNav({
                         <Link
                             key={item.label}
                             href={item.href!}
+                            aria-current={item.isActive ? "page" : undefined}
                             className={cn(
                                 "flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] gap-1 transition-colors",
                                 item.isActive

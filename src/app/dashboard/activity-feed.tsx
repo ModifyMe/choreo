@@ -203,8 +203,8 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
         return (
             <div key={log.id} className="flex items-start gap-3 text-sm border-b pb-3 last:border-0">
                 <div className="mt-0.5">{getIcon(log.action)}</div>
-                <div className="flex-1 space-y-1">
-                    <p className="leading-none">{getMessage(log)}</p>
+                <div className="min-w-0 flex-1 space-y-1">
+                    <p className="break-words leading-relaxed">{getMessage(log)}</p>
                     <p className="text-xs text-muted-foreground">
                         {(() => {
                             let dateStr = log.createdAt;
@@ -240,7 +240,7 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                         <Popover>
                             <PopoverTrigger asChild>
                                 <button
-                                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-muted transition-colors"
+                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors"
                                     disabled={reactingId === log.id}
                                 >
                                     {reactingId === log.id ? (
@@ -256,7 +256,7 @@ export function ActivityFeed({ householdId }: { householdId: string }) {
                                         <button
                                             key={emoji}
                                             onClick={() => handleReaction(log.id, emoji)}
-                                            className="p-1.5 text-lg hover:bg-muted rounded transition-colors"
+                                            className="min-h-11 min-w-11 p-1.5 text-lg hover:bg-muted rounded transition-colors"
                                         >
                                             {emoji}
                                         </button>

@@ -1,8 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Trophy } from "lucide-react";
 
 interface Achievement {
     id: string;
@@ -14,7 +12,7 @@ interface Achievement {
 
 export function AchievementsList({ achievements }: { achievements: Achievement[] }) {
     return (
-        <CardContent className="grid grid-cols-2 gap-4">
+        <div className="grid min-w-0 grid-cols-1 min-[400px]:grid-cols-2 gap-3">
             {achievements.map((ach) => (
                 <div
                     key={ach.id}
@@ -27,8 +25,8 @@ export function AchievementsList({ achievements }: { achievements: Achievement[]
                 >
                     <div className="text-3xl">{ach.icon}</div>
                     <div>
-                        <p className="font-semibold text-sm">{ach.name}</p>
-                        <p className="text-xs text-muted-foreground">{ach.description}</p>
+                        <p className="break-words font-semibold text-sm">{ach.name}</p>
+                        <p className="break-words text-xs text-muted-foreground">{ach.description}</p>
                     </div>
                     {ach.unlockedAt && (
                         <span className="text-[10px] font-bold text-yellow-600 dark:text-yellow-500 bg-yellow-100 dark:bg-yellow-900/50 px-2 py-0.5 rounded-full">
@@ -37,6 +35,6 @@ export function AchievementsList({ achievements }: { achievements: Achievement[]
                     )}
                 </div>
             ))}
-        </CardContent>
+        </div>
     );
 }

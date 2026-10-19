@@ -14,13 +14,13 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { inviteCode } = body;
 
-        if (!inviteCode) {
-            return new NextResponse("Invite code is required", { status: 400 });
+        if (typeof inviteCode !== "string" || !/^[A-Z0-9_-]{6}$/.test(inviteCode.trim().toUpperCase())) {
+            return new NextResponse("A valid six-character invite code is required", { status: 400 });
         }
 
         const household = await prisma.household.findUnique({
             where: {
-                inviteCode: inviteCode.toUpperCase(),
+                inviteCode: inviteCode.trim().toUpperCase(),
             },
         });
 
@@ -28,22 +28,16 @@ export async function POST(req: Request) {
             return new NextResponse("Invalid invite code", { status: 404 });
         }
 
-        // Check if already a member
-        const existingMembership = await prisma.membership.findUnique({
+        // Reopening an invitation preserves the member's existing role.
+        await prisma.membership.upsert({
             where: {
                 userId_householdId: {
                     userId: session.user.id,
                     householdId: household.id,
                 },
             },
-        });
-
-        if (existingMembership) {
-            return new NextResponse("Already a member", { status: 400 });
-        }
-
-        await prisma.membership.create({
-            data: {
+            update: {},
+            create: {
                 userId: session.user.id,
                 householdId: household.id,
                 role: "MEMBER",

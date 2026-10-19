@@ -68,7 +68,7 @@ export function UpdatePrompt() {
     return (
         <div
             className={cn(
-                "fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80",
+                "fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80",
                 "bg-card border rounded-lg shadow-lg p-4 z-50",
                 "animate-in slide-in-from-bottom-5 duration-300"
             )}
@@ -88,6 +88,7 @@ export function UpdatePrompt() {
                     size="icon"
                     className="h-6 w-6 shrink-0"
                     onClick={handleDismiss}
+                    aria-label="Dismiss update notice"
                 >
                     <X className="h-4 w-4" />
                 </Button>

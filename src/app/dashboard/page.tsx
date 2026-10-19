@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const session = await getServerSession(authOptions);
 
@@ -47,7 +47,7 @@ export default async function DashboardPage({
     }
 
     // Determine which household to show
-    const householdId = searchParams?.householdId as string;
+    const { householdId } = await searchParams;
     let membership = user.memberships[0];
 
     if (householdId) {
@@ -83,9 +83,9 @@ export default async function DashboardPage({
     ]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content Area - Chores */}
-            <div className="md:col-span-2 space-y-6">
+            <div className="min-w-0 lg:col-span-2 space-y-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle>My Chores</CardTitle>
@@ -104,7 +104,7 @@ export default async function DashboardPage({
 
                 {household.mode === "ECONOMY" && (
                     <div className="space-y-4 pt-4 border-t">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-wrap justify-between items-center gap-3">
                             <h2 className="text-xl font-semibold tracking-tight">Rewards Shop</h2>
                             {membership.role === "ADMIN" && (
                                 <AddRewardDialog householdId={household.id} />

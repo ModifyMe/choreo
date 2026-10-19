@@ -51,7 +51,7 @@ export function AchievementsDialog({ achievements, open, onOpenChange }: Achieve
                         You have unlocked {unlockedCount} / {achievements.length} achievements.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="min-w-0">
                     <AchievementsList achievements={achievements} />
                 </div>
             </DialogContent>

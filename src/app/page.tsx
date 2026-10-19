@@ -16,7 +16,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col bg-background text-foreground relative overflow-hidden">
       <FallingEmojis />
       <div className="relative z-10 flex flex-col flex-1 w-full">
         {/* Header */}

@@ -1,146 +1,98 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Home, UserPlus } from "lucide-react";
+import { Home, UserPlus, Loader2 } from "lucide-react";
 
-export function OnboardingClient({ code }: { code?: string }) {
+export function OnboardingClient({ code, inviteHouseholdName }: { code?: string; inviteHouseholdName?: string }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [mode, setMode] = useState<"create" | "join">("create");
+    const [mode, setMode] = useState<"create" | "join">(code ? "join" : "create");
     const [householdName, setHouseholdName] = useState("");
-    const [inviteCode, setInviteCode] = useState("");
+    const [inviteCode, setInviteCode] = useState(code || "");
+    const [error, setError] = useState("");
+    const [useLink, setUseLink] = useState(Boolean(code && inviteHouseholdName));
 
-    useEffect(() => {
-        if (code) {
-            setMode("join");
-            setInviteCode(code);
-        }
-    }, [code]);
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    async function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
+        if (isLoading) return;
         setIsLoading(true);
-
+        setError("");
         try {
-            const res = await fetch("/api/households", {
+            const response = await fetch(mode === "join" ? "/api/households/join" : "/api/households", {
                 method: "POST",
-                body: JSON.stringify({ name: householdName }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(mode === "join" ? { inviteCode: inviteCode.trim().toUpperCase() } : { name: householdName.trim() }),
             });
-
-            if (!res.ok) throw new Error("Failed to create household");
-
-            toast.success("Household created!");
-            router.push("/dashboard");
+            if (!response.ok) {
+                if (response.status === 404) throw new Error("This invitation is no longer valid. Ask a household member for a new link.");
+                if (response.status === 401) throw new Error("Your sign-in expired. Reload this page to sign in again.");
+                if (response.status === 400) throw new Error(await response.text());
+                throw new Error("We couldn’t save your household. Please try again.");
+            }
+            const household = await response.json();
+            router.push(`/dashboard?householdId=${encodeURIComponent(household.id)}`);
             router.refresh();
         } catch (error) {
-            toast.error("Something went wrong");
-        } finally {
+            setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
             setIsLoading(false);
         }
-    };
-
-    const handleJoin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        try {
-            const res = await fetch("/api/households/join", {
-                method: "POST",
-                body: JSON.stringify({ inviteCode }),
-            });
-
-            if (res.status === 404) {
-                toast.error("Invalid invite code");
-                return;
-            }
-
-            if (res.status === 400) {
-                toast.error("You are already a member of this household");
-                return;
-            }
-
-            if (!res.ok) throw new Error("Failed to join household");
-
-            toast.success("Joined household!");
-            router.push("/dashboard");
-            router.refresh();
-        } catch (error) {
-            toast.error("Something went wrong");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+        <div className="min-h-dvh flex items-center justify-center bg-muted/50 p-4 py-8">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Welcome to Choreo</CardTitle>
+                    <CardTitle className="break-words text-2xl">{useLink && mode === "join" ? `Join ${inviteHouseholdName}` : "Welcome to Choreo"}</CardTitle>
                     <CardDescription>
-                        To get started, create a new household or join an existing one.
+                        {useLink && mode === "join" ? "Your invitation is ready. Join this household to get started." : "Create a new household or join an existing one."}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        <Button
-                            variant={mode === "create" ? "default" : "outline"}
-                            className="h-20 flex flex-col gap-2"
-                            onClick={() => setMode("create")}
-                        >
-                            <Home className="w-6 h-6" />
-                            Create New
-                        </Button>
-                        <Button
-                            variant={mode === "join" ? "default" : "outline"}
-                            className="h-20 flex flex-col gap-2"
-                            onClick={() => setMode("join")}
-                        >
-                            <UserPlus className="w-6 h-6" />
-                            Join Existing
-                        </Button>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        {(["create", "join"] as const).map((option) => (
+                            <Button key={option} variant={mode === option ? "default" : "outline"}
+                                className="h-20 flex flex-col gap-2" disabled={isLoading}
+                                aria-pressed={mode === option} onClick={() => { setMode(option); setError(""); }}>
+                                {option === "create" ? <Home className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
+                                {option === "create" ? "Create New" : "Join Existing"}
+                            </Button>
+                        ))}
                     </div>
-
-                    {mode === "create" ? (
-                        <form onSubmit={handleCreate} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {mode === "create" ? (
                             <div className="space-y-2">
                                 <Label htmlFor="name">Household Name</Label>
-                                <Input
-                                    id="name"
-                                    placeholder="e.g. The Cool Kids"
-                                    value={householdName}
-                                    onChange={(e) => setHouseholdName(e.target.value)}
-                                    required
-                                />
+                                <Input id="name" placeholder="e.g. Our home" value={householdName}
+                                    onChange={event => setHouseholdName(event.target.value)} required disabled={isLoading} />
                             </div>
-                            <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? "Creating..." : "Create Household"}
-                            </Button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleJoin} className="space-y-4">
+                        ) : useLink ? (
+                            <div className="space-y-2">
+                                <p className="rounded-lg bg-muted p-4 text-sm leading-relaxed">
+                                    You&apos;re invited to <strong className="break-words">{inviteHouseholdName}</strong>.
+                                    Your link already includes the invite code.
+                                </p>
+                                <Button type="button" variant="link" className="px-0" disabled={isLoading}
+                                    onClick={() => { setUseLink(false); setInviteCode(""); setError(""); }}>Use a different invite code</Button>
+                            </div>
+                        ) : (
                             <div className="space-y-2">
                                 <Label htmlFor="code">Invite Code</Label>
-                                <Input
-                                    id="code"
-                                    placeholder="e.g. X7K9P2"
-                                    value={inviteCode}
-                                    onChange={(e) => setInviteCode(e.target.value)}
-                                    required
-                                    className="uppercase"
-                                    maxLength={6}
-                                />
+                                <Input id="code" placeholder="e.g. X7K9P2" value={inviteCode}
+                                    onChange={event => setInviteCode(event.target.value.toUpperCase())} required
+                                    className="uppercase" maxLength={6} autoCapitalize="characters" autoCorrect="off" disabled={isLoading} />
                             </div>
-                            <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? "Joining..." : "Join Household"}
-                            </Button>
-                        </form>
-                    )}
+                        )}
+                        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+                        <Button type="submit" className="w-full" disabled={isLoading || (mode === "create" ? !householdName.trim() : inviteCode.trim().length !== 6)}>
+                            {isLoading && <Loader2 className="size-4 animate-spin" />}
+                            {mode === "join" ? (isLoading ? "Joining…" : "Join Household") : (isLoading ? "Creating…" : "Create Household")}
+                        </Button>
+                    </form>
                 </CardContent>
             </Card>
         </div>

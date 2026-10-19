@@ -16,8 +16,8 @@ export async function Leaderboard({ householdId }: { householdId: string }) {
     return (
         <div className="space-y-4">
             {sortedMembers.map((member: any, index: number) => (
-                <div key={member.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
+                <div key={member.id} className="flex min-w-0 items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                         <div className="font-bold text-muted-foreground w-4 text-center">
                             {index + 1}
                         </div>
@@ -26,7 +26,7 @@ export async function Leaderboard({ householdId }: { householdId: string }) {
                             <AvatarFallback>{member.user.name?.[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="font-medium text-sm leading-none flex items-center gap-1">
+                            <p className="font-medium text-sm leading-snug break-words">
                                 {member.user.name}
                                 {member.isAway && (
                                     <Palmtree className="w-3 h-3 text-orange-500" aria-label="On Vacation" />
@@ -35,7 +35,7 @@ export async function Leaderboard({ householdId }: { householdId: string }) {
                             <p className="text-xs text-muted-foreground capitalize">{member.role.toLowerCase()}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                         <span className="font-bold">{member.totalPoints}</span>
                         <Trophy className={`w-4 h-4 ${index === 0 ? "text-yellow-500" : "text-muted-foreground"}`} />
                     </div>

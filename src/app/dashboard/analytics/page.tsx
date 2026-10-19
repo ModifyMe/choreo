@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ householdId?: string }> }) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -26,7 +26,8 @@ export default async function AnalyticsPage() {
         },
     });
 
-    const membership = user?.memberships[0];
+    const { householdId: requestedHouseholdId } = await searchParams;
+    const membership = user?.memberships.find(m => m.householdId === requestedHouseholdId) ?? user?.memberships[0];
     const householdId = membership?.householdId;
 
     if (!householdId) {
@@ -106,15 +107,15 @@ export default async function AnalyticsPage() {
     })).reverse(); // Show oldest to newest
 
     return (
-        <div className="max-w-4xl mx-auto p-4 space-y-8 pb-20">
+        <div className="min-w-0 max-w-4xl mx-auto space-y-6">
             <div className="flex items-center gap-4">
-                <Link href="/dashboard">
+                <Link href={`/dashboard?householdId=${encodeURIComponent(householdId)}`}>
                     <Button variant="ghost" size="icon">
                         <ArrowLeft className="w-5 h-5" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Household Stats 📊</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Household Stats 📊</h1>
                     <p className="text-muted-foreground">See who's carrying the team!</p>
                 </div>
             </div>

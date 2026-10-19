@@ -68,14 +68,14 @@ export function ChoreDetailDialog({ chore, open, onOpenChange }: ChoreDetailDial
                     {/* Description */}
                     {chore.description && (
                         <div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-sm text-muted-foreground leading-relaxed break-words">
                                 {chore.description}
                             </p>
                         </div>
                     )}
 
                     {/* Info Grid */}
-                    <div className="grid gap-3">
+                    <div className="grid min-w-0 gap-3 [&>div>div:last-child]:min-w-0 [&>div>div:first-child]:shrink-0">
                         {/* Points */}
                         <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                             <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
@@ -83,7 +83,7 @@ export function ChoreDetailDialog({ chore, open, onOpenChange }: ChoreDetailDial
                             </div>
                             <div>
                                 <p className="text-xs text-muted-foreground">Points</p>
-                                <p className="font-semibold">{chore.points} pts</p>
+                                <p className="font-semibold break-words">{chore.points} pts</p>
                             </div>
                         </div>
 
@@ -121,7 +121,7 @@ export function ChoreDetailDialog({ chore, open, onOpenChange }: ChoreDetailDial
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Repeats</p>
-                                    <p className="font-semibold">{getRecurrenceText()}</p>
+                                    <p className="font-semibold break-words">{getRecurrenceText()}</p>
                                 </div>
                             </div>
                         )}
@@ -134,7 +134,7 @@ export function ChoreDetailDialog({ chore, open, onOpenChange }: ChoreDetailDial
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Assigned To</p>
-                                    <p className="font-semibold">{chore.assignedTo.name || "Unknown"}</p>
+                                    <p className="font-semibold break-words">{chore.assignedTo.name || "Unknown"}</p>
                                 </div>
                             </div>
                         )}
@@ -169,7 +169,7 @@ export function ChoreDetailDialog({ chore, open, onOpenChange }: ChoreDetailDial
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Verification</p>
-                                    <p className="font-semibold">Photo proof required</p>
+                                    <p className="font-semibold break-words">Photo proof required</p>
                                 </div>
                             </div>
                         )}

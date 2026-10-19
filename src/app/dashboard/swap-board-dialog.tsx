@@ -156,7 +156,7 @@ export function SwapBoardDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                <div className="space-y-4">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -183,7 +183,7 @@ export function SwapBoardDialog({
                                     )}
                                 >
                                     {/* Header */}
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={swap.createdBy.image || undefined} />
@@ -210,8 +210,8 @@ export function SwapBoardDialog({
                                     <div className="bg-background rounded-md p-3 space-y-2">
                                         {/* Offered Chore */}
                                         <div className="flex items-center gap-2">
-                                            <div className="w-16 text-xs text-muted-foreground">Offering:</div>
-                                            <div className="flex-1">
+                                            <div className="w-12 shrink-0 text-xs text-muted-foreground">Offering:</div>
+                                            <div className="min-w-0 flex-1 break-words">
                                                 <p className="font-medium text-sm">{swap.offeredChore.title}</p>
                                                 <p className="text-xs text-muted-foreground">{swap.offeredChore.points} XP</p>
                                             </div>
@@ -223,8 +223,8 @@ export function SwapBoardDialog({
 
                                         {/* Wanted */}
                                         <div className="flex items-start gap-2">
-                                            <div className="w-16 text-xs text-muted-foreground">Wants:</div>
-                                            <div className="flex-1">
+                                            <div className="w-12 shrink-0 text-xs text-muted-foreground">Wants:</div>
+                                            <div className="min-w-0 flex-1 break-words">
                                                 <p className="text-sm">{swap.wantedDescription}</p>
                                                 {swap.wantedChore && (
                                                     <Badge variant="secondary" className="mt-1 text-xs">
@@ -241,7 +241,7 @@ export function SwapBoardDialog({
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex-1"
+                                                className="min-w-0 flex-1 break-words"
                                                 onClick={() => handleCancel(swap.id)}
                                             >
                                                 Cancel Offer
@@ -250,7 +250,7 @@ export function SwapBoardDialog({
                                             <>
                                                 <Button
                                                     size="sm"
-                                                    className="flex-1"
+                                                    className="min-w-0 flex-1 break-words"
                                                     onClick={() => handleAccept(swap.id)}
                                                     disabled={acceptingId === swap.id}
                                                 >

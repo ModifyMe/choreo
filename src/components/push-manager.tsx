@@ -33,6 +33,7 @@ export function PushNotificationManager() {
             // Auto-prompt if permission is default
             if (Notification.permission === "default") {
                 toast("Enable notifications?", {
+                    id: "enable-push-notifications",
                     description: "Stay updated on your chores!",
                     action: {
                         label: "Enable",

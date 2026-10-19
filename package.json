@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:reset": "node --test scripts/test-household-reset.cjs",
+    "test:invites": "node --test scripts/test-invitations.cjs",
     "analyze": "ANALYZE=true npm run build",
     "postinstall": "prisma generate"
   },

@@ -83,10 +83,10 @@ export function DashboardHeader({
     }, [router]);
 
     return (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <Link href="/dashboard" className="hover:underline">
-                    <h1 className="text-3xl font-bold tracking-tight">{household.name}</h1>
+        <div className="flex min-w-0 flex-col gap-4">
+            <div className="min-w-0">
+                <Link href={`/dashboard?householdId=${encodeURIComponent(household.id)}`} className="hover:underline">
+                    <h1 className="break-words text-2xl sm:text-3xl font-bold tracking-tight">{household.name}</h1>
                 </Link>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                     <p className="text-muted-foreground text-sm font-medium">{user.name}</p>
@@ -112,11 +112,11 @@ export function DashboardHeader({
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex min-w-0 items-center gap-2 w-full">
                 {/* Mobile: Simplified - just Add Chore, Notifications, User */}
-                <div className="flex md:hidden items-center justify-end gap-2 w-full">
+                <div className="flex md:hidden items-center justify-between gap-2 w-full">
                     <PushNotificationManager />
-                    <SwapBoardDialog householdId={household.id} userId={user.id} />
+                    <InviteCodeButton code={household.inviteCode} />
                     <AddChoreDialog householdId={household.id} />
                     <UserNav
                         user={user}
@@ -129,14 +129,14 @@ export function DashboardHeader({
                 </div>
 
                 {/* Desktop: Full Row */}
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:flex flex-wrap items-center gap-3">
                     <InviteCodeButton code={household.inviteCode} />
-                    <Link href="/dashboard/analytics">
+                    <Link href={`/dashboard/analytics?householdId=${encodeURIComponent(household.id)}`}>
                         <Button variant="outline" size="icon" title="Analytics">
                             <BarChart3 className="w-4 h-4" />
                         </Button>
                     </Link>
-                    <Link href="/dashboard/shopping-list">
+                    <Link href={`/dashboard/shopping-list?householdId=${encodeURIComponent(household.id)}`}>
                         <Button variant="secondary" className="gap-2">
                             <ShoppingCart className="w-4 h-4" />
                             Shopping List

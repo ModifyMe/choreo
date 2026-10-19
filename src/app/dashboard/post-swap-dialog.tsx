@@ -165,7 +165,7 @@ export function PostSwapDialog({ chore, open, onOpenChange }: PostSwapDialogProp
                         </p>
                     </div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto space-y-4 pt-2">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain space-y-4 pt-2">
                         {/* What you're offering */}
                         <div className="p-3 bg-muted/50 rounded-md">
                             <p className="text-xs text-muted-foreground mb-1">You're offering:</p>

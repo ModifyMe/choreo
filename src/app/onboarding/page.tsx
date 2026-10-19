@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { OnboardingClient } from "./onboarding-client";
 import { AutoSignIn } from "./auto-sign-in";
+import { prisma } from "@/lib/prisma";
 
 export default async function OnboardingPage({
     searchParams,
@@ -10,12 +11,16 @@ export default async function OnboardingPage({
 }) {
     const session = await getServerSession(authOptions);
     const resolvedParams = await searchParams;
-    const code = resolvedParams?.code as string;
+    const rawCode = resolvedParams?.code;
+    const code = typeof rawCode === "string" ? rawCode.trim().toUpperCase() : undefined;
 
     if (!session?.user?.email) {
-        const callbackUrl = code ? `/onboarding?code=${code}` : "/onboarding";
+        const callbackUrl = code ? `/onboarding?${new URLSearchParams({ code })}` : "/onboarding";
         return <AutoSignIn callbackUrl={callbackUrl} />;
     }
 
-    return <OnboardingClient code={code} />;
+    const invitation = code ? await prisma.household.findUnique({
+        where: { inviteCode: code }, select: { name: true },
+    }) : null;
+    return <OnboardingClient key={code || "new"} code={code} inviteHouseholdName={invitation?.name} />;
 }
