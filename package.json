@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "test:reset": "node --test scripts/test-household-reset.cjs",
     "analyze": "ANALYZE=true npm run build",
     "postinstall": "prisma generate"
   },

@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import Webcam from "react-webcam";
 import { compressImage } from "@/lib/image-compression";
+import { ResetHouseholdDialog } from "./reset-household-dialog";
 
 export function SettingsDialog({
     householdId,
@@ -323,6 +324,15 @@ export function SettingsDialog({
                                 disabled={loading || !isAdmin}
                             />
                         </div>
+
+                        {isAdmin && (
+                            <div className="space-y-2 pt-4 border-t">
+                                <p className="text-xs text-muted-foreground">
+                                    Start fresh by clearing this household&apos;s tasks and progress. Members and settings are kept.
+                                </p>
+                                <ResetHouseholdDialog householdId={householdId} disabled={loading} />
+                            </div>
+                        )}
 
                         <div className="pt-4 border-t">
                             <Button
