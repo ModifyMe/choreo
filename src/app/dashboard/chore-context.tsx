@@ -81,6 +81,7 @@ export function ChoreProvider({
     const insertQueueRef = useRef<Map<string, Chore>>(new Map());
     const deleteQueueRef = useRef<Set<string>>(new Set());
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const stepQueueRef = useRef<Map<string, Promise<void>>>(new Map());
     const DEBOUNCE_MS = 100; // Batch updates within 100ms window
 
     // Sync with server data
@@ -429,19 +430,26 @@ export function ChoreProvider({
 
         if (!chore || !chore.steps) return;
 
+        const completed = !chore.steps.find(step => step.id === stepId)?.completed;
         const newSteps = chore.steps.map(step =>
-            step.id === stepId ? { ...step, completed: !step.completed } : step
+            step.id === stepId ? { ...step, completed } : step
         );
 
         updateChore(choreId, { steps: newSteps });
 
-        fetch(`/api/chores/${choreId}`, {
+        // Send the wanted state, one request per chore at a time, so quick taps
+        // reach the server in the order they were made.
+        const previous = stepQueueRef.current.get(choreId) || Promise.resolve();
+        const next = previous.then(() => fetch(`/api/chores/${choreId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "TOGGLE_STEP", stepId }),
+            body: JSON.stringify({ action: "TOGGLE_STEP", stepId, completed }),
+        })).then(res => {
+            if (!res.ok) throw new Error(`Failed to save subtask (${res.status})`);
         }).catch(err => {
             console.error("Failed to toggle subtask", err);
         });
+        stepQueueRef.current.set(choreId, next);
     }, [serverChores, optimisticAdds, optimisticUpdates, updateChore]);
 
     return (

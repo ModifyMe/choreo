@@ -270,6 +270,10 @@ export function ChoreCard({
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             onToggleSubtask(chore.id, step.id);
+                                                            // Ticking the last open step does not finish the chore by
+                                                            // itself, so offer the Complete dialog right away.
+                                                            const othersDone = visibleSteps.every(s => s.id === step.id || s.completed);
+                                                            if (!step.completed && othersDone) setDialogOpen(true);
                                                         }}
                                                     >
                                                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${step.completed ? "bg-primary border-primary" : "border-muted-foreground"}`}>

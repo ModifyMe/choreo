@@ -10,6 +10,7 @@
     "test:reset": "node --test scripts/test-household-reset.cjs",
     "test:invites": "node --test scripts/test-invitations.cjs",
     "test:chores": "node --test scripts/test-chore-actions.cjs",
+    "test:steps": "node --test scripts/test-chore-steps.cjs",
     "analyze": "ANALYZE=true npm run build",
     "postinstall": "prisma generate"
   },

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkAchievements } from "@/lib/achievements";
+import { setChoreStep } from "@/lib/chore-steps";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
@@ -486,20 +487,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         if (action === "TOGGLE_STEP") {
-            const { stepId } = body;
-            const currentSteps = (chore.steps as any[]) || [];
-
-            const updatedSteps = currentSteps.map((step: any) =>
-                step.id === stepId ? { ...step, completed: !step.completed } : step
-            );
-
-            const updatedChore = await prisma.chore.update({
-                where: { id },
-                data: {
-                    steps: updatedSteps,
-                    // Optional: Log activity if needed, but might be too noisy for every step
-                },
-            });
+            const { stepId, completed } = body;
+            const updatedChore = await setChoreStep(prisma, id, stepId, completed);
             return NextResponse.json(updatedChore);
         }
 
