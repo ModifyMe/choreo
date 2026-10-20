@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { reconcileChoreUpdates } from "@/lib/chore-actions";
+import { reconcileChoreUpdates, retireEchoedUpdates } from "@/lib/chore-actions";
 
 export interface Step {
     id: string;
@@ -200,13 +200,10 @@ export function ChoreProvider({
                 return next;
             });
 
-            // Clear optimistic updates for updated items
+            // Clear optimistic updates for updated items, keeping subtask ticks
+            // the server has not saved yet.
             if (updates.length > 0) {
-                setOptimisticUpdates((prev) => {
-                    const next = new Map(prev);
-                    updates.forEach((u) => next.delete(u.id));
-                    return next;
-                });
+                setOptimisticUpdates((prev) => retireEchoedUpdates(prev, updates));
             }
 
             // Clear pending deletes
@@ -448,9 +445,11 @@ export function ChoreProvider({
             if (!res.ok) throw new Error(`Failed to save subtask (${res.status})`);
         }).catch(err => {
             console.error("Failed to toggle subtask", err);
+            // Show what the server has rather than a tick that was never saved.
+            clearChoreUpdate(choreId);
         });
         stepQueueRef.current.set(choreId, next);
-    }, [serverChores, optimisticAdds, optimisticUpdates, updateChore]);
+    }, [serverChores, optimisticAdds, optimisticUpdates, updateChore, clearChoreUpdate]);
 
     return (
         <ChoreContext.Provider

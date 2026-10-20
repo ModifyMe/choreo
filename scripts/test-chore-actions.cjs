@@ -17,7 +17,7 @@ function load(file, dependencies = {}, globals = {}) {
     return exports;
 }
 
-const { reconcileChoreUpdates } = load("src/lib/chore-actions.ts");
+const { reconcileChoreUpdates, retireEchoedUpdates } = load("src/lib/chore-actions.ts");
 const chore = { id: "task", householdId: "home", status: "PENDING", assignedToId: null, points: 50 };
 
 function fixture({ status = 200, networkError = false, assignedToId = null } = {}) {
@@ -99,4 +99,24 @@ test("a completed chore missing from pending server data retires its overlay so 
 test("an older snapshot keeps a newer in-flight claim", () => {
     const updates = new Map([["task", { assignedToId: "person" }]]);
     assert.equal(reconcileChoreUpdates(updates, [chore]).size, 1);
+});
+
+const tick = (...done) => ["a", "b", "c"].map(id => ({ completed: done.includes(id), title: id, id }));
+
+test("an echo of an earlier step save keeps ticks still on their way", () => {
+    const updates = new Map([["task", { steps: tick("a", "b", "c") }]]);
+    const remaining = retireEchoedUpdates(updates, [{ ...chore, steps: tick("a") }]);
+    assert.equal(remaining.size, 1);
+    assert.equal(updates.size, 1, "must not mutate React's previous state");
+});
+
+test("the echo that carries every tick retires the overlay, whatever its key order", () => {
+    const updates = new Map([["task", { steps: tick("a", "b", "c").map(({ id, title, completed }) => ({ id, title, completed })) }]]);
+    assert.equal(retireEchoedUpdates(updates, [{ ...chore, steps: tick("a", "b", "c") }]).size, 0);
+});
+
+test("echoes still clear overlays without subtasks, and leave other chores alone", () => {
+    const updates = new Map([["task", { assignedToId: "person" }], ["other", { status: "COMPLETED" }]]);
+    const remaining = retireEchoedUpdates(updates, [chore]);
+    assert.deepEqual([...remaining.keys()], ["other"]);
 });

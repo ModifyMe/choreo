@@ -26,3 +26,22 @@ export function reconcileChoreUpdates<T extends { id: string; status: string }>(
     }
     return remaining;
 }
+
+// Subtask ticks as a comparable string, independent of JSON key order.
+export function stepState(steps?: { id: string; completed: boolean }[] | null) {
+    return (steps || []).map(step => `${step.id}:${step.completed ? 1 : 0}`).join(",");
+}
+
+// A realtime echo replaces local overlays, except subtask ticks the echo does not
+// contain yet: those are saved one request at a time and are still on their way.
+export function retireEchoedUpdates<T extends { id: string; steps?: { id: string; completed: boolean }[] | null }>(
+    updates: Map<string, Partial<T>>, echoes: T[],
+): Map<string, Partial<T>> {
+    const remaining = new Map(updates);
+    for (const echo of echoes) {
+        const pending = remaining.get(echo.id)?.steps;
+        if (pending && stepState(pending) !== stepState(echo.steps)) continue;
+        remaining.delete(echo.id);
+    }
+    return remaining;
+}
